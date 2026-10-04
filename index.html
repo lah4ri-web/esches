@@ -1,0 +1,141 @@
+<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ESCHÉS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.min.js"></script>
+<style>
+:root{--bg:#131315;--bg2:#1a1a1d;--fg:#ece7dd;--mut:#8d8a84;--line:#2b2b2f;--acc:#c9a96e;--bad:#d9534f;--mid:#d98b4a;--ok:#7fae8a;--ser:'Cormorant Garamond',Georgia,serif;--sans:Inter,-apple-system,Helvetica,Arial,sans-serif;--mono:ui-monospace,Menlo,monospace;--bs:max(300px,min(calc(100vh - 150px),calc(100vw - 560px)))}
+[data-theme=light]{--bg:#f6f2e9;--bg2:#efe9dc;--fg:#1c1b19;--mut:#7a766d;--line:#ddd6c6;--acc:#8a6a2f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 var(--sans)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}button:disabled{opacity:.4;cursor:not-allowed}
+#app{min-height:100vh;padding:20px 36px;transition:filter .35s}#app.blur{filter:blur(10px)}
+header{display:flex;align-items:baseline;gap:34px;padding-bottom:16px;margin-bottom:22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font:600 22px var(--ser);letter-spacing:.3em}.tabs{display:flex;gap:20px;flex-wrap:wrap}.tabs button{font-size:11px;letter-spacing:.16em;color:var(--mut);padding:2px 0;border-bottom:1px solid transparent;transition:color .15s}.tabs button:hover{color:var(--fg)}.tabs .on{color:var(--acc);border-color:var(--acc)}
+.hr{margin-left:auto;font-size:11px;color:var(--mut)}.hr button{color:var(--mut);margin-left:14px}.hr button:hover{color:var(--fg)}
+.ws{display:flex;gap:44px;align-items:flex-start}
+.board{position:relative;width:var(--bs);height:var(--bs);flex:none;user-select:none;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.sq{position:absolute;width:12.5%;height:12.5%;cursor:pointer;overflow:hidden}.sq.l{background:#F0D9B5}.sq.d{background:#B58863}
+.sq img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:1}
+.sq .g{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(var(--bs)/11);pointer-events:none;z-index:1}
+.sq.last{box-shadow:inset 0 0 0 100px rgba(255,214,10,.34)}.sq.sel{box-shadow:inset 0 0 0 100px rgba(255,214,10,.5)}
+.sq.chk{box-shadow:inset 0 0 18px 8px rgba(217,60,60,.85)}.sq.mate{box-shadow:inset 0 0 0 100px rgba(200,30,30,.75)}
+.dot{position:absolute;left:35%;top:35%;width:30%;aspect-ratio:1/1;border-radius:50%;background:rgba(0,0,0,.22);z-index:2;pointer-events:none}
+.ring{position:absolute;left:4%;top:4%;width:92%;aspect-ratio:1/1;border-radius:50%;border:calc(var(--bs)/150 + 2px) solid rgba(0,0,0,.22);z-index:2;pointer-events:none}
+.co{position:absolute;z-index:3;font:600 clamp(11px,calc(var(--bs)/42),19px)/1 var(--sans);pointer-events:none}.f{left:4px;bottom:3px}.rk{right:4px;top:3px}
+.l .co{color:#B58863}.d .co{color:#F0D9B5}.nocoords .co{display:none}
+.bt{width:var(--bs);display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--mut);letter-spacing:.1em}
+.side{flex:1;min-width:300px;max-width:470px;height:var(--bs);overflow:auto;padding-right:8px}
+.side>section{padding:0 0 22px;margin-bottom:22px;border-bottom:1px solid var(--line)}.side>section:last-child{border:0}
+h4{margin:0 0 10px;font:600 10px var(--sans);letter-spacing:.2em;color:var(--mut);display:flex;justify-content:space-between}
+.tag{border:1px solid var(--acc);color:var(--acc);padding:0 6px;font:600 9px/16px var(--sans);letter-spacing:.14em}
+.big{font:500 30px/1.05 var(--ser);margin:4px 0 8px}.mut{color:var(--mut)}.sm{font-size:11px;color:var(--mut)}
+.ib{border:1px solid var(--line);padding:5px 11px;border-radius:2px;font-size:11px;letter-spacing:.1em}.ib:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+.cta{background:var(--fg);color:var(--bg);padding:10px 18px;letter-spacing:.16em;font-size:11px;font-weight:600;margin:6px 8px 0 0}.cta:hover{background:var(--acc)}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--line);width:100%;text-align:left}.row:hover:not(:disabled){color:var(--acc)}.row em{font-style:normal;font-size:10px;color:var(--mut);letter-spacing:.1em}
+.hum{font:italic 500 17px/1.35 var(--ser);color:var(--acc)}.eng{border:1px dashed var(--line);padding:10px;color:var(--mut);font-size:12px}.ev{font:500 30px var(--mono)}
+.ml{font:12px var(--mono);max-height:130px;overflow:auto}.ml div{display:grid;grid-template-columns:26px 1fr 1fr}.ml span{color:var(--mut)}.ml button{padding:2px 5px;text-align:left}.ml button.on{background:var(--acc);color:var(--bg)}
+svg.gr{width:100%;height:90px;cursor:crosshair;display:block}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-start;justify-content:center;padding-top:12vh;z-index:50}.ovl.on{display:flex}
+.box{background:var(--bg2);border:1px solid var(--line);width:min(440px,92vw);padding:22px;max-height:76vh;overflow:auto}
+.box input,.box select,.side select{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--line);padding:9px;font:inherit;margin:4px 0 8px}
+.pi{display:block;width:100%;text-align:left;padding:8px 10px}.pi.on{background:var(--bg);color:var(--acc)}
+#ld{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(10,10,12,.55);backdrop-filter:blur(14px);opacity:0;pointer-events:none;transition:opacity .4s}
+#ld>*{filter:blur(10px);opacity:0;transition:filter .4s,opacity .4s}#ld.on{opacity:1}#ld.on>*{filter:none;opacity:1}
+#ld b{font:500 20px var(--sans);letter-spacing:.5em;color:#ece7dd;padding-left:.5em}
+.kn{font-size:44px;line-height:1;background:linear-gradient(110deg,#8d8a84 30%,#fff 50%,#8d8a84 70%) 0/250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 1.6s linear infinite}@keyframes sh{to{background-position:-150% 0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:1000px){:root{--bs:calc(100vw - 28px)}#app{padding:14px}.ws{flex-direction:column;gap:20px}.side{height:auto;max-width:none;width:100%;overflow:visible}}
+</style></head><body>
+<div id="app"><header><div class="logo">ESCHÉS</div><div class="tabs" id="tabs"></div><div class="hr"><span id="pcs"></span><button data-a="palette">⌘K</button><button data-a="help">/ shortcuts</button></div></header>
+<div class="ws"><div><div class="board" id="board"></div><div class="bt"><span id="cap">FREE BOARD · LOCAL</span><span><button class="ib" data-a="flip">FLIP · F</button> <button class="ib" data-a="reset">RESET</button></span></div></div><div class="side" id="side"></div></div></div>
+<div class="ovl" id="ov"><div class="box" id="box"></div></div>
+<div id="ld"><b>ESCHÉS</b><div class="kn">♞</div></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const S=Object.assign({theme:'dark',flip:false,coords:true,sound:true,practiced:0,saved:[],rep:{w:[],b:[]},fen:null},JSON.parse(localStorage.getItem('esches')||'{}'));
+const save=()=>{try{localStorage.setItem('esches',JSON.stringify(S))}catch(e){}};
+const theme=()=>document.documentElement.dataset.theme=S.theme==='system'?(matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'):S.theme;
+/* ---- loading overlay: only shown if a real operation exceeds 150ms ---- */
+async function withLoading(p){let on=false;const t=setTimeout(()=>{on=true;$('#ld').classList.add('on');$('#app').classList.add('blur')},150);try{return await p}finally{clearTimeout(t);if(on){$('#ld').classList.remove('on');$('#app').classList.remove('blur')}}}
+/* ---- pieces: Wikimedia (Cburnett) SVGs, fetched with fallbacks, cached locally for offline ---- */
+const H={wk:'4/42',wq:'1/15',wr:'7/72',wb:'b/b1',wn:'7/70',wp:'4/45',bk:'f/f0',bq:'4/47',br:'f/ff',bb:'9/98',bn:'e/ef',bp:'c/c7'};let PC={};
+const srcs=k=>[`https://upload.wikimedia.org/wikipedia/commons/${H[k]}/Chess_${k[1]}${k[0]==='w'?'l':'d'}t45.svg`,`https://cdn.jsdelivr.net/gh/lichess-org/lila@master/public/piece/cburnett/${k[0]+k[1].toUpperCase()}.svg`,`https://raw.githubusercontent.com/lichess-org/lila/master/public/piece/cburnett/${k[0]+k[1].toUpperCase()}.svg`];
+async function loadPieces(){let c={};try{c=JSON.parse(localStorage.getItem('esches-pc')||'{}')}catch(e){}
+ await Promise.all(Object.keys(H).filter(k=>!c[k]).map(async k=>{for(const u of srcs(k)){try{const r=await fetch(u);if(!r.ok)continue;const t=await r.text();if(t.includes('<svg')){c[k]='data:image/svg+xml;utf8,'+encodeURIComponent(t);break}}catch(e){}}}));
+ try{localStorage.setItem('esches-pc',JSON.stringify(c))}catch(e){}PC=c}
+const GL={wk:'♔',wq:'♕',wr:'♖',wb:'♗',wn:'♘',wp:'♙',bk:'♚',bq:'♛',br:'♜',bb:'♝',bn:'♞',bp:'♟'};
+/* ---- sound ---- */
+const SN={move:'move-self',cap:'capture',end:'game-end',castle:'castle',promo:'promote',bad:'illegal'},AU={};
+function sfx(k){if(!S.sound)return;try{const a=AU[k]=AU[k]||new Audio(`https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/${SN[k]}.mp3`);a.currentTime=0;a.play().catch(()=>{})}catch(e){}}
+/* ---- the one persistent board (fixed geometry: absolutely positioned 12.5% squares) ---- */
+const B={g:new Chess(),sel:null,last:null,lock:false,onMove:null,
+ click(s){if(this.lock)return;const g=this.g;
+  if(this.sel){const m=g.moves({square:this.sel,verbose:true}).find(m=>m.to===s);
+   if(m){const r=g.move({from:this.sel,to:s,promotion:'q'});this.sel=null;this.last=[r.from,r.to];sfx(g.game_over()?'end':r.flags.includes('p')?'promo':/[kq]/.test(r.flags)?'castle':/[ce]/.test(r.flags)?'cap':'move');this.draw();this.onMove&&this.onMove(r);return}}
+  const p=g.get(s);if(p&&p.color===g.turn())this.sel=s;else{if(this.sel&&!p)sfx('bad');this.sel=null}this.draw()},
+ draw(){const g=this.g,f=S.flip,tg=this.sel?g.moves({square:this.sel,verbose:true}):[];let ks=null;
+  if(g.in_check())g.board().forEach((row,i)=>row.forEach((p,j)=>{if(p&&p.type==='k'&&p.color===g.turn())ks='abcdefgh'[j]+(8-i)}));
+  let h='';for(let r=0;r<8;r++)for(let c=0;c<8;c++){const fl=f?7-c:c,rk=f?r:7-r,s='abcdefgh'[fl]+(rk+1),p=g.get(s),t=tg.find(m=>m.to===s),k=p&&p.color+p.type;
+   const cl=['sq',(fl+rk)%2?'l':'d',this.last&&this.last.includes(s)?'last':'',this.sel===s?'sel':'',s===ks?(g.in_checkmate()?'mate':'chk'):''].join(' ');
+   h+=`<div class="${cl}" data-s="${s}" style="left:${c*12.5}%;top:${r*12.5}%">${p?(PC[k]?`<img draggable="false" src="${PC[k]}" alt="">`:`<span class="g">${GL[k]}</span>`):''}${t?(p?'<i class="ring"></i>':'<i class="dot"></i>'):''}${r===7?`<span class="co f">${'abcdefgh'[fl]}</span>`:''}${c===7?`<span class="co rk">${rk+1}</span>`:''}</div>`}
+  const el=$('#board');el.innerHTML=h;el.classList.toggle('nocoords',!S.coords)}};
+$('#board').onclick=e=>{const q=e.target.closest('.sq');q&&B.click(q.dataset.s)};
+const Engine={available:false,analyze(){return Promise.reject(new Error('Engine unavailable — reconnect/retry.'))}};
+/* ---- example content (clearly labeled; not user data) ---- */
+const SAN='e4 e5 Nf3 d6 d4 Bg4 dxe5 Bxf3 Qxf3 dxe5 Bc4 Nf6 Qb3 Qe7 Nc3 c6 Bg5 b5 Nxb5 cxb5 Bxb5+ Nbd7 O-O-O Rd8 Rxd7 Rxd7 Rd1 Qe6 Bxd7+ Nxd7 Qb8+ Nxb8 Rd8#'.split(' ');
+const E=[.2,.3,.3,.3,.3,.4,.4,.5,.5,.4,.4,.6,.5,.9,.8,.9,2.1,2.2,3.4,3.6,3.5,3.8,4.4,5,5.2,6.5,6.2,7,7.6,9,9.2,9.4,9.5,10];
+const CM={16:['This quiet pawn move leaves the queenside undeveloped while b7 is under pressure.','8...Nbd7','Finish development before committing pawns.','Pawn moves before development'],18:['The pawn push opens lines against your own king while behind in development.','9...Nbd7','Keep the position closed until your pieces are ready.','Opening the position while undeveloped']};
+const AN={ply:16,var:false,fens:[],hist:[],pos:new Chess()};{const g=new Chess();AN.fens=[g.fen()];SAN.forEach(m=>{AN.hist.push(g.move(m));AN.fens.push(g.fen())})}
+const TRAIN={fen:'1K1k4/1P6/8/8/8/8/r7/4R3 w - - 0 1',best:'Re4'},TG=new Chess(TRAIN.fen),FREE=new Chess();
+if(S.fen){try{FREE.load(S.fen)}catch(e){}}
+const fe=v=>v>=9.9?'#':(v>0?'+':'')+v.toFixed(1),lbl=i=>`${Math.ceil(i/2)}${i%2?'.':'...'}${SAN[i-1]}`,loss=i=>i%2?E[i-1]-E[i]:E[i]-E[i-1],tg=i=>{const l=loss(i);return l>=1.5?'blunder':l>=.8?'mistake':l>=.4?'inaccuracy':''},TC={inaccuracy:'var(--acc)',mistake:'var(--mid)',blunder:'var(--bad)'};
+/* ---- modes: same page, same board; only the side content changes ---- */
+const MODES=['home','analyze','train','repertoire','masters','progress','profile'];let M='home';
+const sec=(h,b,t)=>`<section><h4>${h}${t?`<span class="tag">${t}</span>`:''}</h4>${b}</section>`,rows=a=>a.map(x=>`<div class="row"${x[2]?` data-a="${x[2]}"`:''} ${x[2]?'':'style="cursor:default"'}><span>${x[0]}</span><em>${x[1]}</em></div>`).join('');
+const dis=a=>a.map(x=>`<button class="row" disabled>${x}<em>COMING SOON</em></button>`).join('');
+const P={
+ home:()=>sec('WHAT SHOULD I WORK ON?',`<div class="big">Analyze your games to discover recurring weaknesses.</div><div class="mut">ESCHÉS only makes personal claims from games it has actually analyzed. None have been analyzed yet — the board works fully without an account.</div>${dis(['Connect Chess.com','Connect Lichess','Import PGN'])}`)+
+  sec('START NOW',`${rows([['Study the board freely','LOCAL'],['Analyze an example game','EXAMPLE','m:analyze'],['Try an example training position','EXAMPLE','m:train'],['Save this position','LOCAL','savepos'],['Add current moves to repertoire','LOCAL','m:repertoire']])}`)+
+  sec('SAVED POSITIONS',S.saved.length?S.saved.map((f,i)=>`<button class="row" data-a="loadpos:${i}">Position ${i+1}<em>LOAD</em></button>`).join(''):'<div class="sm">None yet. Set up a position on the board and save it.</div>','LOCAL')+
+  sec('YOUR DATA',`<div class="sm">Stored on this device only. An optional ESCHÉS account (coming soon) would add long-term history across sessions and devices. Connecting a chess account is separate and doesn't require one.</div><div style="margin-top:10px"><button class="ib" data-a="add">+ ADD NEW</button></div>`)+
+  sec('COMMUNITY',`<div class="sm">Contact us · Join the ESCHÉS community · Share your feedback · Help us spread the word — <i>coming soon</i></div>`),
+ analyze:()=>{const i=AN.ply,t=i?tg(i):'',c=CM[i];let m='';for(let k=0;k<SAN.length;k+=2)m+=`<div><span>${k/2+1}</span>${[k,k+1].map(j=>SAN[j]?`<button class="${j+1===i&&!AN.var?'on':''}" data-ply="${j+1}">${SAN[j]}</button>`:'<i></i>').join('')}</div>`;
+  const x=k=>k*660/SAN.length,y=v=>45-Math.max(-4.5,Math.min(4.5,v))*10;let d='';E.forEach((v,k)=>d+=`${k?' L':'M'}${x(k)} ${y(v)}`);
+  return sec('EXAMPLE GAME',`<div class="sm">The Opera Game (Morphy, 1858) · ${AN.var?'<a style="color:var(--acc);cursor:pointer" data-a="back">exploring a variation — back to game</a>':'← → to step, or click a move or the graph'}</div><div class="ml" style="margin-top:8px">${m}</div>`,'EXAMPLE')+
+  sec('EVALUATION',`<svg class="gr" id="gr" viewBox="0 0 660 90" preserveAspectRatio="none"><line x1="0" x2="660" y1="45" y2="45" stroke="var(--line)"/><path d="${d}" fill="none" stroke="var(--acc)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>${SAN.map((_,k)=>tg(k+1)?`<circle cx="${x(k+1)}" cy="${y(E[k+1])}" r="4" fill="${TC[tg(k+1)]}"/>`:'').join('')}<line x1="${x(i)}" x2="${x(i)}" y1="0" y2="90" stroke="var(--fg)" vector-effect="non-scaling-stroke"/></svg><div class="sm">Illustrative values for this example — not engine output.</div>`,'EXAMPLE')+
+  sec(t?t.toUpperCase():'CURRENT POSITION',AN.var?'<div class="eng">Variation. Engine unavailable — reconnect/retry.</div>':i?`<div class="big">${lbl(i)}${t?(t==='blunder'?'??':t==='mistake'?'?':'?!'):''}</div><div class="ev">${fe(E[i])}</div><div class="sm">${fe(E[i-1])} → ${fe(E[i])}</div>${c?`<h4 style="margin-top:16px">THE PROBLEM</h4>${c[0]}<h4 style="margin:14px 0 6px">BETTER</h4><b style="font:600 16px var(--mono)">${c[1]}</b><h4 style="margin:14px 0 6px">HUMAN IDEA</h4><div class="hum">${c[2]}</div><h4 style="margin:14px 0 6px">PATTERN</h4>${c[3]}<br><button class="cta" data-a="m:train">TRAIN THIS</button>`:''}`:'<div class="sm">Starting position.</div>','EXAMPLE')+
+  sec('ENGINE',`<div class="eng">Engine unavailable — Stockfish isn't bundled yet. Nothing above is live analysis.</div>`)},
+ train:()=>sec('TRAINING / ROOK ENDGAME CONVERSION',`<div class="sm">1 / 1 · EXAMPLE TRAINING POSITION</div><div class="big" id="tt">Find the best move.</div><div class="mut" id="tb">White to play. The evaluation stays hidden until you move.</div>`,'EXAMPLE')+`<section id="tfb"></section>`,
+ repertoire:()=>sec('LINES FROM THE BOARD',`<div class="mut" style="margin-bottom:8px">Play moves on the board, then add the line.</div><div class="sm" style="margin-bottom:8px">Current: ${FREE.history().join(' ')||'—'}</div><button class="cta" data-a="addrep:w" ${FREE.history().length?'':'disabled'}>ADD TO WHITE</button><button class="cta" data-a="addrep:b" ${FREE.history().length?'':'disabled'}>ADD TO BLACK</button>`,'LOCAL')+
+  ['w','b'].map(c=>sec((c==='w'?'WHITE':'BLACK')+' REPERTOIRE',S.rep[c].length?S.rep[c].map((l,i)=>`<div class="row"><span>${l.join(' ')}</span><em><a data-a="loadrep:${c}:${i}" style="cursor:pointer">LOAD</a> · <a data-a="delrep:${c}:${i}" style="cursor:pointer">✕</a></em></div>`).join(''):'<div class="sm">No lines yet.</div>','LOCAL')).join('')+sec('MORE',dis(['Opening tree','Practice repertoire','Opening mistakes from your games','Performance by opening'])),
+ masters:()=>sec('STUDY THE POSITIONS THAT MATTER',`<div class="mut">Model games, master patterns and opening structures will connect to your weaknesses. No master database is connected, so there are no results to show.</div>${dis(['Model games','Master patterns','Opening structures'])}`),
+ progress:()=>sec('LOCAL ACTIVITY',rows([['Training positions practiced',S.practiced],['Saved positions',S.saved.length],['Repertoire lines',S.rep.w.length+S.rep.b.length]]),'LOCAL')+sec('FROM YOUR GAMES',`<div class="mut">Rating trend, accuracy by phase, conversion, blunder rate and discovered weaknesses need analyzed games. None are connected yet.</div>${dis(['Connect Chess.com','Connect Lichess'])}`),
+ profile:()=>sec('SETTINGS',`Theme<select id="s-th">${['dark','light','system'].map(t=>`<option ${S.theme===t?'selected':''}>${t}</option>`).join('')}</select><label><input type="checkbox" id="s-co" ${S.coords?'checked':''}> Coordinates</label><br><label><input type="checkbox" id="s-so" ${S.sound?'checked':''}> Sound</label><br><label><input type="checkbox" id="s-fl" ${S.flip?'checked':''}> Board flipped</label><p class="sm">Reduced motion follows your system setting. Engine: unavailable.</p>`)+
+  sec('CHESS ACCOUNTS (DATA SOURCES)',dis(['Chess.com','Lichess']))+sec('ESCHÉS ACCOUNT · OPTIONAL',`<div class="mut">Only for long-term history across sessions and devices. Not needed to use anything here.</div>${dis(['Log in','Create account'])}<button class="ib" data-a="wipe" style="margin-top:12px">ERASE LOCAL DATA</button>`)};
+function render(){$('#tabs').innerHTML=MODES.map(m=>`<button class="${m===M?'on':''}" data-m="${m}">${m.toUpperCase()}</button>`).join('');$('#side').innerHTML=P[M]();$('#cap').textContent={analyze:'EXAMPLE GAME',train:'EXAMPLE TRAINING POSITION'}[M]||'FREE BOARD · LOCAL';
+ if(M==='profile'){$('#s-th').onchange=e=>{S.theme=e.target.value;theme();save()};$('#s-co').onchange=e=>{S.coords=e.target.checked;save();B.draw()};$('#s-so').onchange=e=>{S.sound=e.target.checked;save()};$('#s-fl').onchange=e=>{S.flip=e.target.checked;save();B.draw()}}
+ if(M==='analyze')$('#gr').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();setPly(Math.round((e.clientX-r.left)/r.width*SAN.length))}}
+function setMode(m){M=m;B.sel=null;B.last=null;B.lock=false;
+ if(m==='analyze'){B.g=AN.pos;B.onMove=()=>{AN.var=true;render()};setPly(AN.ply);return}
+ if(m==='train'){B.g=TG;B.onMove=trainMove;TG.load(TRAIN.fen);B.draw();render();return}
+ B.g=FREE;B.onMove=()=>{S.fen=FREE.fen();save();if(M==='repertoire')render()};B.draw();render()}
+function setPly(i){AN.ply=Math.max(0,Math.min(SAN.length,i));AN.pos.load(AN.fens[AN.ply]);AN.var=false;B.last=AN.ply?[AN.hist[AN.ply-1].from,AN.hist[AN.ply-1].to]:null;B.sel=null;B.draw();render()}
+function trainMove(r){const ok=r.san===TRAIN.best;B.lock=true;S.practiced++;save();sfx(ok?'move':'bad');
+ $('#tfb').innerHTML=`<h4><span style="color:${ok?'var(--ok)':'var(--bad)'}">${ok?'CORRECT':'NOT THE BEST MOVE'}</span><span class="tag">EXAMPLE</span></h4><div class="big">You played ${r.san}</div><div class="sm">Best: <b style="color:var(--fg)">${TRAIN.best}</b> · Reference: winning (hand-authored, not engine-computed)</div><p>${ok?'The rook cuts off the enemy king and prepares the bridge on the fourth rank.':'The standard method is the bridge: the rook goes to the fourth rank so the king can shelter from checks.'} This is the Lucena position.</p><div class="sm">CONCEPT · Rook endgame conversion</div><button class="cta" data-a="again">TRAIN THIS AGAIN</button>`}
+/* ---- overlays / palette ---- */
+const ov=h=>{$('#box').innerHTML=h;$('#ov').classList.add('on')},cl=()=>$('#ov').classList.remove('on');let pi=0,pl=[];
+const CM2=()=>[...MODES.map(m=>['Mode: '+m[0].toUpperCase()+m.slice(1),()=>setMode(m)]),['Example game: The Opera Game',()=>{setMode('analyze');setPly(16)}],['Flip board',()=>A.flip()],['Save position',()=>A.savepos()]];
+function palette(){ov('<input id="pq" placeholder="Type a command…"><div id="pr"></div>');const q=$('#pq'),f=()=>{pl=CM2().filter(c=>c[0].toLowerCase().includes(q.value.toLowerCase()));pi=Math.min(pi,Math.max(0,pl.length-1));$('#pr').innerHTML=pl.map((c,i)=>`<button class="pi ${i===pi?'on':''}" data-pi="${i}">${c[0]}</button>`).join('')};
+ q.oninput=()=>{pi=0;f()};q.onkeydown=e=>{if(e.key==='ArrowDown'){pi=Math.min(pl.length-1,pi+1);f();e.preventDefault()}else if(e.key==='ArrowUp'){pi=Math.max(0,pi-1);f();e.preventDefault()}else if(e.key==='Enter'&&pl[pi]){cl();pl[pi][1]()}};f();q.focus()}
+const play=l=>{FREE.reset();l.forEach(m=>FREE.move(m));S.fen=FREE.fen();save();B.last=null;B.sel=null;B.g=FREE;B.draw()};
+const A={flip(){S.flip=!S.flip;save();B.draw()},reset(){if(M==='train'){TG.load(TRAIN.fen);B.lock=false;B.sel=B.last=null;B.draw();render();return}if(M==='analyze'){setPly(AN.ply);return}FREE.reset();S.fen=null;save();B.last=B.sel=null;B.draw();render()},palette,
+ help(){ov('<h4>KEYBOARD</h4><p class="sm" style="line-height:2">← / → step through moves (example game)<br>Home / End first / last move<br>F flip board<br>⌘K / Ctrl+K command palette<br>/ this help</p>')},
+ back(){setPly(AN.ply)},again(){A.reset()},savepos(){S.saved.push(FREE.fen());save();render()},wipe(){localStorage.removeItem('esches');location.reload()},
+ add:()=>ov(`<h4>ADD NEW</h4>${['Import game','Add position','Add repertoire','Upload PGN'].map(x=>`<button class="row" disabled>${x}<em>COMING SOON</em></button>`).join('')}`)};
+document.addEventListener('click',e=>{if(e.target.id==='ov')cl();const t=e.target.closest('[data-a],[data-m],[data-ply],[data-pi]');if(!t)return;const d=t.dataset;
+ if(d.m){setMode(d.m)}else if(d.ply)setPly(+d.ply);else if(d.pi){cl();pl[+d.pi][1]()}else{const[a,x,y]=d.a.split(':');
+  if(a==='m')setMode(x);else if(a==='loadpos'){FREE.load(S.saved[+x]);S.fen=FREE.fen();save();B.last=null;B.draw()}else if(a==='addrep'){S.rep[x].push(FREE.history());save();render()}else if(a==='loadrep'){setMode('repertoire');play(S.rep[x][+y])}else if(a==='delrep'){S.rep[x].splice(+y,1);save();render()}else A[a]&&A[a]()}});
+document.addEventListener('keydown',e=>{const inp=/INPUT|SELECT/.test(e.target.tagName);if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();palette();return}
+ if(e.key==='Escape'){cl();return}if(inp)return;if(e.key==='/'){e.preventDefault();A.help()}else if(e.key.toLowerCase()==='f')A.flip();
+ else if(M==='analyze'){if(e.key==='ArrowLeft'){setPly(AN.ply-1);e.preventDefault()}else if(e.key==='ArrowRight'){setPly(AN.ply+1);e.preventDefault()}else if(e.key==='Home')setPly(0);else if(e.key==='End')setPly(SAN.length)}});
+theme();render();B.g=FREE;B.onMove=()=>{S.fen=FREE.fen();save()};
+withLoading(loadPieces()).then(()=>{const miss=Object.keys(H).filter(k=>!PC[k]);if(miss.length)$('#pcs').textContent='Piece images unavailable offline · ';B.draw()});
+</script></body></html>
