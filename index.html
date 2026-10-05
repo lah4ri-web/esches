@@ -115,10 +115,21 @@ return{START,parse,fen,key,legal,make,san,fromSan,check,status,nm,ix}})();
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const LS={g(k,d){try{return JSON.parse(localStorage.getItem('esches.'+k))??d}catch(e){return d}},s(k,v){try{localStorage.setItem('esches.'+k,JSON.stringify(v))}catch(e){note('Local storage is full.',1)}}};
 const note=(m,e)=>{const n=$('#note');n.textContent=m||'';n.className=e?'e':''};
-let cfg={site:'chesscom',names:{chesscom:'',lichess:''},sound:true,coords:true,token:'',tc:'Rapid',rating:0,intro:0,...LS.g('cfg',{})};
+let cfg={site:'chesscom',names:{chesscom:'',lichess:''},sound:true,coords:true,token:'',tc:'Rapid',selfReportedRating:1500,ratingPlatform:null,intro:0,...LS.g('cfg',{})};delete cfg.rmin;delete cfg.rmax;cfg.ratingPlatform=cfg.ratingPlatform||cfg.site;
 let reps=LS.g('reps',{w:{},b:{}}),games=LS.g('games',[]),meta=LS.g('meta',{}),notes=LS.g('notes',{}),anl=LS.g('anl',{});
 const sv=()=>{LS.s('cfg',cfg);LS.s('reps',reps);LS.s('games',games);LS.s('meta',meta);LS.s('notes',notes);LS.s('anl',anl)};
-reps.t=reps.t||{};const SITE={chesscom:{n:'Chess.com',lt:'#EBECD0',dk:'#739552',w:600},lichess:{n:'Lichess',lt:'#F0D9B5',dk:'#B58863',w:500}};
+reps.t=reps.t||{};const RLIM={chesscom:[100,3500],lichess:[400,3500]};let rmind=false;
+const clampRating=(site,v)=>{const[a,b]=RLIM[site];v=Math.round(+v);return Math.min(b,Math.max(a,Number.isFinite(v)?v:1500))};
+function clampR(){cfg.selfReportedRating=clampRating(cfg.ratingPlatform,cfg.selfReportedRating)}clampR();
+/* platform switch: keep the exact rating if valid on the new platform, clamp only if not, always remind */
+function setSite(p){if(p===cfg.site&&p===cfg.ratingPlatform)return;cfg.site=p;cfg.ratingPlatform=p;clampR();rmind=true;sv()}
+/* Chess.com -> Lichess estimate (ChessGoals paired-player data, Chess.com blitz anchored; other time controls use the matching Lichess column; approximate) */
+const CCX=[1000,1100,1150,1200,1250,1300,1350,1400,1450,1500,1550,1600,1650,1700,1750,1800,1850],
+CCY={bullet:[1225,1305,1340,1380,1420,1460,1495,1535,1575,1615,1650,1690,1730,1770,1805,1845,1885],blitz:[1300,1380,1415,1455,1495,1530,1570,1610,1645,1685,1725,1760,1800,1840,1875,1915,1955],rapid:[1365,1455,1500,1540,1580,1620,1660,1700,1735,1770,1805,1840,1870,1905,1935,1960,1990],classical:[1460,1550,1590,1630,1670,1710,1745,1780,1810,1845,1870,1900,1925,1950,1975,1995,2015]};
+function ccToLichess(r,tc){const y=CCY[tc]||CCY.rapid,n=CCX.length;if(r>=CCX[n-1])return Math.round(y[n-1]+(r-CCX[n-1]));if(r<=CCX[0])return Math.round(y[0]+(r-CCX[0])*(y[1]-y[0])/(CCX[1]-CCX[0]));let i=0;while(r>CCX[i+1])i++;return Math.round(y[i]+(r-CCX[i])*(y[i+1]-y[i])/(CCX[i+1]-CCX[i]))}
+/* derived values are kept apart: platform, selfReportedRating (exact), estimatedLichessRating, explorerRatingBucket (API band: 0 = under 1000) */
+function deriveRating(){const platform=cfg.ratingPlatform,selfReportedRating=cfg.selfReportedRating,tc=(cfg.tc||'Rapid').toLowerCase(),estimatedLichessRating=platform==='chesscom'?Math.min(3500,ccToLichess(selfReportedRating,tc)):selfReportedRating;let explorerRatingBucket=0;for(const b of RB)if(b<=estimatedLichessRating)explorerRatingBucket=b;return{platform,selfReportedRating,estimatedLichessRating,explorerRatingBucket}}
+const SITE={chesscom:{n:'Chess.com',lt:'#EBECD0',dk:'#739552',w:600},lichess:{n:'Lichess',lt:'#F0D9B5',dk:'#B58863',w:500}};
 const PN={P:'p',N:'n',B:'b',R:'r',Q:'q',K:'k'};
 const pcUrl=ch=>PCS[cfg.site][(ch<'a'?'w':'b')+ch.toUpperCase()];
 /* loading overlay: real async only */
@@ -160,24 +171,34 @@ bd.addEventListener('pointermove',e=>{const d=B.drag;if(!d)return;const w=bd.get
 const endDrag=(e,c)=>{const d=B.drag;if(!d)return;B.drag=null;if(d.g)d.g.remove();if(d.on){const t=c?null:sqAt(e);if(t!=null&&t!==d.sq&&B.lg.includes(t))userMove(d.sq,t);else drawBoard()}};
 bd.addEventListener('pointerup',e=>endDrag(e));bd.addEventListener('pointercancel',e=>endDrag(e,1));
 /* engine: real Stockfish via vendor/stockfish.js (UCI worker). No fallback evaluator. */
-let eng=null;function engine(){return eng=eng||new Promise((ok,no)=>{let w;try{w=new Worker('vendor/stockfish.js')}catch(e){return no(new Error('Stockfish not found'))}
- const to=setTimeout(()=>no(new Error('Stockfish not found. Add vendor/stockfish.js (single-threaded WASM build).')),3000);
- w.onerror=()=>{clearTimeout(to);no(new Error('Stockfish failed to start. Add vendor/stockfish.js.'))};
- w.onmessage=e=>{if(String(e.data).includes('uciok')){clearTimeout(to);ok(w)}};w.postMessage('uci')}).catch(e=>{eng=null;throw e})}
-let evQ=Promise.resolve();const evalFen=(f,d)=>evQ=evQ.catch(()=>{}).then(()=>evalFen1(f,d));async function evalFen1(fen,depth){const w=await engine(),t=fen.split(' ')[1];return new Promise(res=>{let r={cp:0,depth:0,best:null};
- w.onmessage=e=>{const m=String(e.data);if(m.startsWith('info')&&/ score /.test(m)){const c=m.match(/score cp (-?\d+)/),mt=m.match(/score mate (-?\d+)/),d=m.match(/ depth (\d+)/);const v=c?+c[1]:mt?(mt[1]>0?1:-1)*(30000-Math.abs(+mt[1])):0;r.cp=t==='w'?v:-v;if(d)r.depth=+d[1]}
-  if(m.startsWith('bestmove')){r.best=m.split(' ')[1];res(r)}};w.postMessage('position fen '+fen);w.postMessage('go depth '+depth)})}
+const ENGINE_JS='./vendor/stockfish/stockfish-19-lite-single.js',ENG={state:'idle',reason:''};
+let eng=null;
+function engine(){return eng=eng||(async()=>{
+ for(const u of[ENGINE_JS,ENGINE_JS.replace(/\.js$/,'.wasm')]){let r;try{r=await fetch(u,{method:'HEAD'})}catch(e){throw new Error('Could not reach '+u+' ('+e.message+')')}if(!r.ok)throw new Error(u+' returned HTTP '+r.status+'. Add it to the repository.')}
+ return new Promise((ok,no)=>{let w;try{w=new Worker(ENGINE_JS)}catch(e){return no(new Error('Worker could not start: '+e.message))}
+  const to=setTimeout(()=>{w.terminate();no(new Error('Engine did not answer UCI within 15 s.'))},15000);let st=0;
+  w.onerror=ev=>{clearTimeout(to);no(new Error('Engine script failed: '+(ev.message||'load error')))};
+  w.onmessage=e=>{const m=String(e.data);if(st===0&&m.includes('uciok')){st=1;w.postMessage('isready')}else if(st===1&&m.includes('readyok')){clearTimeout(to);st=2;ENG.state='ok';ok(w)}};w.postMessage('uci')})})().catch(e=>{ENG.state='fail';ENG.reason=e.message;eng=null;throw e})}
+let evQ=Promise.resolve(),evId=0;
+const evalFen=(f,d)=>{if(ENG.state==='ok'&&eng)eng.then(w=>w.postMessage('stop')).catch(()=>{});return evQ=evQ.catch(()=>{}).then(()=>evalFen1(f,d))};
+async function evalFen1(fen,depth){const w=await engine(),t=fen.split(' ')[1],id=++evId;return new Promise((res,rej)=>{const r={cp:0,depth:0,best:null,pv:'',mate:null};w.onerror=ev=>{ENG.state='fail';ENG.reason='Engine crashed: '+(ev.message||'worker error');eng=null;rej(new Error(ENG.reason))};
+ w.onmessage=e=>{if(id!==evId)return;const m=String(e.data);
+  if(m.startsWith('info')&&/ score /.test(m)&&!/ (lowerbound|upperbound) /.test(m)){const c=m.match(/score cp (-?\d+)/),mt=m.match(/score mate (-?\d+)/),d=m.match(/ depth (\d+)/),p=m.match(/ pv (.+)$/);let v=0;if(c)v=+c[1];else if(mt){r.mate=+mt[1];v=(r.mate>0?1:-1)*(30000-2*Math.abs(r.mate))}
+   r.cp=t==='w'?v:-v;if(d)r.depth=+d[1];if(p)r.pv=p[1]}
+  if(m.startsWith('bestmove')){r.best=m.split(' ')[1];res(r)}};
+ w.postMessage('position fen '+fen);w.postMessage('go depth '+depth)})}
 const fe=cp=>cp==null?'–':Math.abs(cp)>25000?(cp>0?'+':'−')+'M'+Math.ceil((30000-Math.abs(cp))/2):(cp>0?'+':cp<0?'−':'')+Math.abs(cp/100).toFixed(1);
 /* network */
 async function http(u,o){let r;try{r=await fetch(u,o)}catch(e){throw new Error('Network request failed (offline, blocked, or CORS).')}
  if(r.status===404)throw new Error('User not found.');if(r.status===429)throw new Error('Rate limited. Wait a minute and try again.');if(r.status===401||r.status===403)throw new Error('Access denied ('+r.status+'). The Lichess explorer may require an API token; add one in Settings.');
  if(!r.ok)throw new Error('Server returned '+r.status+'.');return r}
-const EX=new Map(),EXL=LS.g('ex',{}),RB=[400,1000,1200,1400,1600,1800,2000,2200,2500];let exQ=Promise.resolve();
-const exCfg=()=>{let i=0;RB.forEach((x,j)=>{if(x<=(cfg.rating||1800))i=j});return`&speeds=${(cfg.tc||'blitz,rapid,classical').toLowerCase()}&ratings=${RB[i]}`};
-async function explorer(kind,fen){const k=kind+'|'+fen+'|'+(kind==='lichess'?exCfg():'');if(EX.has(k))return EX.get(k);if(EXL[k]){EX.set(k,EXL[k]);return EXL[k]}
+const EX=new Map(),EXL=LS.g('ex3',{}),RB=[0,1000,1200,1400,1600,1800,2000,2200,2500];let exQ=Promise.resolve();
+const exSpeed=()=>(cfg.tc||'Rapid').toLowerCase(),exBuckets=()=>[deriveRating().explorerRatingBucket];
+const exCfg=()=>`&speeds=${exSpeed()}&ratings=${exBuckets().join(',')}`;
+async function explorer(kind,fen){const k=kind==='lichess'?['lichess',fen,cfg.ratingPlatform,exBuckets().join(','),exSpeed()].join('|'):'masters|'+fen;if(EX.has(k))return EX.get(k);if(EXL[k]){EX.set(k,EXL[k]);return EXL[k]}
  const u=`https://explorer.lichess.ovh/${kind}?variant=standard&moves=14&topGames=0&recentGames=0&fen=${encodeURIComponent(fen)}`+(kind==='lichess'?exCfg():'');
  const j=await(exQ=exQ.catch(()=>{}).then(async()=>{await new Promise(r=>setTimeout(r,150));const r=await http(u,cfg.token?{headers:{Authorization:'Bearer '+cfg.token}}:undefined);return r.json()}));
- if(!j||!Array.isArray(j.moves))throw new Error('Unexpected response from the explorer.');EX.set(k,j);EXL[k]=j;const ks=Object.keys(EXL);if(ks.length>150)delete EXL[ks[0]];try{localStorage.setItem('esches.ex',JSON.stringify(EXL))}catch(e){}return j}
+ if(!j||!Array.isArray(j.moves))throw new Error('Unexpected response from the explorer.');EX.set(k,j);EXL[k]=j;const ks=Object.keys(EXL);if(ks.length>150)delete EXL[ks[0]];try{localStorage.setItem('esches.ex3',JSON.stringify(EXL))}catch(e){}return j}
 const parseMoves=t=>t.replace(/\[[^\]]*\]/g,'').replace(/\{[^}]*\}/g,'').replace(/\([^)]*\)/g,'').replace(/\$\d+/g,'').split(/\s+/).map(x=>x.replace(/^\d+\.+/,'')).filter(x=>x&&!/^(1-0|0-1|1\/2-1\/2|\*)$/.test(x));
 function addGames(l){const m=new Map(games.map(g=>[g.id,g]));let n=0;for(const g of l){if(!m.has(g.id))n++;m.set(g.id,g)}games=[...m.values()];sv();return n}
 async function fetchCC(u,more){let m=meta.chesscom;if(!more||!m||m.u!==u){const j=await(await http('https://api.chess.com/pub/player/'+encodeURIComponent(u)+'/games/archives')).json();m=meta.chesscom={u,a:(j.archives||[]).reverse(),i:0}}
@@ -222,8 +243,8 @@ function buildUG(){if(UG&&UGn===games.length)return;UG={};UGf={};UGn=games.lengt
 async function repLoad(){const tk=++repTk;RD={loading:true};view();cap(repCap());const f=R.fen(B.s);await new Promise(r=>setTimeout(r,220));if(tk!==repTk)return;
  try{if(games.length&&(!UG||UGn!==games.length))await busy(async()=>buildUG(),'Reading your games');
   const[a,m]=await Promise.all([explorer('lichess',f),explorer('masters',f).catch(()=>null)]);if(tk!==repTk)return;RD={a,m}}catch(e){if(tk!==repTk)return;RD={err:e.message}}view();cap(repCap());fillEval()}
-let evTk=0;async function fillEval(){const tk=++evTk;if(!RD||!RD.a)return;try{await engine()}catch(e){return}
- for(const m of RD.a.moves.slice(0,S.lim)){if(tk!==evTk)return;const mv=R.fromSan(B.s,m.san);if(!mv)continue;try{const r=await evalFen(R.fen(R.make(B.s,mv)),10),el=document.querySelector(`.ev[data-san="${CSS.escape(m.san)}"]`);if(el)el.textContent=fe(r.cp)}catch(e){return}}}
+let evTk=0;async function fillEval(){const tk=++evTk;if(!RD||!RD.a)return;try{await engine()}catch(e){const n=$('#engn');if(n)n.innerHTML='<b>ENGINE UNAVAILABLE</b> — '+esc(e.message);document.querySelectorAll('.ev').forEach(x=>x.textContent='n/a');return}
+ for(const m of RD.a.moves.slice(0,S.lim)){if(tk!==evTk)return;const mv=R.fromSan(B.s,m.san);if(!mv)continue;try{const r=await evalFen(R.fen(R.make(B.s,mv)),10);if(tk!==evTk)return;const el=document.querySelector(`.ev[data-san="${CSS.escape(m.san)}"]`);if(el){el.textContent=fe(r.cp);el.title='Stockfish depth '+r.depth+(r.pv?' · PV '+r.pv:'')}}catch(e){if(tk===evTk){const n=$('#engn');if(n)n.innerHTML='<b>ENGINE UNAVAILABLE</b> — '+esc(e.message);document.querySelectorAll('.ev').forEach(x=>{if(x.textContent==='—')x.textContent='n/a'})}return}}}
 function ugKind(kind){const ug=UG&&UG[R.key(B.s)]||{},l=Object.entries(ug).filter(([s])=>s[0]===kind).map(([s,x])=>({san:s.slice(2),...x}));return{l:l.sort((a,b)=>b.n-a.n),tot:l.reduce((q,x)=>q+x.n,0)}}
 function why(san,t,tot,i,kind){const mv=R.fromSan(B.s,san);if(!mv)return'';const pn={N:'knight',B:'bishop',R:'rook',Q:'queen',K:'king',P:'pawn'},n=R.make(B.s,mv);
  let a=mv.ca?(mv.ca==='K'?'Castles kingside':'Castles queenside'):mv.p==='P'?(mv.cap?'Pawn takes on '+R.nm(mv.t):'Pawn to '+R.nm(mv.t)):'The '+pn[mv.p]+(mv.cap?' takes a '+pn[mv.cap.toUpperCase()]+' on ':' goes to ')+R.nm(mv.t);
@@ -245,9 +266,9 @@ function vRep(){const mine=myTurn(),n=S.path.length;let h=`<h1>${!mine?'Choose a
   h+=lbl('Completion',pc+'%')+`<div class="big pb"><i style="width:${pc}%"></i></div><p class="dim">Share of opponent replies here, weighted by database frequency, for which you have saved a response.</p>`+lbl("Opponent's move",'Expected in');
   h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black;return`<button class="mt" data-a="pick" data-p="${esc(m.san)}" style="grid-template-columns:54px 1fr auto"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}</span><div class="dim">${esc(why(m.san,t,tot,i,kind))}</div></span><span class="dim" style="text-align:right">1 in ${Math.max(1,Math.round(tot/t))} games<div class="pb" style="margin-left:auto"><i style="width:${sav(m)*100}%"></i></div></span></button>`}).join('')}
  else{h+=lbl(n?'Potential moves':'Your first move','<span style="display:flex;gap:18px"><span>Masters</span><span>Eval</span><span style="width:130px;text-align:right">Database results</span></span>');
-  h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black,cur=(reps[S.c][R.key(B.s)]||{sans:[]}).sans.includes(m.san);return`<button class="mt" data-a="pick" data-p="${esc(m.san)}" style="grid-template-columns:54px 1fr auto auto auto;column-gap:16px"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}${cur?'<span class="tag">SAVED</span>':''}</span><div class="dim">${esc(why(m.san,t,tot,i,kind))}</div></span><span class="dim">${mt&&mmap[m.san]?pct(mmap[m.san],mt)+'%':'—'}</span><span class="dim ev" data-san="${esc(m.san)}">—</span>${rbar(m.white,m.draws,m.black).replace('150px','130px')}</button>`}).join('')+`<p class="dim" style="margin:10px 0 0">Eval is Stockfish only (depth 10, White's side) and stays — if the engine is not installed. Database results are White / draw / Black from Lichess games at your rating setting. Popular does not mean best.</p>`}
+  h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black,cur=(reps[S.c][R.key(B.s)]||{sans:[]}).sans.includes(m.san);return`<button class="mt" data-a="pick" data-p="${esc(m.san)}" style="grid-template-columns:54px 1fr auto auto auto;column-gap:16px"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}${cur?'<span class="tag">SAVED</span>':''}</span><div class="dim">${esc(why(m.san,t,tot,i,kind))}</div></span><span class="dim">${mt&&mmap[m.san]?pct(mmap[m.san],mt)+'%':'—'}</span><span class="dim ev" data-san="${esc(m.san)}">—</span>${rbar(m.white,m.draws,m.black).replace('150px','130px')}</button>`}).join('')+`<p class="dim" style="margin:10px 0 0">Eval is Stockfish only (depth 10, White's side) and stays — if the engine is not installed. Database results are White / draw / Black from Lichess games at your rating setting. Popular does not mean best.</p><p class="dim" id="engn"></p>`}
  if(mv.length>S.lim)h+=act('more','Show more');
- h+=lbl('Lichess database','EXTERNAL')+`<p class="dim">${tot.toLocaleString()} games at this position · most common continuation ${esc(mv[0].san)} (${pct(mv[0].white+mv[0].draws+mv[0].black,tot)}%) · ${mm?mt.toLocaleString()+' master games':'masters unavailable'}</p>`;
+ h+=lbl('Lichess database','EXTERNAL')+`<p class="dim">Your rating ${cfg.selfReportedRating} (${SITE[cfg.ratingPlatform].n}${cfg.ratingPlatform==='chesscom'?', est. Lichess '+deriveRating().estimatedLichessRating:''}) · Lichess games in the ${deriveRating().explorerRatingBucket||'under 1000'} band, ${esc(cfg.tc)} · ${tot.toLocaleString()} games at this position · most common continuation ${esc(mv[0].san)} (${pct(mv[0].white+mv[0].draws+mv[0].black,tot)}%) · ${mm?mt.toLocaleString()+' master games':'masters unavailable'}</p>`;
  h+=lbl('Your games','LOCAL');if(!games.length)h+='<p class="dim">CONNECT ACCOUNT to compare your own choices here.</p>';else{const k=ugKind(kind);h+=k.tot?`<p class="dim">${k.tot} of your games reach this position. ${mine?'You played':'Opponents played'}: ${k.l.slice(0,4).map(x=>esc(x.san)+' ×'+x.n+' ('+Math.round(x.p/x.n*100)+'% score)').join(', ')}</p>`:'<p class="dim">None of your imported games reach this position.</p>'}
  const nk='n:'+R.key(B.s);h+=lbl('Notes','LOCAL')+`<textarea class="ta" id="nt" placeholder="Add notes for this position">${esc(notes[nk]||'')}</textarea>`;
  return h+act('home','I\'ll finish later, save my progress')}
@@ -275,13 +296,13 @@ function vGame(){const G=S.g,g=G.g,A=anl[g.id];let h=`<h1 style="font-size:22px"
  if(A){const n=G.hs.length,W=300,pts=A.ev.map((c,i)=>(i/n*W).toFixed(1)+','+(45-Math.max(-1000,Math.min(1000,c))/1000*43).toFixed(1)).join(' ');
   h+=`<svg id="gph" class="g" data-a="graph" viewBox="0 0 ${W} 90" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="45" y2="45" stroke="#444" stroke-width=".5"/><polyline points="${pts}" fill="none" stroke="#ddd" stroke-width="1.2" vector-effect="non-scaling-stroke"/><line x1="${S.ply/n*W}" x2="${S.ply/n*W}" y1="0" y2="90" stroke="#888" vector-effect="non-scaling-stroke"/></svg><p class="dim">Evaluation ${fe(A.ev[S.ply])} · Stockfish depth ${A.d}</p>`;const ci=S.ply-1;if(ci>=0&&A.cl[ci]){const bs=bestSan(G,A,ci);h+=`<div class="cd">${A.cl[ci]}: ${esc(G.hs[ci].san)}. Stockfish (depth ${A.d}) preferred ${esc(bs||'another move')}.</div>`+(bs?act('trainthis',String(ci),'Train this position'):'')}
   const ms=A.cl.map((c,i)=>({c,i})).filter(x=>x.c);h+=lbl('Critical moments')+(ms.length?ms.map(x=>`<button class="mt" data-a="ply" data-p="${x.i+1}" style="grid-template-columns:1fr auto"><span class="mv">${mlabel(x.i,G.hs[x.i].san)}</span><span class="r">${x.c}</span></button>`).join(''):'<p class="dim">None found.</p>')}
- else h+=act('anl','Analyze with Stockfish',A?'':'Requires vendor/stockfish.js');
+ else h+=act('anl','Analyze with Stockfish',A?'':'Needs vendor/stockfish/');
  let ml='';G.hs.forEach((m,i)=>ml+=(i%2?'':`<span class="dim" style="margin-left:10px">${(i>>1)+1}.</span> `)+`<a data-a="ply" data-p="${i+1}" style="cursor:pointer;padding:2px 5px;${i+1===S.ply?'background:var(--hv)':''}">${esc(m.san)}</a>`);
  return h+lbl('Moves')+`<div style="line-height:2">${ml}</div>`}
 const bestSan=(G,A,i)=>{const u=A.bm&&A.bm[i];if(!u||u.length<4)return null;const m=R.legal(G.st[i]).find(x=>R.nm(x.f)+R.nm(x.t)===u.slice(0,4)&&(!u[4]||x.pr===u[4].toUpperCase()));return m&&R.san(G.st[i],m)};
 async function analyze(){const G=S.g,g=G.g;try{const ev=[],bm=[];await busy(async()=>{for(let i=0;i<G.st.length;i++){ldt(`Analyzing ${i+1} / ${G.st.length}`);const r=await evalFen(R.fen(G.st[i]),12);ev.push(r.cp);bm.push(r.best);G.d=r.depth}},'Stockfish analysis');
  const c=x=>Math.max(-1000,Math.min(1000,x)),cl=G.hs.map((h,i)=>{const sg=G.st[i].t==='w'?1:-1,l=Math.max(0,sg*(c(ev[i])-c(ev[i+1])));return l>=300?'Blunder':l>=150?'Mistake':l>=70?'Inaccuracy':''});
- anl[g.id]={ev,d:G.d,cl,bm};sv()}catch(e){note(e.message,1)}view()}
+ anl[g.id]={ev,d:G.d,cl,bm};sv()}catch(e){note((ENG.state==='fail'?'ENGINE UNAVAILABLE — ':'')+e.message,1)}view()}
 function trainthis(p){const G=S.g,A=anl[G.g.id],i=+p,bs=bestSan(G,A,i);if(!bs)return;const k=R.key(G.st[i]);reps.t[k]={fen:R.fen(G.st[i]),sans:[bs]};S.force=k;sv();nav('prac',nextPrac)}
 function genrep(){buildUG();let n=0;for(const k in UG){const col=k.split(' ')[1],es=Object.entries(UG[k]).filter(([s,x])=>s[0]==='m'&&x.n>=3&&x.p/x.n>=.5).sort((a,b)=>b[1].n-a[1].n);if(es.length&&!reps[col][k]){reps[col][k]={fen:k+' 0 1',sans:[es[0][0].slice(2)]};n++}}sv();note(n?`Added ${n} positions from your games (moves played 3+ times with a score of 50% or more).`:'No new positions qualify yet.');view()}
 function vIns(){setPos(R.START,'w',true);B.on=null;cap('');if(!games.length)return'<h1>Insights</h1><div class="cd">CONNECT ACCOUNT<small>Insights are computed only from games you have retrieved.</small></div>'+act('settings','Open data source settings');
@@ -293,27 +314,29 @@ function vIns(){setPos(R.START,'w',true);B.on=null;cap('');if(!games.length)retu
  const rec=Object.entries(UG).flatMap(([k,e])=>Object.entries(e).filter(([s,x])=>s[0]==='m'&&x.n>=3).map(([s,x])=>({k,san:s.slice(2),...x}))).sort((a,b)=>b.n-a.n).slice(0,6);
  h+=lbl('Your most repeated opening moves')+(rec.length?rec.map(x=>row(`${UGf[x.k]}${x.k.split(' ')[1]==='w'?'.':'...'} <b>${esc(x.san)}</b>`,`played ${x.n}× · score ${sc(x.p,x.n)}`)).join(''):'<p class="dim">No position repeated 3 or more times in the first 12 moves.</p>')+act('genrep','Add my well-scoring moves to my repertoire','Moves played 3+ times, score 50%+');
  const an=games.filter(g=>anl[g.id]);h+=lbl('From Stockfish',an.length+' analyzed');
- if(!an.length)h+='<p class="dim">No game analyzed yet. Open a game and choose Analyze with Stockfish (needs vendor/stockfish.js). Until then, no mistake statistics are shown.</p>';
+ if(!an.length)h+='<p class="dim">No game analyzed yet. Open a game and choose Analyze with Stockfish (needs the files in vendor/stockfish/). Until then, no mistake statistics are shown.</p>';
  else{const c={Blunder:0,Mistake:0,Inaccuracy:0},ph=[0,0];for(const g of an)anl[g.id].cl.forEach((k,i)=>{if(k&&(i%2===0)===(g.col==='w')){c[k]++;ph[i<20?0:1]++}});
   h+=row('Blunders · mistakes · inaccuracies',`${c.Blunder} · ${c.Mistake} · ${c.Inaccuracy}`)+row('Flagged moves in the first 10 moves / later',`${ph[0]} / ${ph[1]}`)+'<p class="dim">Your moves only, from games analyzed at the depth shown in each game. Open a game to train a specific position.</p>'}
  return h}
 const vI1=()=>{setPos(R.START,'w',true);B.on=null;cap('');return`<div style="height:84px"></div><h1 style="font-size:24px">Set up your ESCHÉS</h1><p class="sub">This will cover the basics of choosing opening moves and practicing them.</p><p class="sub">It should take around 2 minutes.</p>`+act('i2','Get started')};
-const vI2=()=>{setPos(R.START,'w',true);B.on=null;cap('');const r=cfg.rating||1200;return`<h1 style="font-size:24px;margin-top:40px">What's your rating?</h1><p class="sub">This is used to determine which moves your opponents are likely to play.</p><div class="ib" id="rv">${r}</div><input type="range" id="rt" min="400" max="2800" step="10" value="${r}">`+act('psite','Platform',SITE[cfg.site].n)+act('tcc','Time control',cfg.tc)+'<div style="height:16px"></div>'+act('irate','Set rating and continue')+act('iskip','I don\'t know, skip this step')};
-/* settings */
+const vI2=()=>{setPos(R.START,'w',true);B.on=null;cap('');clampR();const[a,b]=RLIM[cfg.ratingPlatform];
+ return`<h1 style="font-size:24px;margin-top:40px">What's your rating?</h1><p class="sub">Your own rating on the platform below. It is saved exactly; the opening database is queried with a rating band derived from it.</p><div class="lbl" style="margin:10px 0 2px"><span>Your rating</span></div><div class="ib" id="rv"${rmind?' style="outline:2px solid #888;outline-offset:2px"':''}>${cfg.selfReportedRating}</div>`+(rmind?'<p class="dim" id="rrem" style="font-size:10px;margin:-8px 0 8px">Update your rating as needed</p>':'')+`<input type="range" id="rate" min="${a}" max="${b}" step="1" value="${cfg.selfReportedRating}">`+'<p class="dim" style="font-size:10px;margin:0 0 16px">Use ↑ ↓ ← → for precise adjustment</p>'
+ +act('psite','Platform',SITE[cfg.site].n)+act('tcc','Time control',cfg.tc)+'<div style="height:16px"></div>'+act('irate','Set rating and continue')+act('iskip','I don\'t know, skip this step')};
+function setR(v){cfg.selfReportedRating=clampRating(cfg.ratingPlatform,v);rmind=false;const el=$('#rate');if(el)el.value=cfg.selfReportedRating;const r=$('#rv');if(r){r.textContent=cfg.selfReportedRating;r.style.outline=''}const m=$('#rrem');if(m)m.remove();sv()}
 function vSet(){const s=cfg.site;return`<h1>Settings</h1>`+lbl('Data source')+['chesscom','lichess'].map(k=>act('site',(cfg.site===k?'● ':'○ ')+SITE[k].n,'',k).replace('class="act"',`class="act${cfg.site===k?' on':''}"`)).join('')
  +lbl('Username')+`<div class="fw"><input class="in" id="uname" placeholder="${SITE[s].n} username" value="${esc(cfg.names[s])}" autocomplete="off" spellcheck="false"><u id="us"></u></div><div style="height:12px"></div>`+act('connect','Retrieve games')
- +lbl('Display and sound')+act('snd','Sound',cfg.sound?'On':'Off')+act('crd','Board coordinates',cfg.coords?'On':'Off')+act('tcc','Time control',cfg.tc)+act('rtg','Rating',cfg.rating||'Not set')+act('intro','Show introduction')
+ +lbl('Display and sound')+act('snd','Sound',cfg.sound?'On':'Off')+act('crd','Board coordinates',cfg.coords?'On':'Off')+act('tcc','Time control',cfg.tc)+act('rtg','Your rating',cfg.selfReportedRating+' · '+SITE[cfg.ratingPlatform].n+(rmind?' · update if needed':''))+act('intro','Show introduction')
  +lbl('Lichess API token','Optional')+`<input class="in" id="tok" type="password" placeholder="Needed only if the explorer returns 401" value="${esc(cfg.token)}"><p class="dim">Pieces, board colors and coordinates follow the data source above. Sounds are always the Chess.com set.</p>`
  +lbl('Data on this device','LOCAL')+`<p class="dim">${rcount('w')+rcount('b')} repertoire positions · ${games.length} games</p>`+act('exp','Export data (JSON)')+act('erase','Erase local data')
  +lbl('ESCHÉS account')+act('x','ESCHÉS SYNC','COMING SOON').replace('data-a="x"','disabled style="opacity:.5;cursor:default"')}
 /* actions */
 const hist=[];const nav=(v,fn)=>{hist.push({v:S.v,c:S.c});fn()};
 const home=()=>{S.v='home';B.on=null;B.lock=false;view()};
-const ACT={i2(){S.v='intro2';view()},irate(){cfg.rating=+$('#rt').value;cfg.intro=1;sv();EX.clear();home()},iskip(){cfg.intro=1;sv();home()},psite(){cfg.site=cfg.site==='chesscom'?'lichess':'chesscom';sv();view();drawBoard()},tcc(){const a=['Bullet','Blitz','Rapid','Classical'];cfg.tc=a[(a.indexOf(cfg.tc)+1)%4];sv();view()},rtg(){S.v='intro2';view()},intro(){S.v='intro1';view()},trainthis,genrep,open:p=>nav('rep',()=>startRep(p)),prac:()=>nav('prac',nextPrac),pnext:nextPrac,pshow:()=>{const it=S.prac.it;S.prac.st='bad';S.prac.san='(answer shown)';it.e.int=0;it.e.due=Date.now()+6e5;sv();B.lock=true;view()},
+const ACT={i2(){S.v='intro2';view()},irate(){cfg.intro=1;sv();EX.clear();home()},iskip(){cfg.intro=1;sv();home()},psite(){setSite(cfg.site==='chesscom'?'lichess':'chesscom');view();drawBoard()},tcc(){const a=['Bullet','Blitz','Rapid','Classical'];cfg.tc=a[(a.indexOf(cfg.tc)+1)%4];sv();view()},rtg(){S.v='intro2';view()},intro(){S.v='intro1';view()},trainthis,genrep,open:p=>nav('rep',()=>startRep(p)),prac:()=>nav('prac',nextPrac),pnext:nextPrac,pshow:()=>{const it=S.prac.it;S.prac.st='bad';S.prac.san='(answer shown)';it.e.int=0;it.e.due=Date.now()+6e5;sv();B.lock=true;view()},
  games:()=>nav('games',()=>{S.v='games';view()}),ins:()=>nav('ins',()=>{S.v='ins';view()}),settings:()=>{if(S.v!=='set')hist.push({v:S.v,c:S.c});S.v='set';view()},
  back(){if(S.v==='intro2'){S.v='intro1';return view()}if(S.v==='rep'&&S.path.length){undo();S.path.pop();return repLoad()}if(S.v==='game'){S.v='games';return view()}const h=hist.pop();if(!h)return home();if(h.v==='rep'&&S.v!=='rep')return startRep(h.c);S.v=h.v;if(h.v==='home')return home();view()},
  home,flip(){B.o=B.o==='w'?'b':'w';drawBoard()},retry:repLoad,more(){S.lim+=8;view();fillEval()},mg(){S.show+=30;view()},pick,
- site(p){cfg.site=p;sv();ust='';view();drawBoard();if(cfg.names[p])checkUser()},connect:()=>connect(false),older:()=>connect(true),og:openGame,ply:p=>setPly(+p),anl:analyze,
+ site(p){setSite(p);ust='';view();drawBoard();if(cfg.names[p])checkUser()},connect:()=>connect(false),older:()=>connect(true),og:openGame,ply:p=>setPly(+p),anl:analyze,
  graph(p,el,e){const r=el.getBoundingClientRect();setPly(Math.round((e.clientX-r.left)/r.width*S.g.hs.length))},
  snd(){cfg.sound=!cfg.sound;sv();view()},crd(){cfg.coords=!cfg.coords;sv();view();drawBoard()},
  exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({cfg:{...cfg,token:''},reps,games,notes,anl},null,1)],{type:'application/json'}));a.download='esches-data.json';a.click()},
@@ -322,9 +345,9 @@ const ACT={i2(){S.v='intro2';view()},irate(){cfg.rating=+$('#rt').value;cfg.intr
   const g={id:'pgn:'+Date.now().toString(36),site:'local',col:'w',white:tg('White')||'White',black:tg('Black')||'Black',res:'draw',tc:'pgn',t:Date.now(),open:tg('Opening')||'',mv:mv.join(' ')};
   try{gs(g)}catch(e){note(e.message,1);return}addGames([g]);note('Game added.');view()}};
 document.addEventListener('click',e=>{if(e.target.closest('#board'))return;const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const f=ACT[el.dataset.a];if(f)f(el.dataset.p,el,e)});
-document.addEventListener('input',e=>{if(e.target.id==='uname'){cfg.names[cfg.site]=e.target.value;ust='';paintU();sv()}if(e.target.id==='rt'){$('#rv').textContent=e.target.value}if(e.target.id==='tok'){cfg.token=e.target.value.trim();sv()}if(e.target.id==='nt'){notes['n:'+R.key(B.s)]=e.target.value;sv()}});
+document.addEventListener('input',e=>{if(e.target.id==='uname'){cfg.names[cfg.site]=e.target.value;ust='';paintU();sv()}if(e.target.id==='rate')setR(Math.round(+e.target.value/10)*10);if(e.target.id==='tok'){cfg.token=e.target.value.trim();sv()}if(e.target.id==='nt'){notes['n:'+R.key(B.s)]=e.target.value;sv()}});
 document.addEventListener('change',e=>{if(e.target.id==='uname')checkUser()});
-document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName)){if(e.target.id==='uname'&&e.key==='Enter')checkUser();return}
+document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='rate'&&/^Arrow/.test(e.key)){e.preventDefault();setR(cfg.selfReportedRating+((e.key==='ArrowUp'||e.key==='ArrowRight')?1:-1));return}if(/INPUT|TEXTAREA/.test(e.target.tagName)){if(e.target.id==='uname'&&e.key==='Enter')checkUser();return}
  if(S.v==='game'){if(e.key==='ArrowLeft')setPly(S.ply-1);if(e.key==='ArrowRight')setPly(S.ply+1)}if(e.key==='f')ACT.flip()});
 $('#kn').style.setProperty('--kn',`url("${PCS.lichess.wN}")`);
 if(cfg.intro)home();else{S.v='intro1';view()}
