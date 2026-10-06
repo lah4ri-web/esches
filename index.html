@@ -111,7 +111,7 @@ h1{font-size:19px;font-weight:500;letter-spacing:-.015em;line-height:1.25;margin
 .stk .act.go{background:#34373d;justify-content:center;border:0;border-radius:2px;padding:15px 0;font-weight:600}
 .nav{display:flex;justify-content:center;gap:6px}.nav button{background:#2a2c31;border:0;color:var(--tx);width:46px;height:38px;cursor:pointer;border-radius:2px;font-size:14px;transition:background .15s,transform .12s}.nav button:hover{background:#363940}.nav button:active{transform:scale(.94)}.nav button:disabled{opacity:.35;cursor:default}
 .ml{display:grid;grid-template-columns:34px 1fr 1fr;align-items:center;font-size:13.5px}.ml .mn{color:var(--dm);font-size:12px}
-.mc{display:flex;align-items:center;gap:6px;background:none;border:0;border-radius:3px;padding:5px 6px;cursor:pointer;text-align:left;transition:background .15s;color:var(--tx)}.mc:hover{background:var(--hv)}.mc.cur{background:#2f3136}.mc.crit{font-weight:600}.mc small{margin-left:auto;color:var(--mu);font-weight:400;font-size:11px}
+.mc{font-weight:700;display:flex;align-items:center;gap:6px;background:none;border:0;border-radius:3px;padding:5px 6px;cursor:pointer;text-align:left;transition:background .15s;color:var(--tx)}.mc:hover{background:var(--hv)}.mc.cur{background:#2f3136}.mc.crit{font-weight:700}.mc .sy{font-weight:700;margin-left:3px}.mc small{margin-left:auto;color:var(--mu);font-weight:400;font-size:11px}
 .sbx{margin:8px 0 14px;font-size:13px;color:#cfcfcf;line-height:1.5}.sbx b{color:var(--tx)}
 .mini{font-size:10px;letter-spacing:.08em;color:var(--dm);border:1px solid var(--ln);padding:0 5px;border-radius:2px;margin-left:6px;text-transform:uppercase}
 .arw{position:absolute;inset:0;pointer-events:none;z-index:4}
@@ -304,7 +304,8 @@ const pct=(a,b)=>b?Math.round(a/b*100):0;
 const rbar=(w,d,b)=>{const t=w+d+b||1,W=pct(w,t),D=pct(d,t),Bk=100-W-D;return`<div class="rb"><span class="w" style="width:${W}%">${W>=9?W+'%':''}</span><span class="d" style="width:${D}%"></span><span class="b" style="width:${Bk}%">${Bk>=9?Bk+'%':''}</span></div>`};
 const cap1=s=>s?s[0].toUpperCase()+s.slice(1):s;
 /* classification icons (Chess.com set supplied with the project) */
-const CL={Brilliant:{ic:'brilliant',col:'#26c2a3',sy:'!!'},Great:{ic:'great_find',col:'#749bbf',sy:'!'},Best:{ic:'best',col:'#96bc4b',sy:'★'},Excellent:{ic:'excellent',col:'#96bc4b',sy:'+'},Good:{ic:'good',col:'#96af8b',sy:'✓'},Book:{ic:'book',col:'#a88865',sy:'B'},Forced:{ic:'forced',col:'#97af8b',sy:'→'},Inaccuracy:{ic:'inaccuracy',col:'#f7c631',sy:'?!'},Mistake:{ic:'mistake',col:'#e6912c',sy:'?'},Miss:{ic:'incorrect',col:'#ee6055',sy:'X'},Blunder:{ic:'blunder',col:'#ca3431',sy:'??'},'Missed win':{ic:'missed_win',col:'#dbac16',sy:'–'},Checkmate:{ic:'mate',col:'#ee6055',sy:'#'}};
+const CL={Brilliant:{ic:'brilliant',col:'#26c2a3',sy:'!!'},Great:{ic:'great_find',col:'#749bbf',sy:'!'},Best:{ic:'best',col:'#96bc4b',sy:'★'},Excellent:{ic:'excellent',col:'#96bc4b',sy:'✦'},Good:{ic:'good',col:'#96af8b',sy:'✓'},Book:{ic:'book',col:'#a88865',sy:'≡'},Forced:{ic:'forced',col:'#97af8b',sy:'→'},Inaccuracy:{ic:'inaccuracy',col:'#f7c631',sy:'?!'},Mistake:{ic:'mistake',col:'#e6912c',sy:'?'},Miss:{ic:'incorrect',col:'#ee6055',sy:'✕'},Blunder:{ic:'blunder',col:'#ca3431',sy:'??'},'Missed win':{ic:'missed_win',col:'#dbac16',sy:'—'},Checkmate:{ic:'mate',col:'#ee6055',sy:'#'}};
+ICO.incorrect="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23ff6f61'/%3E%3Cpath d='M20 20L44 44M44 20L20 44' stroke='white' stroke-width='9' stroke-linecap='round'/%3E%3C/svg%3E";
 const cic=(c,z)=>CL[c]?`<img class="ci" src="${ICO[CL[c].ic]}" alt="${c}" title="${c}" style="width:${z||18}px;height:${z||18}px">`:'';
 const BADC=['Inaccuracy','Mistake','Miss','Blunder','Missed win'],CRIT=['Brilliant','Great','Mistake','Miss','Blunder','Missed win'];
 /* opening names: concise label + exact variation on hover */
@@ -387,7 +388,7 @@ async function bgGame(g){const{st}=gs(g),n=st.length;BG.cur=g.id;BG.n=n;const p=
 /* Book = the move exists in the Lichess masters database (>=5 games) in that position. Stops at the first non-book move. */
 async function bookPlies(g){const{st,hs}=gs(g);let k=0;try{for(let i=0;i<Math.min(16,hs.length);i++){const j=await explorer('masters',R.fen(st[i])),x=j.moves.find(m=>m.san===hs[i].san);if(x&&x.white+x.draws+x.black>=5)k++;else break}return{ok:true,n:k,src:'Lichess masters database'}}catch(e){return{ok:false,err:e.message}}}
 const bgDone=()=>games.filter(g=>anl[g.id]&&anl[g.id].done).length;
-function bgText(){if(!games.length||cfg.bg===false)return'';if(BG.err)return'Analysis unavailable';const d=bgDone();if(cfg.bgPause)return d<games.length?`Analysis paused · ${d}/${games.length} · resume`:'';if(d>=games.length)return'';return`<span class="spn"></span> Analyzing ${d}/${games.length}${BG.run&&BG.cur?` · game ply ${BG.i}/${BG.n}`:''} · pause`}
+function bgText(){if(!games.length||cfg.bg===false)return'';if(BG.err)return'Analysis unavailable';const d=bgDone();if(cfg.bgPause)return d<games.length?`Analysis paused · ${d}/${games.length} · resume`:'';if(d>=games.length)return'Complete!';return`<span class="spn"></span> Analyzing ${d}/${games.length}${BG.run&&BG.cur?` · game ply ${BG.i}/${BG.n}`:''} · pause`}
 let bgPT=0;function bgPaint(soft){const el=$('#bgst');if(el)el.innerHTML=bgText();if(S.v==='game'||S.v==='moves'){const q=$('#anst');if(q)q.innerHTML=anStatus()}}
 function onAnlDone(id){bgPaint();if(S.g&&S.g.g.id===id&&(S.v==='game'||S.v==='moves')){const keep=S.ply;view(1)}else if(S.v==='games'||S.v==='open'||S.v==='ins')view(1)}
 function anStatus(){const g=S.g&&S.g.g,A=g&&anl[g.id];if(A&&A.done)return'';if(!g)return'';const q=BG.cur===g.id?`Analyzing with Stockfish · ${BG.i}/${gs(g).st.length}`:anlp[g.id]?`Analysis in progress · ${anlp[g.id].ev.length}/${gs(g).st.length}`:bgOn()?'Queued for background analysis':'Background analysis is paused';return`<span class="spn"></span> ${q}`}
@@ -519,7 +520,7 @@ function vRep(){const mine=myTurn(),n=S.path.length;let h=`<h1>${!mine?'Choose a
  const nk='n:'+R.key(B.s);h+=lbl('Notes','LOCAL')+`<textarea class="ta" id="nt" placeholder="Add notes for this position">${esc(notes[nk]||'')}</textarea>`;
  return h+act('home','I\'ll finish later, save my progress')}
 /* ---- repertoire settings (per repertoire) ---- */
-function vRSet(){const c=S.c,pre=S.rsc;const cv=repCover(c);return`<h1>Settings</h1><div class="rowsel"><span>Name</span><input class="in" id="rname" style="width:60%;text-align:right;padding:2px 0;font-size:13px;color:var(--mu)" value="${esc(repName(c))}"></div>`
+function vRSet(){const c=S.c,pre=S.rsc;const cv=repCover(c);return`<h1>Settings</h1><div class="rowsel"><span>Name</span><input class="in" id="rname" style="border:0;box-shadow:none;width:60%;text-align:right;padding:2px 0;font-size:13px;color:var(--mu)" value="${esc(repName(c))}"></div>`
  +act('rimp','Import')+(pre==='imp'?`<div class="fade"><textarea class="ta" id="rpgn" placeholder="Paste PGN. Moves for ${c==='w'?'White':'Black'} are saved to this repertoire."></textarea>${act('rimpgo','Import moves')}</div>`:'')+act('rexp','Export to PGN')
  +`<div class="lbl" style="margin-top:34px"><span>Advanced settings</span></div><div class="rowsel"><span>Cover positions seen in</span><select class="sel" id="rcover">${[20,50,100,150,300,500].map(x=>`<option value="${x}"${x===cv?' selected':''}>1 in ${x} games</option>`).join('')}</select></div>`
  +`<div class="lbl" style="margin-top:34px"><span>Danger zone</span></div>`+act('rrmauto','Remove autofilled moves')+act('rtrim','Trim unnecessary moves')+(S.rdel?`<div class="fade">${act('rdelgo','Confirm: delete '+Object.keys(reps[c]).length+' saved positions')}</div>`:act('rdel','Delete'))}
@@ -585,7 +586,7 @@ function vHome(){const du=pItems().filter(x=>!x.e.due||x.e.due<=Date.now()).leng
  +lbl('Game Analysis',cn?'<span class="tag" style="margin:0">CONNECTED</span>':'')
  +(cn?act('games','Correct your opening mistakes',games.length?games.length+' games':'')+act('ins','View performance by opening'):`<div style="font-weight:500;margin:4px 0 8px">Review your online games</div>`+act('conn','Correct your opening mistakes','Not connected')+act('conn','View performance by opening','Not connected')+`<div style="height:10px"></div>`+act('conn','Connect account'))
  +lbl('Insights by Opening')+act('ins','Insights by Opening',cn?'':'Not connected')
- +`<div style="height:18px"></div>`+act('rate','Change ELO rating',cfg.selfReportedRating+' · '+SITE[cfg.ratingPlatform].n)
+ 
  +`<p class="dim" style="margin-top:34px;max-width:52ch"><b>LOCAL</b> stored on this device. <b>CONNECTED</b> from Chess.com or Lichess. <b>SYNCED</b> ESCHÉS account — coming soon.</p>`}
 const rcount=c=>Object.keys(reps[c]).length;
 function vConn(){return`<h1 style="font-size:26px;margin-top:40px">Connect your online accounts</h1><p class="sub">Get notified of opening mistakes in your games.</p>`
@@ -602,13 +603,13 @@ function setR(v){cfg.selfReportedRating=clampRating(cfg.ratingPlatform,v);rmind=
 function vSet(){const s=cfg.site;return`<h1>Settings</h1>`+lbl('Data source')+['chesscom','lichess'].map(k=>act('site',(cfg.site===k?'● ':'○ ')+SITE[k].n,'',k).replace('class="act"',`class="act${cfg.site===k?' on':''}"`)).join('')
  +lbl('Username')+`<div class="fw"><input class="in" id="uname" placeholder="${SITE[s].n} username" value="${esc(cfg.names[s])}" autocomplete="off" spellcheck="false"><u id="us"></u></div><div style="height:12px"></div>`+act('connect','Retrieve games')
  +lbl('Display and sound')+act('snd','Sound',cfg.sound?'On':'Off')+act('crd','Board coordinates',cfg.coords?'On':'Off')+tcSel()+act('rate','Your rating',cfg.selfReportedRating+' · '+SITE[cfg.ratingPlatform].n+(rmind?' · update if needed':''))
- +lbl('Stockfish','LOCAL')+act('bgset','Analyze games in the background',cfg.bg===false?'Off':'On')+(cfg.bg!==false?act('bgp',cfg.bgPause?'Resume analysis':'Pause analysis',bgDone()+'/'+games.length+' analyzed'):'')
+ +(connected()?'':lbl('Rating')+act('rate','Your rating',cfg.selfReportedRating+' · '+SITE[cfg.ratingPlatform].n))+lbl('Stockfish','LOCAL')+act('bgset','Analyze games in the background',cfg.bg===false?'Off':'On')+(cfg.bg!==false&&bgDone()<games.length?act('bgp',cfg.bgPause?'Resume analysis':'Pause analysis',bgDone()+'/'+games.length+' analyzed'):'')
  +lbl('Lichess API token','Optional')+`<input class="in" id="tok" type="password" placeholder="Needed only if the explorer returns 401" value="${esc(cfg.token)}"><p class="dim">Pieces, board colors and coordinates follow the data source above. Sounds are always the Chess.com set.</p>`
  +lbl('Data on this device','LOCAL')+`<p class="dim">${rcount('w')+rcount('b')} repertoire positions · ${games.length} games</p>`+act('exp','Export data (JSON)')+act('erase','Erase local data')
  +lbl('ESCHÉS account')+act('x','ESCHÉS SYNC','COMING SOON').replace('data-a="x"','disabled style="opacity:.5;cursor:default"')}
 
 /* ---- games: critical / best / list ---- */
-const opp=g=>g.col==='w'?g.black:g.white,resTxt=g=>g.res==='win'?'Won':g.res==='loss'?'Lost':'Draw',resCls=g=>g.res==='win'?'ok':g.res==='loss'?'no':'';
+const opp=g=>g.col==='w'?g.black:g.white,termTxt=g=>{const t=(g.term||'').toLowerCase(),w=g.res==='win';if(g.res==='draw')return/repetition/.test(t)?'Draw by repetition':/stalemate/.test(t)?'Draw by stalemate':/insufficient/.test(t)?'Draw by insufficient material':/50/.test(t)?'Draw by 50-move rule':/agreed|draw/.test(t)?'Draw by agreement':'Draw';const k=/mate/.test(t)?'checkmate':/resign/.test(t)?'resignation':/time/.test(t)?'time':/abandon/.test(t)?'abandonment':'';return(w?'Won':'Lost')+(k?(k==='time'?' on time':' by '+k):'')},resTxt=g=>g.res==='win'?'Won':g.res==='loss'?'Lost':'Draw',resCls=g=>g.res==='win'?'ok':g.res==='loss'?'no':'';
 const sample50=()=>games.slice().sort((a,b)=>b.t-a.t).slice(0,50);
 const surprise=g=>{if(g.mr==null||g.or==null)return null;const E=1/(1+Math.pow(10,(g.or-g.mr)/400)),a=g.res==='win'?1:g.res==='draw'?.5:0;return a-E};
 function critBest(){const s=sample50(),x=s.map(g=>({g,d:surprise(g)})).filter(y=>y.d!=null);return{n:s.length,nr:x.length,crit:x.filter(y=>y.d<0).sort((a,b)=>a.d-b.d).slice(0,5),best:x.filter(y=>y.d>0).sort((a,b)=>b.d-a.d).slice(0,5)}}
@@ -634,7 +635,7 @@ function refreshLive(){/* update only the parts that depend on the current ply, 
 const PNN={P:'pawn',N:'knight',B:'bishop',R:'rook',Q:'queen',K:'king'};
 function pvSan(s,pv,max){const o=[];let st=s;for(const u of (pv||'').split(' ').filter(Boolean).slice(0,max||5)){const m=R.legal(st).find(x=>uci(x)===u);if(!m)break;o.push((st.t==='w'?st.fm+'. ':(o.length?'':st.fm+'... '))+moveSan(st,m));st=R.make(st,m)}return o.join(' ')}
 function moveList(G,rv,ply){let h='';const hs=G.hs,A=anl[G.g.id],tm=termMark(G.g);for(let i=0;i<hs.length;i+=2){h+=`<div class="ml"><span class="mn">${(i>>1)+1}.</span>`;for(const j of[i,i+1]){if(j>=hs.length){h+='<span></span>';continue}const c=rv?rv.cl[j]:null,cr=CRIT.includes(c),ev=A&&A.ev&&A.ev[j+1]!=null?fe(A.ev[j+1]):'';
-  h+=`<button class="mc${j+1===ply?' cur':''}${cr?' crit':''}" data-a="ply" data-p="${j+1}" style="${cr?'background:'+CL[c].col+'22':''}">${esc(hs[j].san)}${c&&c!=='Best'||c==='Best'?cic(c,16):''}${j===hs.length-1&&tm?`<span title="${tm.t}" style="color:var(--mu)">${tm.sy}</span>`:''}<small>${ev}</small></button>`}h+='</div>'}return h}
+  h+=`<button class="mc${j+1===ply?' cur':''}${cr?' crit':''}" data-a="ply" data-p="${j+1}" style="${cr?'color:'+CL[c].col:''}">${esc(hs[j].san)}${cr?`<b class="sy" title="${c}" style="color:${CL[c].col}">${CL[c].sy}</b>`:''}${j===hs.length-1&&tm?`<span title="${tm.t}" style="color:var(--mu)">${tm.sy}</span>`:''}<small>${ev}</small></button>`}h+='</div>'}return h}
 function curMoveBox(){const G=S.g,k=S.ply;if(!k)return'<p class="dim">Starting position. Use the arrow keys or the list to walk through the game.</p>';const i=k-1,rv=review(G.g),A=anl[G.g.id],m=G.hs[i].m,s0=G.st[i],mover=s0.t==='w'?'White':'Black';
  let h=`<div class="sbx fade"><b>${(i>>1)+1}${i%2?'...':'.'} ${esc(G.hs[i].san)}</b>${rv?' '+cic(rv.cl[i],18)+' '+rv.cl[i]:''}`;
  if(rv){const b=rv.bw[i];h+=`<span class="mini">Stockfish</span><div>Evaluation ${fe(A.ev[i+1])}${i?` (was ${fe(A.ev[i])})`:''} · depth ${A.d}</div>`;
@@ -646,7 +647,7 @@ function coachQuote(G,rv){const g=G.g,me=g.col,A=rv.A;let wi=-1,wl=0;rv.ls.forEa
  if(wi>=0&&wl>=10)return`On move ${(wi>>1)+1} you played ${G.hs[wi].san} (${rv.cl[wi]})${bestSanFrom(G.st[wi],A.bm[wi])?'; Stockfish preferred '+bestSanFrom(G.st[wi],A.bm[wi]):''}.`;
  const a=rv.acc[me];return a!=null&&a>=85?`A clean game: ${a.toFixed(1)}% accuracy with no move losing more than 10 points of win chance.`:null}
 function vGame(){const G=S.g,g=G.g;if(g.model)return vModel(G,g);const rv=review(g),A=anl[g.id];if(S.rv&&S.rv.on)return vReviewMode(G,g,rv,A);
- let h=`<h1 style="font-size:22px">${esc(g.white)} vs ${esc(g.black)}</h1><p class="sub">${resTxt(g)} as ${g.col==='w'?'White':'Black'} · ${esc(g.open?shortOpen(g.open):'Unknown opening')}${g.open?'':''}</p>`+act('am','Analyze Moves');
+ let h=`<h1 style="font-size:22px">${esc(g.white)} vs ${esc(g.black)}</h1><p class="sub">${g.res==='draw'?termTxt(g)+' · '+(g.col==='w'?'White':'Black'):termTxt(g)+' as '+(g.col==='w'?'White':'Black')} · ${esc(g.open?shortOpen(g.open):'Unknown opening')}${g.open?'':''}</p>`+act('am','Analyze Moves');
  if(!rv){h+=`<p class="dim" id="anst" style="margin-top:14px">${anStatus()||'Analysis data is not available for this game.'}</p>`;if(!(BG.cur===g.id||anlp[g.id]))h+=act('anl','Analyze this game now');return h+`<div class="sbx" style="margin-top:20px">Moves</div><div id="mlist">${moveList(G,null,S.ply)}</div>`}
  const me=g.col,q=coachQuote(G,rv);h+=q?`<div class="coach">“${esc(q)}”<span class="mini">Stockfish · depth ${A.d}</span></div>`:'';
  h+=evGraph(g,A,rv,S.ply).replace('class="evg"','class="evg" id="gph"');
@@ -794,6 +795,7 @@ document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='rate'&&/^Arr
  if((S.v==='game'||S.v==='moves')&&S.g){if(e.key==='ArrowLeft'){rvStop();S.rv&&S.rv.on?rvGo(S.ply-1):setPly(S.ply-1)}if(e.key==='ArrowRight'){rvStop();S.rv&&S.rv.on?rvGo(S.ply+1):setPly(S.ply+1)}}});
 $('#kn').style.setProperty('--kn',`url("${PCS.lichess.wN}")`);
 if(cfg.intro)home();else{S.v='intro1';view()}
+ldN++;$('#ls').textContent='';$('#ld').classList.add('on');setTimeout(()=>{if(--ldN===0)$('#ld').classList.remove('on')},2400);
 setTimeout(kickBg,1500);
 window.__esches={R,S,B,reps,get games(){return games},anl,cfg,ACT,review,gs,classify,shortOpen,opGroups,purpose};
 </script></body></html>
