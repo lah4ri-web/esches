@@ -795,11 +795,17 @@ function slidePcs(a,b,fl){const bd=$('#board');if(!bd||!a||!bd.animate&&!bd.quer
  for(let i=0;i<64;i++){if(!b[i]||a[i]===b[i])continue;let bj=-1,bd2=1e9;gone.forEach((j,n)=>{if(a[j]===b[i]){const d=Math.abs(X(i)-X(j))+Math.abs(Y(i)-Y(j));if(d<bd2){bd2=d;bj=n}}});if(bj<0)continue;const j=gone.splice(bj,1)[0],img=bd.querySelector(`.sq[data-i="${i}"] .pc`);if(img&&img.animate)img.animate([{transform:`translate(${(X(j)-X(i))*100}%,${(Y(j)-Y(i))*100}%)`},{transform:'none'}],{duration:240,easing:'cubic-bezier(.2,.7,.2,1)'})}}
 let OPD=null,opnOn=null;
 async function opData(){if(OPD)return OPD;OPD={};try{await Promise.all([...'abcde'].map(async c=>{const t=await(await fetch('https://raw.githubusercontent.com/lichess-org/chess-openings/master/'+c+'.tsv')).text();t.split('\n').slice(1).forEach(l=>{const p=l.split('\t');if(p[1]&&p[2])OPD[p[1]]=p[2]})}))}catch(e){}return OPD}
-async function opnHover(el){const name=el.dataset.full;if(!name)return;opnOn=el;const pgn=(await opData())[name];if(opnOn!==el||!pgn)return;if(!S.opSnap)S.opSnap={s:B.s,last:B.last,o:B.o};let s=R.parse(R.START),last=null;for(const x of pgn.split(/\s+/).filter(x=>x&&!/\./.test(x))){const m=R.fromSan(s,x);if(!m)break;last={f:m.f,t:m.t};s=R.make(s,m)}const oB=B.s.b;B.s=s;B.last=last;drawBoard();slidePcs(oB,B.s.b,B.o==='b')}
+async function opnHover(el){const name=el.dataset.full;if(!name)return;opnOn=el;const pgn=(await opData())[name];if(opnOn!==el||!pgn)return;showLine(pgn.split(/\s+/).filter(x=>x&&!/\./.test(x)),B.o)}
 document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('#opn');if(el&&el!==opnOn)opnHover(el)});
 document.addEventListener('mouseout',e=>{if(!opnOn)return;if(e.relatedTarget&&opnOn.contains(e.relatedTarget))return;opnOn=null;opRestore()});
-function opPreview(i){const G=S.insG&&S.insG[i];if(!G)return;if(!S.opSnap)S.opSnap={s:B.s,last:B.last,o:B.o};let s=R.parse(R.START),last=null;for(const x of G.prefix){const m=R.fromSan(s,x);if(!m)break;last={f:m.f,t:m.t};s=R.make(s,m)}const oB=B.s.b,oO=B.o;B.s=s;B.last=last;B.o=G.col;drawBoard();if(oO===B.o)slidePcs(oB,B.s.b,B.o==='b');setOp(G.open,G.open)}
-function opRestore(){const p=S.opSnap;if(!p)return;S.opSnap=null;const oB=B.s.b,oO=B.o;B.s=p.s;B.last=p.last;B.o=p.o;drawBoard();if(oO===B.o)slidePcs(oB,B.s.b,B.o==='b');setOp(null)}
+let OTK=0,OLN=null;const slp=ms=>new Promise(r=>setTimeout(r,ms));
+function buildLine(sans){let s=R.parse(R.START),a=[{s,last:null}];for(const x of sans){const m=R.fromSan(s,x);if(!m)break;s=R.make(s,m);a.push({s,last:{f:m.f,t:m.t},m})}return a}
+async function runLine(L,to){const tk=++OTK,dir=to>L.k?1:-1;while(L.k!==to){if(tk!==OTK)return;const k=L.k+dir,mv=dir>0?L.a[k].m:L.a[L.k].m;L.k=k;B.s=L.a[k].s;B.last=L.a[k].last;drawBoard(dir>0?mv:{f:mv.t,t:mv.f});await slp(dir>0?230:150)}
+ if(tk===OTK&&to===0&&L.snap){B.s=L.snap.s;B.last=L.snap.last;B.o=L.snap.o;drawBoard();OLN=null;S.opSnap=null}}
+function showLine(sans,col,title,full){const snap=S.opSnap||(S.opSnap={s:B.s,last:B.last,o:B.o});OTK++;if(OLN&&OLN.k===0&&B.s===OLN.a[0].s){}else if(!OLN||OLN.k===0){}
+ const a=buildLine(sans);if(!a.length)return;B.o=col||B.o;const L=OLN={a,k:0,snap};B.s=a[0].s;B.last=null;drawBoard();runLine(L,a.length-1);if(title!==undefined)setOp(title,full)}
+function opPreview(i){const G=S.insG&&S.insG[i];if(!G)return;showLine(G.prefix,G.col,G.open,G.open)}
+function opRestore(){if(OLN){runLine(OLN,0)}else if(S.opSnap){const p=S.opSnap;S.opSnap=null;B.s=p.s;B.last=p.last;B.o=p.o;drawBoard()}setOp(null)}
 /* ---- model game: interactive guess-the-move sequence ---- */
 const sqn=i=>'abcdefgh'[i&7]+(8-(i>>3));
 const mgPOV=(ev,k)=>{const u=k%2?1:-1;return u*(ev[k]-ev[k-1])};
