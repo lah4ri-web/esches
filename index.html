@@ -149,6 +149,12 @@ select.sel{background:#1b1b1b;color:var(--tx);border:1px solid var(--ln);padding
 .nav button[data-p=play]{width:50px;background:var(--tx);color:#1b1c1f}.nav button[data-p=play]:hover{background:#fff;color:#000}
 .nav svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.nav svg .f{fill:currentColor;stroke:none}
 .ml .mc:nth-child(3n+2){box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)}.ml .mc:nth-child(3n+3){box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.act.res:not(:hover){background:rgba(255,255,255,.06)}
+.ftip{display:inline-block;margin-top:7px;font-size:10px;color:var(--mu);text-decoration:underline dotted;cursor:help;position:relative}
+.ftip:hover::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 6px);width:230px;padding:8px 10px;border-radius:6px;background:#2f3136;color:var(--tx);font-size:11.5px;line-height:1.4;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:20;animation:in .15s}
+.srct{font-size:10px;font-weight:500;color:var(--mu);margin-left:12px;vertical-align:middle;letter-spacing:.02em}
+.lab{display:inline-block;margin-left:8px;padding:0 6px;border-radius:4px;font-size:10px;font-weight:600;line-height:16px;color:var(--mu);background:rgba(255,255,255,.07);cursor:help;vertical-align:middle}
+.mgcrit{margin-top:12px;padding:10px 0 10px 14px;border-left:2px solid #f5b042;font-size:13.5px;line-height:1.5;color:#d6d6d6}.mgcrit b{display:block;margin-bottom:4px;color:var(--tx)}.mgcrit i{color:var(--mu);font-style:normal}
 </style></head><body>
 <div id="app"><div id="L"><div id="col"><div id="crumb"></div><div id="evb"><i></i></div><div id="bdg"></div><div id="board"></div><div id="cap"></div><div id="note"></div></div></div><div id="sp"></div><aside id="P"></aside></div>
 <div id="ld"><div class="kn" id="kn"></div><div class="t">ESCHÉS</div><div class="s" id="ls"></div></div>
@@ -236,8 +242,8 @@ const ldt=t=>$('#ls').textContent=t;
 const AM=ms=>{const f={slow:1.8,normal:1,fast:.6,vfast:.3}[cfg.anim];return f==null?0:ms*f},hap=k=>{if(cfg.hap&&navigator.vibrate)try{navigator.vibrate(k==='cap'?14:8)}catch(e){}};const SA={};function snd(k){hap(k);if(!cfg.sound)return;const u=SNDS[{self:'self',opp:'opponent',castle:'castle',check:'check',promote:'promote',cap:'capture'}[k]];if(!u)return;try{(SA[u]=SA[u]||new Audio(u)).cloneNode().play().catch(()=>{})}catch(e){}}
 /* board */
 const B={s:R.parse(R.START),keys:[],o:'w',last:null,sel:null,lg:[],promo:null,lock:false,on:null,hist:[],drag:null};B.keys=[R.key(B.s)];
-function setPos(fen,o,lock){B.s=R.parse(fen||R.START);B.keys=[R.key(B.s)];B.hist=[];B.last=null;B.sel=null;B.lg=[];B.promo=null;B.o=o||'w';B.lock=!!lock;drawBoard()}
-function arrowSvg(){const fl=B.o==='b',X=i=>(fl?7-(i&7):i&7)*12.5+6.25,Y=i=>(fl?7-(i>>3):i>>3)*12.5+6.25;let o='';const a=B.arrow;if(a)o+=`<defs><marker id="ah" markerWidth="4" markerHeight="4" refX="2.4" refY="2" orient="auto"><path d="M0 0L4 2L0 4z" fill="rgba(255,170,0,.9)"/></marker></defs><line x1="${X(a.f)}" y1="${Y(a.f)}" x2="${X(a.t)+(X(a.f)<X(a.t)?-1.2:X(a.f)>X(a.t)?1.2:0)}" y2="${Y(a.t)+(Y(a.f)<Y(a.t)?-1.2:Y(a.f)>Y(a.t)?1.2:0)}" stroke="rgba(255,170,0,.9)" stroke-width="2" stroke-linecap="round" marker-end="url(#ah)"/>`;if(B.hintSq!=null)o+=`<circle cx="${X(B.hintSq)}" cy="${Y(B.hintSq)}" r="6" fill="none" stroke="rgba(255,170,0,.95)" stroke-width="1.4"/>`;return o?`<svg class="arw" viewBox="0 0 100 100">${o}</svg>`:''}
+function setPos(fen,o,lock){B.arrows=null;B._ak=null;B.s=R.parse(fen||R.START);B.keys=[R.key(B.s)];B.hist=[];B.last=null;B.sel=null;B.lg=[];B.promo=null;B.o=o||'w';B.lock=!!lock;drawBoard()}
+function arrowSvg(){const fl=B.o==='b',X=i=>(fl?7-(i&7):i&7)*12.5+6.25,Y=i=>(fl?7-(i>>3):i>>3)*12.5+6.25;let o='';if(B.arrows&&B.arrows.length){o+='<defs><marker id="ah2" markerWidth="4" markerHeight="4" refX="2.4" refY="2" orient="auto"><path d="M0 0L4 2L0 4z" fill="rgba(110,170,255,.8)"/></marker></defs>';for(const q of B.arrows){const dx=X(q.t)-X(q.f),dy=Y(q.t)-Y(q.f),l=Math.hypot(dx,dy)||1;o+=`<line x1="${X(q.f)}" y1="${Y(q.f)}" x2="${X(q.t)-dx/l*1.6}" y2="${Y(q.t)-dy/l*1.6}" stroke="rgba(110,170,255,.75)" stroke-width="1.6" stroke-linecap="round" marker-end="url(#ah2)"/>`}}const a=B.arrow;if(a)o+=`<defs><marker id="ah" markerWidth="4" markerHeight="4" refX="2.4" refY="2" orient="auto"><path d="M0 0L4 2L0 4z" fill="rgba(255,170,0,.9)"/></marker></defs><line x1="${X(a.f)}" y1="${Y(a.f)}" x2="${X(a.t)+(X(a.f)<X(a.t)?-1.2:X(a.f)>X(a.t)?1.2:0)}" y2="${Y(a.t)+(Y(a.f)<Y(a.t)?-1.2:Y(a.f)>Y(a.t)?1.2:0)}" stroke="rgba(255,170,0,.9)" stroke-width="2" stroke-linecap="round" marker-end="url(#ah)"/>`;if(B.hintSq!=null)o+=`<circle cx="${X(B.hintSq)}" cy="${Y(B.hintSq)}" r="6" fill="none" stroke="rgba(255,170,0,.95)" stroke-width="1.4"/>`;return o?`<svg class="arw" viewBox="0 0 100 100">${o}</svg>`:''}
 function drawBoard(mv){const bd=$('#board'),s=B.s,fl=B.o==='b',S=SITE[disp()];let h='',ck=R.check(s)?s.b.indexOf(s.t==='w'?'K':'k'):-1;const mate=ck>=0&&!R.legal(s).length;
  const root=document.documentElement.style;root.setProperty('--lt',S.lt);root.setProperty('--dk',S.dk);
  for(let d=0;d<64;d++){const r=d>>3,c=d&7,i=fl?63-d:d,ir=i>>3,ic=i&7,l=(ir+ic)%2===0,p=s.b[i];
@@ -249,7 +255,7 @@ function drawBoard(mv){const bd=$('#board'),s=B.s,fl=B.o==='b',S=SITE[disp()];le
  bd.innerHTML=h+arrowSvg();
  if(mv){const img=bd.querySelector(`.sq[data-i="${mv.t}"] .pc`);if(img&&img.animate){const X=i=>fl?7-(i&7):i&7,Y=i=>fl?7-(i>>3):i>>3;
   img.animate([{transform:`translate(${(X(mv.f)-X(mv.t))*100}%,${(Y(mv.f)-Y(mv.t))*100}%)`},{transform:'none'}],{duration:AM(190),easing:'cubic-bezier(.25,.8,.25,1)'})}}}
-function play(m,who,q){const L=R.legal(B.s),san=R.san(B.s,m,L);B.hist.push({s:B.s,k:B.keys.slice(),l:B.last,san,m});B.s=R.make(B.s,m);B.keys.push(R.key(B.s));B.last={f:m.f,t:m.t};B.sel=null;B.lg=[];B.promo=null;
+function play(m,who,q){const L=R.legal(B.s),san=R.san(B.s,m,L);B.hist.push({s:B.s,k:B.keys.slice(),l:B.last,san,m});B.s=R.make(B.s,m);B.keys.push(R.key(B.s));B.last={f:m.f,t:m.t};B.sel=null;B.lg=[];B.promo=null;B.arrows=null;B._ak=null;
  if(!q){snd(R.check(B.s)?'check':m.pr?'promote':m.ca?'castle':m.cap?'cap':who||'self');drawBoard(m)}clearBadge();const st=R.status(B.s,B.keys);note(st?st[0].toUpperCase()+st.slice(1)+(st==='checkmate'?' · '+(B.s.t==='w'?'Black':'White')+' wins':''):'');if(!q)hdrSoon();return san}
 function undo(){const h=B.hist.pop();if(!h)return false;B.s=h.s;B.keys=h.k;B.last=h.l;B.sel=null;B.lg=[];drawBoard();clearBadge();hdrSoon();return true}
 function userMove(f,t){const ms=R.legal(B.s).filter(x=>x.f===f&&x.t===t);if(!ms.length){B.sel=null;B.lg=[];drawBoard();return}
@@ -288,7 +294,7 @@ async function engOne(E,fen,depth,mpv){const w=await E.get(),t=fen.split(' ')[1]
   w.onerror=ev=>{ENG.state='fail';ENG.reason='Engine crashed: '+(ev.message||'worker error');E.p=null;rej(new Error(ENG.reason))};
   w.onmessage=e=>{if(id!==E.id)return;const m=String(e.data);
    if(m.startsWith('info')&&/ score /.test(m)&&!/ (lowerbound|upperbound) /.test(m)){const sc=scoreOf(m);if(!sc)return;const mp=m.match(/ multipv (\d+)/),k=mp?+mp[1]:1,cpw=t==='w'?sc.v:-sc.v,d=m.match(/ depth (\d+)/),p=m.match(/ pv (.+)$/);
-    if(k===1){r.cp=cpw;r.mate=sc.mate;if(d)r.depth=+d[1];if(p)r.pv=p[1]}else if(k===2)r.cp2=cpw}
+    if(k===1){r.cp=cpw;r.mate=sc.mate;if(d)r.depth=+d[1];if(p)r.pv=p[1]}else if(k===2)r.cp2=cpw;if(p)(r.lines=r.lines||{})[k]={cp:cpw,mv:p[1].split(' ')[0],d:d?+d[1]:0}}
    if(m.startsWith('bestmove')){r.best=m.split(' ')[1];res(r)}};
   w.postMessage('position fen '+fen);w.postMessage('go depth '+depth)})}
 /* foreground evaluation: queued (never cut short), cached, optional skip() so stale requests are dropped */
@@ -380,7 +386,7 @@ async function plansFor(fen){const s=R.parse(fen),j=await explorer('lichess',fen
  const pw=mv.filter(x=>x.m.p==='P'&&!x.m.cap).slice(0,3);if(pw.length)L.push(`Common pawn moves: <b>${pw.map(x=>esc(x.san)).join(', ')}</b>`);
  const pc=mv.filter(x=>x.m.p==='N'||x.m.p==='B').slice(0,3);for(const x of pc)L.push(`The ${pn[x.m.p]} is often <b>developed to ${R.nm(x.m.t)}</b> (${sh(x)} of games)`);
  const cp=mv.filter(x=>x.m.cap).slice(0,2);for(const x of cp)L.push(`<b>${esc(x.san)}</b> captures in ${sh(x)} of games`);
- return L.length?{side,lines:L,tot}:null}
+ return L.length?{side,lines:L,tot,arrows:mv.filter(x=>!x.m.ca).slice(0,4).map(x=>({f:x.m.f,t:x.m.t}))}:null}
 let planTk=0;function loadPlan(){const v=PLAYV();if(!['rep','prac','game','moves'].includes(v)||(v==='rep'&&!S.rb))return;const f=R.fen(B.s);if(S.plan&&S.plan.f===f)return;const tk=++planTk;S.plan={f,lines:null,loading:1};
  setTimeout(async()=>{if(tk!==planTk)return;let r=null;try{r=await plansFor(f)}catch(e){}if(tk!==planTk||R.fen(B.s)!==f)return;S.plan={f,...(r||{}),lines:r?r.lines:null};capBar()},350)}
 /* ---- move annotation badge ---- */
@@ -471,9 +477,9 @@ document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.cl
 document.addEventListener('mouseout',e=>{if(!hvEl)return;if(e.relatedTarget&&hvEl.contains(e.relatedTarget))return;hvEl=null;unpreview()});
 /* ---- navigation: a real history of snapshots ---- */
 const hist=[];
-const snap=()=>({v:S.v,c:S.c,path:S.path.slice(),rb:S.rb,gid:S.g&&S.g.g.id,ply:S.ply,okey:S.okey,so:S.so,pm:S.pm&&{mode:S.pm.mode,key:S.pm.key}});
+const snap=()=>({v:S.v,c:S.c,path:S.path.slice(),rb:S.rb,gid:S.g&&S.g.g.id,ply:S.ply,okey:S.okey,so:S.so,psc:S.psc,pm:S.pm&&{mode:S.pm.mode,key:S.pm.key}});
 const nav=fn=>{hist.push(snap());fn()};
-function restore(n){B.on=null;B.lock=false;S.c=n.c;({home,rep:()=>n.rb?startRep(n.c,n.path):openRep(n.c),pchoose,prac:()=>startPrac(n.pm.mode,n.pm.key),games:()=>{S.v='games';view()},game:()=>openGame(n.gid,n.ply),moves:()=>openGame(n.gid,n.ply,1),ins:()=>{S.v='ins';view()},open:()=>{S.okey=n.okey;S.v='open';view()},set:()=>{S.v='set';view()},rate:()=>{S.v='rate';view()},conn:()=>{S.v='conn';view()},rset:()=>{S.v='rset';view()},acc:()=>{S.v='acc';view()},sopt:()=>{S.so=n.so;S.v='sopt';view()}}[n.v]||home)()}
+function restore(n){B.on=null;B.lock=false;S.c=n.c;({home,rep:()=>n.rb?startRep(n.c,n.path):openRep(n.c),pchoose:()=>{S.psc=n.psc;pchoose()},prac:()=>startPrac(n.pm.mode,n.pm.key),games:()=>{S.v='games';view()},game:()=>openGame(n.gid,n.ply),moves:()=>openGame(n.gid,n.ply,1),ins:()=>{S.v='ins';view()},open:()=>{S.okey=n.okey;S.v='open';view()},set:()=>{S.v='set';view()},rate:()=>{S.v='rate';view()},conn:()=>{S.v='conn';view()},rset:()=>{S.v='rset';view()},model:()=>{S.v='model';if(S.mg)mgBoard();view()},acc:()=>{S.v='acc';view()},sopt:()=>{S.so=n.so;S.v='sopt';view()}}[n.v]||home)()}
 const home=()=>{S.v='home';B.on=null;B.lock=false;S.opPv=null;S.capL='';setPos(R.START,'w',false);view()};
 /* ---- repertoire overview (reference layout) ---- */
 reps.m=reps.m||{names:{},cover:{}};const repName=c=>reps.m.names[c]||(c==='w'?'White openings':'Black openings'),repCover=c=>reps.m.cover[c]||cfg.cover||150;
@@ -551,9 +557,40 @@ function startRep(c,path){S.v='rep';S.c=c;S.rb=true;S.path=[];S.lim=8;S.opPv=nul
 let RD=null,repTk=0,UG=null,UGn=-1,UGf={},clsTk=0;
 function buildUG(){if(UG&&UGn===games.length)return;UG={};UGf={};UGn=games.length;for(const g of games){let st=R.parse(R.START);const mv=g.mv.split(' ').slice(0,24);for(const x of mv){const m=R.fromSan(st,x);if(!m)break;const k=R.key(st),e=UG[k]||(UG[k]={}),mine=st.t===g.col,id=(mine?'m:':'o:')+moveSan(st,m),y=e[id]||(e[id]={n:0,p:0,mine});UGf[k]=st.fm;y.n++;y.p+=g.res==='win'?1:g.res==='draw'?.5:0;st=R.make(st,m)}}}
 async function repLoad(){const tk=++repTk;RD={loading:true};view();const f=R.fen(B.s);await new Promise(r=>setTimeout(r,220));if(tk!==repTk)return;
- try{if(games.length&&(!UG||UGn!==games.length))buildUG();const[a,m]=await Promise.all([explorer('lichess',f),explorer('masters',f).catch(()=>null)]);if(tk!==repTk)return;RD={a,m}}catch(e){if(tk!==repTk)return;RD={err:e.message}}view(1);fillEval()}
+ try{if(games.length&&(!UG||UGn!==games.length))buildUG();const[a,m]=await Promise.all([explorer('lichess',f),explorer('masters',f).catch(()=>null)]);if(tk!==repTk)return;RD={a,m};repPrep()}catch(e){if(tk!==repTk)return;RD={err:e.message}}view(1);fillEval();if(RD&&RD.src==='sf')sfLoad(tk,f)}
+
+/* ---- repertoire learning: plan sidebar, ranking, Lichess -> Stockfish fallback, labels ---- */
+function planPaint(){const el=$('#planbox'),pn=S.plan&&S.plan.f===R.fen(B.s)&&S.plan.lines&&S.plan.lines.length>=2?S.plan:null,on=pn&&S.v==='rep'&&S.rb;B.arrows=on?pn.arrows:null;
+ if(el)el.innerHTML=on?`<div class="lbl"><span>Plan for ${pn.side}</span><span>LICHESS</span></div><div class="sbx fade">${pn.lines.map(x=>'<div style="margin:4px 0">• '+x+'</div>').join('')}</div>`:'';
+ const k=JSON.stringify(B.arrows||null);if(k!==B._ak){B._ak=k;drawBoard()}}
+const savSan=san=>{const k=R.fromSan(B.s,san);return k&&reps[S.c][R.key(R.make(B.s,k))]?1:0};
+function repPrep(){const a=RD.a,tot=a.white+a.draws+a.black,mine=myTurn(),thr=1/repCover(S.c),side=B.s.t,all=a.moves.map(m=>({...m,t:m.white+m.draws+m.black}));
+ const scr=m=>((side==='w'?m.white:m.black)+m.draws/2)/(m.t||1);let mv;
+ if(mine){const g=Math.max(10,tot*.002);mv=all.filter(m=>m.t>=g).map(m=>({...m,sc:scr(m)})).sort((x,y)=>y.sc-x.sc||y.t-x.t)}
+ else{mv=all.filter(m=>m.t/tot>=thr).sort((x,y)=>y.t-x.t);const ex=all.filter(m=>m.t/tot<thr&&m.t>=30&&scr(m)>=.58).sort((x,y)=>scr(y)-scr(x)).slice(0,2).map(m=>({...m,dg:true}));mv=mv.concat(ex)}
+ RD.mv=mv;RD.src=(tot<100||(mine&&!mv.length))?'sf':'li';RD.ev={};RD.goal=!mine&&RD.src==='li'&&mv.every(m=>m.dg||savSan(m.san))}
+async function sfTop(fen,n,d){const r=await FG.run(fen,d,n);if(!r||!r.lines)return[];const s=R.parse(fen),o=[],L=R.legal(s);for(const k of Object.keys(r.lines).map(Number).sort((x,y)=>x-y)){const l=r.lines[k],m=L.find(x=>uci(x)===l.mv.slice(0,5)||uci(x)===l.mv.slice(0,4));if(m)o.push({san:R.san(s,m,L),cp:l.cp,d:l.d})}return o}
+async function sfLoad(tk,f){try{const L=await sfTop(f,5,12);if(tk!==repTk||!RD)return;RD.sf=L}catch(e){if(tk!==repTk||!RD)return;RD.sf={err:e.message}}view(1)}
+const vGoal=()=>`<h1 style="font-size:26px;margin-top:40px">You've reached your coverage goal</h1><p class="sub">Do you want to keep adding moves, or save your progress?</p>`+act('home','Save these moves')+act('keepadd','Keep adding moves');
+function vSfBody(mine,n){const L=RD.sf;if(!L)return'<p class="dim"><span class="spn"></span> Lichess has too few games here. Asking Stockfish…</p>';
+ if(L.err)return`<div class="cd">STOCKFISH UNAVAILABLE<small>${esc(L.err)}</small></div>`+act('retry','Try again');
+ if(!L.length)return'<p class="sub">No legal moves from this position.</p>';
+ return lbl(mine?'Potential moves':'Best moves according to Stockfish','Eval')+L.map(m=>`<button class="mt" data-a="pick" data-hv="${esc(m.san)}" data-p="${esc(m.san)}" style="grid-template-columns:54px 1fr auto"><span class="mv">${mlabel(n,m.san)}</span><span></span><span class="dim" style="text-align:right">${fe(m.cp)}${mine?'':`<div class="pb" style="margin-left:auto"><i style="width:${savSan(m.san)*100}%"></i></div>`}</span></button>`).join('')}
+const labH=(x,tip,col)=>`<span class="lab" title="${esc(tip)}"${col?` style="color:${col}"`:''}>${x}</span>`;
+function labsHtml(m,mine){const a=RD.a,tot=a.white+a.draws+a.black,t=m.t||m.white+m.draws+m.black,share=t/tot,mover=B.s.t,sc=((mover==='w'?m.white:m.black)+m.draws/2)/(t||1);let o='';
+ if(!mine){if(m.dg)o+=labH('Rare but dangerous','This move is seen in less than 1 in '+repCover(S.c)+' games, but the high win rate for the opposition means you should still prepare for it.');else if(share>=.03&&sc<.44&&t>=50)o+=labH('Common mistake',"This is a bad move that's common at your level, so you should be prepared to punish it.")}
+ else{const k=ugKind('m'),x=k.l.find(y=>y.san===m.san);if(k.tot>=3&&x&&x.n===k.tot)o+=labH('Consistent with your play',`You play this move in ${x.n}/${k.tot} similar positions.`)}
+ return o+`<span class="elab" data-san="${esc(m.san)}"></span>`}
+function paintLabels(){if(!RD||!RD.mv||!RD.ev)return;const mine=myTurn(),sg=B.s.t==='w'?1:-1,rows=RD.mv.slice(0,S.lim).filter(m=>RD.ev[m.san]!=null);if(rows.length<2)return;
+ const v=m=>sg*RD.ev[m.san],best=Math.max(...rows.map(v)),a=RD.a,tot=a.white+a.draws+a.black,mm=RD.m,mmap={};if(mm)for(const x of mm.moves)mmap[x.san]=x.white+x.draws+x.black;
+ const topSc=rows.slice().sort((x,y)=>(y.sc||0)-(x.sc||0))[0],topMs=mm?rows.slice().sort((x,y)=>(mmap[y.san]||0)-(mmap[x.san]||0))[0]:null,srt=rows.map(v).sort((x,y)=>y-x),gap=srt[0]-srt[1];
+ for(const m of rows){const el=document.querySelector(`.elab[data-san="${CSS.escape(m.san)}"]`);if(!el)continue;const loss=best-v(m),share=(m.t||0)/tot;let o='';
+  if(loss>=300)o=labH('??','This move is a blunder.',CL.Blunder.col);else if(loss>=150)o=labH('?','This move is a mistake.',CL.Mistake.col);else if(loss>=70)o=labH('?!','This move is an inaccuracy.',CL.Inaccuracy.col);
+  else if(mine&&loss===0&&rows.length>=3&&gap>=40&&topSc===m&&topMs===m)o=labH('Clear best move','This is the best move according to masters, the computer, and results at your level.');
+  else if(mine&&loss<=30&&share<.02&&(m.t||0)>=10)o=labH('Rare find','A strong move that few players choose (under 2% of games) but the engine rates it near the best.');
+  el.innerHTML=o}}
 let evTk=0;async function fillEval(){const tk=++evTk;if(!RD||!RD.a)return;try{await engine()}catch(e){const n=$('#engn');if(n)n.innerHTML='<b>ENGINE UNAVAILABLE</b> — '+esc(e.message);document.querySelectorAll('.ev').forEach(x=>x.textContent='n/a');return}
- for(const m of RD.a.moves.slice(0,S.lim)){if(tk!==evTk)return;const mv=R.fromSan(B.s,m.san);if(!mv)continue;try{const r=await fgEval(R.fen(R.make(B.s,mv)),10,()=>tk!==evTk);if(!r)return;if(tk!==evTk)return;const el=document.querySelector(`.ev[data-san="${CSS.escape(m.san)}"]`);if(el){el.textContent=fe(r.cp);el.title='Stockfish depth '+r.depth+(r.pv?' · PV '+r.pv:'')}}catch(e){if(tk===evTk){const n=$('#engn');if(n)n.innerHTML='<b>ENGINE UNAVAILABLE</b> — '+esc(e.message);document.querySelectorAll('.ev').forEach(x=>{if(x.textContent==='—')x.textContent='n/a'})}return}}}
+ for(const m of (RD.mv||RD.a.moves).slice(0,S.lim)){if(tk!==evTk)return;const mv=R.fromSan(B.s,m.san);if(!mv)continue;try{const r=await fgEval(R.fen(R.make(B.s,mv)),10,()=>tk!==evTk);if(!r)return;if(tk!==evTk)return;const el=document.querySelector(`.ev[data-san="${CSS.escape(m.san)}"]`);RD.ev=RD.ev||{};RD.ev[m.san]=r.cp;if(el){el.textContent=fe(r.cp);el.title='Stockfish depth '+r.depth+(r.pv?' · PV '+r.pv:'')}paintLabels()}catch(e){if(tk===evTk){const n=$('#engn');if(n)n.innerHTML='<b>ENGINE UNAVAILABLE</b> — '+esc(e.message);document.querySelectorAll('.ev').forEach(x=>{if(x.textContent==='—')x.textContent='n/a'})}return}}}
 function ugKind(kind){const ug=UG&&UG[R.key(B.s)]||{},l=Object.entries(ug).filter(([s])=>s[0]===kind).map(([s,x])=>({san:s.slice(2),...x}));return{l:l.sort((a,b)=>b.n-a.n),tot:l.reduce((q,x)=>q+x.n,0)}}
 function whyline(san,kind){const mv=R.fromSan(B.s,san);if(!mv)return'';let a=purpose(B.s,mv);if(games.length){const k=ugKind(kind),x=k.l.find(y=>y.san===san);a+=!k.tot?'':x?` · Your games: ${x.n} of ${k.tot}`:` · Your games: 0 of ${k.tot}`}return a}
 function saveMove(c,prevS,san,data,pathBefore){const k=R.key(prevS),e=reps[c][k]||(reps[c][k]={fen:R.fen(prevS),sans:[]});if(!e.sans.includes(san))e.sans.push(san);if(pathBefore)e.p=pathBefore;
@@ -567,13 +604,17 @@ function vRep(){const mine=myTurn(),n=S.path.length;let h=`<h1>${!mine?'Choose a
  if(!RD||RD.loading)return h+'<p class="sub">Loading from the Lichess opening database…</p>';
  if(RD.err)return h+`<div class="cd">DATABASE UNAVAILABLE<small>${esc(RD.err)}</small></div>`+act('retry','Try again')+act('home','Back to openings');
  const a=RD.a,tot=a.white+a.draws+a.black,mm=RD.m,mt=mm?mm.white+mm.draws+mm.black:0,mmap={};if(mm)for(const x of mm.moves)mmap[x.san]=x.white+x.draws+x.black;
- const mv=a.moves;if(!mv.length||!tot)return h+'<p class="sub">The database has no games continuing from this position.</p>'+act('home','Back to openings');
+ const fin=()=>{const nk='n:'+R.key(B.s);return lbl('Notes','LOCAL')+`<textarea class="ta" id="nt" placeholder="Add notes for this position">${esc(notes[nk]||'')}</textarea>`+((S.pm&&S.pm.done>0)||(S.path&&S.path.length>0)?act('home','I\'ll finish later, save my progress'):'')};
+ h=h.replace('</h1>',`<span class="srct">${RD.src==='sf'?'from Stockfish (depth 12)':'from Lichess'}</span></h1>`);
+ if(RD.src==='sf')return h+vSfBody(mine,n)+fin();
+ if(RD.goal&&S.keepKey!==R.key(B.s))return vGoal();
+ h+='<div id="planbox"></div>';const mv=RD.mv;if(!mv.length)return h+'<p class="sub">No replies at this position reach your coverage goal.</p>'+fin();
  const lines=mv.slice(0,S.lim),kind=mine?'m':'o',sav=m=>{const k=R.fromSan(B.s,m.san);return k&&reps[S.c][R.key(R.make(B.s,k))]?1:0};
  if(!mine){let cov=0,cw=0;for(const m of mv){const t=m.white+m.draws+m.black;cw+=t;cov+=sav(m)*t}const pc=Math.round(cov/(cw||1)*100);S.cov=pc;
   h+=lbl("Opponent's move",'Expected in');
-  h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black;return`<button class="mt" data-a="pick" data-hv="${esc(m.san)}" data-p="${esc(m.san)}" style="grid-template-columns:54px 1fr auto"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}</span><div class="dim">${esc(whyline(m.san,kind))}</div></span><span class="dim" style="text-align:right">1 in ${Math.max(1,Math.round(tot/t))} games<div class="pb" style="margin-left:auto"><i style="width:${sav(m)*100}%"></i></div></span></button>`}).join('')}
+  h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black;return`<button class="mt" data-a="pick" data-hv="${esc(m.san)}" data-p="${esc(m.san)}" style="grid-template-columns:54px 1fr auto"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}${labsHtml(m,mine)}</span><div class="dim">${esc(whyline(m.san,kind))}</div></span><span class="dim" style="text-align:right">1 in ${Math.max(1,Math.round(tot/t))} games<div class="pb" style="margin-left:auto"><i style="width:${sav(m)*100}%"></i></div></span></button>`}).join('')}
  else{h+=`<div class="hdrg"><span>${n?'Potential moves':'Your first move'}</span><span>Masters</span><span>Evaluation</span><span>Database results</span></div>`;
-  h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black,cur=(reps[S.c][R.key(B.s)]||{sans:[]}).sans.includes(m.san);return`<button class="mt g5" data-a="pick" data-hv="${esc(m.san)}" data-p="${esc(m.san)}"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}${cur?'<span class="tag">SAVED</span>':''}</span><div class="dim">${esc(whyline(m.san,kind))}</div></span><span class="dim">${mt&&mmap[m.san]?pct(mmap[m.san],mt)+'%':'—'}</span><span class="dim ev" data-san="${esc(m.san)}">—</span>${rbar(m.white,m.draws,m.black).replace('150px','130px')}</button>`}).join('')+`<p class="dim" id="engn"></p>`}
+  h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black,cur=(reps[S.c][R.key(B.s)]||{sans:[]}).sans.includes(m.san);return`<button class="mt g5" data-a="pick" data-hv="${esc(m.san)}" data-p="${esc(m.san)}"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}${labsHtml(m,mine)}${cur?'<span class="tag">SAVED</span>':''}</span><div class="dim">${esc(whyline(m.san,kind))}</div></span><span class="dim">${mt&&mmap[m.san]?pct(mmap[m.san],mt)+'%':'—'}</span><span class="dim ev" data-san="${esc(m.san)}">—</span>${rbar(m.white,m.draws,m.black).replace('150px','130px')}</button>`}).join('')+`<p class="dim" id="engn"></p>`}
  if(mv.length>S.lim)h+=act('more','Show more');
  const nk='n:'+R.key(B.s);h+=lbl('Notes','LOCAL')+`<textarea class="ta" id="nt" placeholder="Add notes for this position">${esc(notes[nk]||'')}</textarea>`;
  return h+((S.pm&&S.pm.done>0)||(S.path&&S.path.length>0)?act('home','I\'ll finish later, save my progress'):'')}
@@ -596,47 +637,100 @@ function reachable(c){const E=reps[c],ok=new Set();function walk(s,d){const k=R.
 const pItems=()=>['w','b','t'].flatMap(c=>Object.entries(reps[c]).filter(([k,e])=>e.sans&&e.sans.length).map(([k,e])=>({c:c==='t'?e.fen.split(' ')[1]:c,k,e,src:c})));
 const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const nmKey=e=>shortOpen(e.nm||'')==='Unknown opening'?'Unnamed':shortOpen(e.nm);
-function qFor(mode,key){const it=pItems(),now=Date.now();return shuf(mode==='soon'?it.filter(x=>!x.e.due||x.e.due<=now+864e5):mode==='wrong'?it.filter(x=>x.e.w>0):mode==='open'?it.filter(x=>nmKey(x.e)===key):mode==='repo'?it.filter(x=>x.src===key&&(!x.e.due||x.e.due<=now)):it)}
+const pid=x=>x.src+'|'+x.k,pScope=()=>pItems().filter(x=>!S.psc||x.src===S.psc),sl=ms=>new Promise(r=>setTimeout(r,ms));
+function qFor(mode,key){const it=pScope(),now=Date.now(),g=cfg.goal||10,due=x=>!x.e.due||x.e.due<=now;
+ if(mode==='rec'){const n=it.length,sc=it.map((x,i)=>({x,s:(x.e.w>0?3:0)+(!x.e.pr?2:0)+(due(x)?1:0)+(i>=n-10?1:0)+(!x.e.lp||now-x.e.lp>2592e5?1:0)+Math.random()*.9})).sort((a,b)=>b.s-a.s),top=sc.filter(y=>y.s>=1);return shuf((top.length?top:sc).slice(0,g).map(y=>y.x))}
+ return shuf(mode==='due'||mode==='repo'?it.filter(due):mode==='soon'?it.filter(x=>!x.e.due||x.e.due<=now+864e5):mode==='wrong'?it.filter(x=>x.e.w>0):mode==='open'?it.filter(x=>nmKey(x.e)===key):it)}
 function pchoose(){S.v='pchoose';B.on=null;B.lock=true;S.opPv=null;S.pOpen=false;setPos(R.START,'w',true);view()}
-function vPChoose(){const it=pItems(),now=Date.now(),soon=it.filter(x=>!x.e.due||x.e.due<=now+864e5).length,wrong=it.filter(x=>x.e.w>0).length,mast=it.length?Math.round(it.filter(x=>(x.e.int||0)>=21).length/it.length*1000)/10:0;
+
+const psClear=()=>{if(cfg.psess){delete cfg.psess;sv()}};
+function psSave(P,skipCur){const ids=((skipCur||!P.it)?[]:[P.it]).concat(P.q).map(pid);if(!ids.length)return psClear();cfg.psess={psc:S.psc||null,mode:P.mode,key:P.key,ids,n:P.n,done:P.done,ok:P.ok,bad:P.bad,t:Date.now()};sv()}
+const psAvail=()=>{const s=cfg.psess;if(!s||(s.psc||null)!==(S.psc||null))return null;const have=new Set(pScope().map(pid)),ids=s.ids.filter(i=>have.has(i));return ids.length?{...s,ids}:null};
+function vPChoose(){const it=pScope(),now=Date.now(),rec=qFor('rec').length,due=it.filter(x=>!x.e.due||x.e.due<=now).length,wrong=it.filter(x=>x.e.w>0).length,mast=it.length?Math.round(it.filter(x=>(x.e.int||0)>=21).length/it.length*1000)/10:0,rs=psAvail();
  let names={};it.forEach(x=>{const k=nmKey(x.e);names[k]=(names[k]||0)+1});
- return`<h1 style="font-size:28px;margin:40px 0 22px">What do you want to practice?</h1><div class="hrow"><span>${mast}% mastered</span></div><div class="bar"><i style="width:${mast}%;background:var(--am)"></i></div><div style="height:26px"></div>`
- +act('ps','Moves that will be due soon',soon+' moves','soon')+act('ps','Just the moves I often get wrong',wrong+' moves','wrong')+act('ps','All moves, even if they\'re not due',it.length+' moves','all')+act('ppo','A specific opening…')
+ return`<h1 style="font-size:28px;margin:40px 0 ${S.psc?6:22}px">What do you want to practice?</h1>`+(S.psc?`<p class="sub" style="margin-top:0">${esc(repName(S.psc))}</p>`:'')
+ +(rs?`<button class="act res" data-a="pres"><span>Continue your practice session</span><span class="r">${rs.ids.length} move${rs.ids.length>1?'s':''} left</span></button><div style="height:14px"></div>`:'')
+ +`<div class="hrow"><span>${mast}% mastered</span></div><div class="bar"><i style="width:${mast}%;background:var(--am)"></i></div><div style="height:26px"></div>`
+ +act('ps','Recommended moves',rec+' moves','rec')+act('ps','Everything due for review',due+' moves','due')+act('ps','Just the moves I get wrong',wrong+' moves','wrong')+act('ps','All moves, even if they\'re not due',it.length+' moves','all')+act('ppo','A specific opening…')
  +(S.pOpen?`<div class="fade">${Object.entries(names).sort((a,b)=>b[1]-a[1]).map(([k,n])=>act('pso',esc(k),n+' moves',k)).join('')||'<p class="dim">No saved moves yet.</p>'}</div>`:'')}
-function startPrac(mode,key){let q=qFor(mode,key);if(mode==='soon')q=q.slice(0,cfg.goal||10);S.pm={mode,key,q,n:q.length,done:0,ok:0,bad:0,it:null,st:'think'};B.on=pracAns;nextPrac(true)}
-function nextPrac(first){const P=S.pm;S.v='prac';S.opPv=null;S.plan=null;clearBadge();if(!P.n){P.empty=1;B.on=null;setPos(R.START,'w',true);view();return}
- if(!P.q.length){P.lastIt=P.it;return startBonus()}
- P.it=P.q.shift();P.st='think';P.failed=false;P.msg=false;P.san=null;P.tries=0;setPos(P.it.e.fen,P.it.c,false);B.on=pracAns;view(first?0:1)}
-function pracAns(){const P=S.pm,it=P.it,e=it.e,h=B.hist[B.hist.length-1],san=h.san,ok=e.sans.includes(san);P.lastTry=h;const book=false;liveCls(h.s,h.m,book);B.lock=true;
- if(ok){if(!P.failed){P.ok++;e.int=Math.max(1,Math.round((e.int||0)*2.3));e.due=Date.now()+e.int*864e5}P.done++;P.st='ok';P.san=san;sv();view(1)}
- else{if(!P.failed){P.failed=true;P.bad++;e.int=0;e.due=Date.now()+6e5;e.w=(e.w||0)+1;sv()}P.msg=true;P.tries++;view(1);const pm=P;
-  setTimeout(()=>{if(S.pm!==pm||S.v!=='prac'||pm.it!==it||(pm.st!=='think'&&pm.st!=='hint'))return;const x=B.hist.pop();if(!x)return;B.s=x.s;B.keys=x.k;B.last=x.l;B.sel=null;B.lg=[];drawBoard({f:x.m.t,t:x.m.f});B.lock=false;clearBadge()},900)}}
+function startPrac(mode,key,rs){let q;if(rs){const m=new Map(pScope().map(x=>[pid(x),x]));q=rs.ids.map(i=>m.get(i)).filter(Boolean)}else q=qFor(mode,key);
+ S.pm={mode,key,q,n:rs?rs.n:q.length,done:rs?rs.done:0,ok:rs?rs.ok:0,bad:rs?rs.bad:0,it:null,st:'think',lines:{},tk:0};B.on=pracAns;nextPrac(true)}
+function pFinish(){const P=S.pm;P.fin=1;P.it=null;psClear();B.on=null;view()}
+function nextPrac(first){const P=S.pm;S.v='prac';S.opPv=null;S.plan=null;clearBadge();B.arrow=null;B.hintSq=null;P.tk++;
+ if(!P.n){P.empty=1;B.on=null;setPos(R.START,'w',true);view();return}
+ if(!P.q.length){if(!P.lastIt||P.midBonus||Math.random()<.5)return pFinish();return startBonus()}
+ const it=P.it=P.q.shift();P.st='setup';P.failed=false;P.msg=false;P.demoMsg='';P.san=null;P.tries=0;P.first=!it.e.pr;P.todo=it.e.sans.slice();P.played=[];P.hintd=false;psSave(P);B.on=pracAns;B.lock=true;
+ if(it.cont){view(first?0:1);const tk=P.tk;(async()=>{await sl(AM(300)+250);if(!pAlive(P,tk))return;const m=R.fromSan(B.s,it.opp);if(m)play(m,'opp');await sl(AM(250)+200);if(!pAlive(P,tk))return;pReady(P)})();return}
+ setPos(R.START,it.c,true);B.lock=true;view(first?0:1);pSetup(P,it)}
+const pAlive=(P,tk)=>S.pm===P&&S.v==='prac'&&P.tk===tk;
+async function pSetup(P,it){const tk=P.tk,path=it.e.p||[];for(const san of path){await sl(AM(300)+260);if(!pAlive(P,tk))return;const m=R.fromSan(B.s,san);if(!m)break;play(m,B.s.t===it.c?'self':'opp')}
+ if(R.key(B.s)!==R.key(R.parse(it.e.fen)))setPos(it.e.fen,it.c,true);pReady(P)}
+function pArrow(P){const m=R.fromSan(B.s,P.todo[0]);B.arrow=m?{f:m.f,t:m.t}:null;drawBoard()}
+function pReady(P){P.base=B.hist.length;B.lock=false;P.st=P.first?'hint':'think';if(P.first)pArrow(P);view(1)}
+const pPause=(P,note)=>{const c=cfg.pause;return c==='always'||(c==='wrong'&&P.failed)||(c==='note'&&note)};
+const pLeaf=it=>{try{const e=it.e,p=e.p||[],pre=p.concat(e.sans[0]);return!Object.values(reps[it.src]||{}).some(x=>x!==e&&x.p&&x.p.length>p.length&&pre.every((s,i)=>x.p[i]===s))}catch(e){return false}};
+function pracAns(){const P=S.pm,it=P.it,e=it.e,h=B.hist[B.hist.length-1],san=h.san;B.arrow=null;B.hintSq=null;P.lastTry=h;B.lock=true;
+ if(P.todo.includes(san)){liveCls(h.s,h.m,false);P.todo=P.todo.filter(x=>x!==san);P.played.push(san);P.msg=false;P.san=san;const mm=R.fromSan(h.s,san),pu=mm?purpose(h.s,mm):'';
+  if(P.todo.length){P.st='more';view(1);const tk=P.tk;if(!pPause(P,true))setTimeout(()=>{if(pAlive(P,tk)&&P.st==='more')ACT.pmore()},AM(500)+1100);return}
+  if(!P.failed){P.ok++;e.int=Math.max(1,Math.round((e.int||0)*2.3));e.due=Date.now()+e.int*864e5}e.pr=(e.pr||0)+1;e.lp=Date.now();P.done++;P.lastIt=it;P.st='ok';
+  if(cfg.pmode&&cfg.pmode!=='single'){const key=(e.p||[]).join(' ');if(cfg.pmode==='every'||!P.lines[key]){const L=(e.p||[]).length,pre=(e.p||[]).concat(san),kids=pScope().filter(x=>x.src===it.src&&x.e.p&&x.e.p.length===L+2&&pre.every((s,i)=>x.e.p[i]===s));if(kids.length){const k=kids[Math.floor(Math.random()*kids.length)];P.lines[key]=1;k.cont=true;k.opp=k.e.p[L+1];const n0=P.q.length;P.q=P.q.filter(x=>pid(x)!==pid(k));if(P.q.length===n0)P.n++;P.q.unshift(k)}}}
+  psSave(P,true);sv();view(1);const tk=P.tk;if(!pPause(P,!!pu))setTimeout(()=>{if(pAlive(P,tk)&&P.st==='ok')ACT.pnext()},AM(500)+500);return}
+ if(!P.failed){P.failed=true;P.bad++;e.int=0;e.due=Date.now()+6e5;e.w=(e.w||0)+1;sv()}P.msg=true;P.tries++;P.demoMsg='';view(1);const tk=P.tk;
+ wrongDemo(h,()=>pAlive(P,tk)&&(P.st==='think'||P.st==='hint'),m=>{P.demoMsg=m;if(pAlive(P,tk))view(1)}).then(()=>{if(pAlive(P,tk)&&(P.st==='think'||P.st==='hint')){B.lock=false;if(P.first&&P.st==='hint')pArrow(P);view(1)}})}
+const PNAME={p:'pawn',n:'knight',b:'bishop',r:'rook',q:'queen',k:'king'};
+function popAnim(){const x=B.hist.pop();if(!x)return;B.s=x.s;B.keys=x.k;B.last=x.l;B.sel=null;B.lg=[];drawBoard({f:x.m.t,t:x.m.f})}
+/* shows WHY the move just played is wrong, on the board, then restores the position (Stockfish-derived; nothing invented) */
+async function wrongDemo(h,alive,say){const base=B.hist.length-1;
+ const restore=async()=>{if(!alive())return;B.arrow=null;while(B.hist.length>base+1){popAnim();await sl(AM(260)+200);if(!alive())return}if(B.hist.length>base){popAnim();await sl(AM(240)+120)}B.arrow=null;B.hintSq=null;drawBoard();clearBadge()};
+ try{const n=R.make(h.s,h.m);if(!R.legal(n).length){say('That move is incorrect. Try again.');await sl(900);await restore();return}
+  say('Checking why that move is wrong…');
+  const[r0,r1]=await Promise.all([fgEval(R.fen(h.s),10),fgEval(R.fen(n),10)]);if(!alive())return;
+  const sg=h.s.t==='w'?1:-1,loss=r0&&r1?Math.max(0,sg*(r0.cp-r1.cp)):0,bm=r1&&r1.best?R.legal(n).find(x=>uci(x)===r1.best.slice(0,5)||uci(x)===r1.best.slice(0,4)):null;
+  if(r0&&r1){const c=classify({s:h.s,m:h.m,e0:r0.cp,e1:r1.cp,best:r0.best,e2:null,book:false,prevLoss:0}).c;badge(c)}
+  if(bm&&loss>=60){const sanR=R.san(n,bm),cp=bm.cap?n.b[bm.t]:null;B.arrow={f:bm.f,t:bm.t};drawBoard();say(`Stockfish's answer: ${sanR}`);await sl(AM(500)+900);if(!alive())return;
+   play(bm,'opp');B.arrow=null;const mate=!R.legal(B.s).length&&R.check(B.s);
+   const why=mate?`${sanR} is checkmate.`:cp?`${sanR} captures your ${PNAME[cp.toLowerCase()]||'piece'}${bm.t===h.m.t?' — the piece you just moved was hanging':''}.`:`${sanR} punishes this move (evaluation swings by ${(loss/100).toFixed(1)} pawns against you).`;
+   say(why);await sl(1700);if(!alive())return;await restore();say(why+' Try again.')}
+  else{say("That move isn't the one saved for this position. Try again.");await sl(1000);await restore()}
+ }catch(e){await restore()}}
 function hintText(P){const e=P.it.e,s=R.parse(e.fen),m=R.fromSan(s,e.sans[0]);const t=m?purpose(s,m,true):'';return t||'Think about development, the center and king safety.'}
+
 function vPrac(){const P=S.pm;if(P.empty)return`<h1>${pItems().length?'Nothing to practice here':'No lines yet'}</h1><p class="sub">${pItems().length?'This selection has no moves right now.':'Build a repertoire first. Lines you choose are saved here and practiced offline.'}</p>`+act('back','Back');
  if(P.fin)return`<h1>Practice complete</h1><p class="sub">${P.ok} correct on the first try · ${P.bad} missed.</p>`+act('pback','Back to practice');
  if(P.st==='bonus')return vBonus();
- const it=P.it,s=R.parse(it.e.fen),num=s.fm+(s.t==='w'?'.':'...'),s_=P.st,rem=P.q.length+(s_==='think'||s_==='hint'?1:0);
- let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:12px"><h1 style="margin:0">Practicing moves</h1><div class="cnt"><span>${rem} Due <i class="clk"></i></span><span>${P.ok}<i class="dot" style="background:#7bc65c">✓</i></span><span>${P.bad}<i class="dot" style="background:#e0716a">✕</i></span></div></div><p class="sub" style="margin-top:8px">Play the correct move on the board.</p>`;
- if(s_==='ok'||s_==='shown'){const m=R.fromSan(s,P.san),pu=m?purpose(s,m):'';h+=`<div class="prow fade"><b class="n">${num}</b><span><b>${esc(P.san)}</b>${pu?`<div class="h" style="margin-top:6px">${esc(pu)}</div>`:''}</span></div>`;
+ const it=P.it,s=R.parse(it.e.fen),num=s.fm+(s.t==='w'?'.':'...'),s_=P.st,rem=P.q.length+(['think','hint','setup','more'].includes(s_)?1:0),multi=it.e.sans.length>1;
+ let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:12px"><h1 style="margin:0">Practicing moves</h1><div class="cnt"><span>${rem} Due <i class="clk"></i></span><span>${P.ok}<i class="dot" style="background:#7bc65c">✓</i></span><span>${P.bad}<i class="dot" style="background:#e0716a">✕</i></span></div></div>`;
+ h+=`<p class="sub" style="margin-top:8px">${s_==='setup'?'Setting up the position…':multi?`You have ${it.e.sans.length} saved moves for this position. Play them all on the board.`:'Play the correct move on the board.'}</p>`;
+ if(s_==='setup')return h;
+ if(s_==='ok'||s_==='shown'||s_==='more'){const m=R.fromSan(s,P.san),pu=m?purpose(s,m):'';h+=`<div class="prow fade"><b class="n">${num}</b><span><b>${esc(P.san)}</b>${pu?`<div class="h" style="margin-top:6px">${esc(pu)}</div>`:''}</span></div>`;
   if(s_==='shown')h+=lbl('Your saved move'+(it.e.sans.length>1?'s':''))+it.e.sans.map(x=>`<button class="mt" data-hv="${esc(x)}" style="grid-template-columns:1fr;cursor:default"><span class="mv">${num} ${esc(x)}</span></button>`).join('');
-  return h+act('pnext','Next position')}
- h+=`<div class="prow"><b class="n">${num}</b><span class="u" style="font-size:19px;color:var(--mu)">_</span>${s_==='hint'?`<span class="h fade">${esc(hintText(P))}</span>`:''}</div>`;
- if(P.msg)h+='<p class="err">That move is incorrect. Try again.</p>';
- return h+(s_==='think'?`<button class="pbtn" data-a="phint">I don't know, give me a hint</button>`:`<button class="pbtn fade" data-a="pshow">I don't know, show me the answer</button>`)}
+  return h+act(s_==='more'?'pmore':'pnext',s_==='more'?'Next saved move':'Next position')}
+ const first=P.first&&s_==='hint';
+ if(first){const m=R.fromSan(B.s,P.todo[0]),pu=m?purpose(B.s,m):'';h+=`<div class="prow fade"><b class="n">${num}</b><span><b>${esc(P.todo[0])}</b>${pu?`<div class="h" style="margin-top:6px">${esc(pu)}</div>`:''}<div class="ftip" data-tip="We're showing you a reminder arrow because this is your first time practicing this move.">First practice</div></span></div>`}
+ h+=`<div class="prow"><b class="n">${num}</b><span class="u" style="font-size:19px;color:var(--mu)">_</span>${!first&&s_==='hint'?`<span class="h fade">${esc(hintText(P))}</span>`:''}</div>`;
+ if(P.msg)h+=`<p class="err">${esc(P.demoMsg||'That move is incorrect. Try again.')}</p>`;
+ if(first)h+=`<button class="pbtn" data-a="pskip">Skip first practice</button><button class="pbtn" data-a="pbuild">View in Build Mode</button>`;
+ else h+=(s_==='think'?`<button class="pbtn" data-a="phint">I don't know, give me a hint</button>`:`<button class="pbtn fade" data-a="pshow">I don't know, show me the answer</button>`);
+ return h+`<button class="pbtn" data-a="pexit">Exit Practice</button>`}
 const bestSanFrom=(s,u)=>{if(!u||u.length<4)return null;const m=R.legal(s).find(x=>uci(x)===u.slice(0,5)||uci(x)===u.slice(0,4));return m?moveSan(s,m):null};
-async function startBonus(){const P=S.pm,L=P.lastIt;P.st='bonus';P.bonus={load:1};view();if(!L){P.bonus={err:'No position available.'};return view()}
+async function startBonus(){const P=S.pm,L=P.lastIt;P.st='bonus';P.bonus={load:1,tries:0};B.lock=true;view();if(!L){P.bonus={err:'No position available.'};return view()}
  try{const s0=R.parse(L.e.fen),m=R.fromSan(s0,L.e.sans[0]);if(!m)throw new Error('Could not read the last saved move.');const s1=R.make(s0,m),j=await explorer('lichess',R.fen(s1)),top=j.moves[0];if(!top)throw new Error('The database has no continuation after your last line.');
   const m2=R.fromSan(s1,top.san),s2=R.make(s1,m2);if(!R.legal(s2).length)throw new Error('The line ends the game.');const pl=await plansFor(R.fen(s2)).catch(()=>null);
-  setPos(R.fen(s2),L.c,false);B.on=bonusAns;P.bonus={fen:R.fen(s2),reply:top.san,plan:pl,c:L.c};view()}catch(e){P.bonus={err:e.message};view()}}
-async function bonusAns(){const P=S.pm,b=P.bonus,h=B.hist[B.hist.length-1];B.lock=true;b.mine=h.san;b.chk=1;view(1);
- try{const r0=await fgEval(b.fen,12),n=R.make(h.s,h.m),r1=R.legal(n).length?await fgEval(R.fen(n),12):{cp:R.check(n)?(n.t==='w'?-30000:30000):0},o=classify({s:h.s,m:h.m,e0:r0.cp,e1:r1.cp,best:r0.best,e2:null,book:false,prevLoss:0});b.res=o;b.best=bestSanFrom(h.s,r0.best);b.ok=o.loss<=5;badge(o.c)}catch(e){b.err2=e.message}b.chk=0;view(1)}
+  setPos(R.fen(s2),L.c,false);B.on=bonusAns;B.lock=false;P.bonus={fen:R.fen(s2),reply:top.san,plan:pl,c:L.c,tries:0};view()}catch(e){P.bonus={err:e.message};view()}}
+async function bonusAns(){const P=S.pm,b=P.bonus,h=B.hist[B.hist.length-1];B.lock=true;b.mine=h.san;b.chk=1;b.res=null;b.msg='';view(1);
+ try{const r0=await fgEval(b.fen,12),n=R.make(h.s,h.m),r1=R.legal(n).length?await fgEval(R.fen(n),12):{cp:R.check(n)?(n.t==='w'?-30000:30000):0},o=classify({s:h.s,m:h.m,e0:r0.cp,e1:r1.cp,best:r0.best,e2:null,book:false,prevLoss:0});b.res=o;b.best=bestSanFrom(h.s,r0.best);b.ok=o.loss<=5;badge(o.c)}catch(e){b.err2=e.message;b.chk=0;view(1);return}
+ b.chk=0;if(b.ok){b.done=1;view(1);return}
+ b.tries++;if(b.tries>=3){b.done=1;b.fail=1;view(1);return}
+ view(1);const alive=()=>S.pm===P&&S.v==='prac'&&P.st==='bonus'&&P.bonus===b;await wrongDemo(h,alive,m=>{b.msg=m;if(alive())view(1)});if(!alive())return;b.res=null;B.lock=false;view(1)}
 function vBonus(){const b=S.pm.bonus;let h='<h1>Bonus move</h1>';if(b.load)return h+'<p class="sub"><span class="spn"></span> Preparing a position from your last line…</p>';
- if(b.err)return h+`<div class="cd">BONUS UNAVAILABLE<small>${esc(b.err)}</small></div>`+act('bfin','Finish practice');
- h+=`<p class="sub">Your line continued with ${esc(b.reply)} (most played in the Lichess database). Apply what you have learned and play a good move.</p>`;
+ if(b.err)return h+`<div class="cd">BONUS UNAVAILABLE<small>${esc(b.err)}</small></div>`+act('bfin','Continue');
+ h+=`<p class="sub">This is a bonus move beyond your learned repertoire. Your line continued with ${esc(b.reply)}. Choose what you think is best — ${b.done?'':`attempt ${Math.min(3,b.tries+1)} of 3`}.</p>`;
  if(b.plan)h+=lbl('Plans for '+b.plan.side+' in this position','LICHESS DATABASE')+'<div class="sbx fade">'+b.plan.lines.map(x=>'<div style="margin:4px 0">• '+x+'</div>').join('')+'</div>';
  if(b.chk)return h+'<p class="dim"><span class="spn"></span> Checking your move with Stockfish…</p>';
- if(b.err2)return h+`<p class="err">${esc(b.err2)}</p>`+act('bfin','Finish practice');
- if(b.res)return h+`<div class="cd fade">${cic(b.res.c,20)} ${esc(b.mine)} is ${b.res.c}.<small>Stockfish depth 12${b.best&&b.res.loss>5?' preferred '+esc(b.best):''}.</small></div>`+act('bfin','Finish practice');
+ if(b.err2)return h+`<p class="err">${esc(b.err2)}</p>`+act('bfin','Continue');
+ if(b.done&&b.ok)return h+`<div class="cd fade">${cic(b.res.c,20)} ${esc(b.mine)} is ${b.res.c}.<small>Stockfish depth 12.</small></div>`+act('bfin','Continue');
+ if(b.done&&b.fail)return h+`<div class="cd fade">${cic(b.res.c,20)} ${esc(b.mine)} is ${b.res.c}.<small>Out of attempts${b.best?' — Stockfish preferred '+esc(b.best):''}.</small></div>`+act('bfin','Continue');
+ if(b.tries)h+=`<p class="err">${esc(b.msg||'Not quite.')} Attempt ${b.tries} of 3 used.</p>`;
  return h+'<p class="dim">Play your move on the board.</p>'}
 /* ---- home / accounts / rating / settings ---- */
 const omCount=g=>{const rv=review(g);if(!rv)return 0;let n=0;for(let i=0;i<Math.min(20,rv.cl.length);i++)if((i%2===0)===(g.col==='w')&&['Mistake','Blunder','Miss','Missed win'].includes(rv.cl[i]))n++;return n};
@@ -842,13 +936,17 @@ const mgPOV=(ev,k)=>{const u=k%2?1:-1;return u*(ev[k]-ev[k-1])};
 async function mgEval(s){if(!R.legal(s).length)return R.check(s)?(s.t==='w'?-30000:30000):0;const r=await fgEval(R.fen(s),10);return r?r.cp:null}
 function mgTarget(){if(S.mgOver){const t=S.mgOver;S.mgOver=null;return t}
  if(S.pm&&S.pm.it&&S.pm.it.e&&S.pm.it.e.fen){const e=S.pm.it.e;return{name:e.nm||'your opening',col:S.c,prefix:(e.p||[]).concat(e.sans[0]||[])}}
+ {const its=pItems().filter(x=>x.src!=='t');if(its.length){const by={};its.forEach(x=>{(by[nmKey(x.e)]=by[nmKey(x.e)]||[]).push(x)});const ks=Object.keys(by),k=ks[Math.floor(Math.random()*ks.length)],it=by[k][Math.floor(Math.random()*by[k].length)],e=it.e;return{name:e.nm||'your repertoire',col:it.c,prefix:(e.p||[]).concat(e.sans[0]||[])}}}
  const G=games.length?opGroups(insGames()):[];if(G.length){const w=G[G.length-1];return{name:w.open,col:w.col,prefix:w.prefix}}
  const it=pItems().filter(x=>x.src!=='t')[0];if(it){const e=it.e;return{name:e.nm||'your repertoire',col:it.c,prefix:(e.p||[]).concat(e.sans[0]||[])}}return null}
 const mgSrcs=()=>cfg.mgsrc==='masters'?['masters']:cfg.mgsrc==='online'?['lichess']:(Math.random()<.5?['masters','lichess']:['lichess','masters']);
+async function mgList(src,fen){const tok=cfg.token?{headers:{Authorization:'Bearer '+cfg.token}}:undefined,f=encodeURIComponent(fen);
+ if(src==='masters'){const eras=shuf([[1850,1949],[1950,1979],[1980,1999],[2000,2012],[2013,2035]]);let acc=[];for(const[a,b]of eras){try{const j=await(await http(`https://explorer.lichess.ovh/masters?fen=${f}&moves=0&topGames=15&since=${a}&until=${b}`,tok)).json();if(j.topGames&&j.topGames.length)acc=acc.concat(j.topGames)}catch(e){}if(acc.length>=12)break;await sl(120)}return acc}
+ const j=await(await http(`https://explorer.lichess.ovh/lichess?variant=standard&fen=${f}&moves=0&topGames=15&recentGames=0&ratings=2200,2500&speeds=blitz,rapid,classical`,tok)).json();return j.topGames||[]}
 async function mgFetch(id,src){const u=src==='masters'?'https://explorer.lichess.ovh/masters/pgn/'+id:'https://lichess.org/game/export/'+id+'?evals=0&clocks=0';return(await http(u)).text()}
 async function mgFind(t){const used=new Set((cfg.mgHist||[]).map(x=>x.id));let tried=0;
  for(let n=t.prefix.length;n>=0&&tried<8;n--,tried++){let s=R.parse(R.START);for(let i=0;i<n;i++){const m=R.fromSan(s,t.prefix[i]);if(!m)break;s=R.make(s,m)}const fen=R.fen(s),pos=R.key(s);
-  for(const src of mgSrcs()){let j;try{j=await explorer(src,fen,4)}catch(e){continue}const tg=(j.topGames||j.recentGames||[]).slice().sort((a,b)=>(used.has(a.id)?1:0)-(used.has(b.id)?1:0)||Math.random()-.5);
+  for(const src of mgSrcs()){let tg0;try{tg0=await mgList(src,fen)}catch(e){continue}const tg=tg0.slice().sort((a,b)=>(used.has(a.id)?1:0)-(used.has(b.id)?1:0)||Math.random()-.5);
    for(const x of tg){let txt;try{txt=await mgFetch(x.id,src)}catch(e){continue}const mv=parseMoves(txt);if(mv.length<12)continue;const tag=k=>(txt.match(new RegExp('\\['+k+' "([^"]*)"'))||[])[1];let s2=R.parse(R.START),ply=R.key(s2)===pos?0:-1;for(let i=0;i<mv.length&&ply<0;i++){const m=R.fromSan(s2,mv[i]);if(!m)break;s2=R.make(s2,m);if(R.key(s2)===pos)ply=i+1}if(ply<0)continue;
     return{id:x.id,src,mv,k0:ply,w:tag('White')||'White',b:tag('Black')||'Black',we:tag('WhiteElo'),be:tag('BlackElo'),y:(tag('Date')||'').slice(0,4)||x.year||'',ev:tag('Event')||'',res:tag('Result')||'*',name:t.name,col:t.col,prefix:t.prefix}}}}
  return null}
@@ -860,7 +958,20 @@ function mgOpen(g){S.mg={g,k:g.k0,ev:{},msg:'',dev:null,end:0,lst:0};cfg.mgHist=
 function mgBoard(){const m=S.mg;setPos(R.START,m.g.col,false);B.on=mgMove;B.lock=false;for(let i=0;i<m.k;i++){const mv=R.fromSan(B.s,m.g.mv[i]);if(!mv)break;play(mv,'opp',true)}drawBoard()}
 async function mgEv(k){const m=S.mg;if(!m||m.ev[k]!=null)return;let s=R.parse(R.START);for(let i=0;i<k;i++){const mv=R.fromSan(s,m.g.mv[i]);if(!mv)return;s=R.make(s,mv)}try{if(k>0&&m.ev[k-1]==null)await mgEv(k-1);const cp=await mgEval(s);if(cp==null||S.mg!==m)return;m.ev[k]=cp;if(S.v==='model')view(1)}catch(e){}}
 function mgWhy(k){const m=S.mg,g=m.g,s=R.parse(R.START);let st=s;for(let i=0;i<k-1;i++)st=R.make(st,R.fromSan(st,g.mv[i]));const mv=R.fromSan(st,g.mv[k-1]);if(!mv)return'';const who=st.t==='w'?'White':'Black',base=purpose(st,mv,true)||'',cap=mv.cap?' It captures material.':'';let t=base?base.replace(/[.\s]+$/,'')+'.':'';t+=cap;const ev=m.ev;if(ev[k]!=null&&ev[k-1]!=null){const d=(st.t==='w'?1:-1)*(ev[k]-ev[k-1]);if(d>=150)t+=` This is a key moment: it improves ${who}'s evaluation from ${fe(ev[k-1])} to ${fe(ev[k])}.`;else if(d<=-150)t+=` This is a key moment: it hurts ${who}, moving the evaluation from ${fe(ev[k-1])} to ${fe(ev[k])}.`}return t.trim()}
-function mgSay(k){const g=S.mg.g,mn=((k-1)>>1)+1,lab=mn+((k-1)%2?'...':'.')+' '+g.mv[k-1];S.mg.msg=`<b>Understanding ${esc(lab)}:</b><div class="mgx">${esc(mgWhy(k)||'A standard move in this position.')}</div>`}
+function mgSay(k){const g=S.mg.g,mn=((k-1)>>1)+1,lab=mn+((k-1)%2?'...':'.')+' '+g.mv[k-1];S.mg.msg=`<b>Understanding ${esc(lab)}:</b><div class="mgx">${esc(mgWhy(k)||'A standard move in this position.')}</div>`;mgCrit(k)}
+const mgLab=(k,san)=>(((k-1)>>1)+1)+((k-1)%2?'...':'.')+' '+san;
+async function mgCrit(k){const m=S.mg;if(!m||k<1)return;m.cd=m.cd||{};if(m.cd[k])return;m.cd[k]=1;
+ try{await mgEv(k);if(S.mg!==m||m.ev[k]==null||m.ev[k-1]==null)return;const g=m.g;let st=R.parse(R.START);for(let i=0;i<k-1;i++)st=R.make(st,R.fromSan(st,g.mv[i]));const mv=R.fromSan(st,g.mv[k-1]);if(!mv)return;
+  const u=st.t==='w'?1:-1,d=u*(m.ev[k]-m.ev[k-1]);if(Math.abs(d)<90)return;
+  const L=await sfTop(R.fen(st),3,10);if(S.mg!==m||!L.length)return;const san=g.mv[k-1],who=st.t==='w'?'White':'Black',top=L[0],pl=L.find(x=>x.san===san),ploss=pl?Math.max(0,u*(top.cp-pl.cp)):Math.max(0,u*(top.cp-m.ev[k])),only=L.length>1&&u*(L[0].cp-L[1].cp)>=150&&top.san===san;
+  if(!(Math.abs(d)>=100||only))return;
+  const why=(mm,s0)=>{const x=purpose(s0,mm,true)||'';return x?x.replace(/[.\s]+$/,'')+'.':''};
+  let h=`<div class="mgcrit fade"><b>Critical moment · ${esc(mgLab(k,san))}</b>`;
+  h+=`<div><i>What made it critical:</i> ${only?`${who} has essentially one good move here. The next best option is about ${(u*(L[0].cp-L[1].cp)/100).toFixed(1)} pawns worse.`:`the evaluation swings from ${fe(m.ev[k-1])} to ${fe(m.ev[k])} on this single decision.`}</div>`;
+  h+=`<div><i>The decision:</i> ${who} chose ${esc(san)}${L.filter(x=>x.san!==san).length?` over ${L.filter(x=>x.san!==san).slice(0,2).map(x=>esc(x.san)+' ('+fe(x.cp)+')').join(' or ')}`:''}.</div>`;
+  h+=`<div><i>Why it mattered:</i> ${esc(why(mv,st))} ${d>=100?`It improves ${who}'s position from ${fe(m.ev[k-1])} to ${fe(m.ev[k])}.`:d<=-100?`It costs ${who} the advantage, moving the evaluation from ${fe(m.ev[k-1])} to ${fe(m.ev[k])}.`:''}</div>`;
+  if(top.san!==san&&ploss>=80){const am=R.fromSan(st,top.san);h+=`<div><i>The better idea:</i> ${esc(top.san)} (${fe(top.cp)})${am?'. '+esc(why(am,st)):'.'}</div>`}
+  h+='</div>';if(S.mg!==m)return;m.msg=(m.msg||'')+h;if(S.v==='model'&&m.k===k)view(1)}catch(e){}}
 async function mgMove(){const m=S.mg;if(!m||m.busy)return;const h=B.hist[B.hist.length-1],san=h.san,exp=m.g.mv[m.k];if(!exp)return;
  if(san===exp){m.k++;m.dev=null;await mgEv(m.k);mgSay(m.k);mgAfter();return}
  m.busy=1;const before=h.s,um=h.m,mm=R.fromSan(before,exp);undo();let eu=null,em=null;
@@ -880,10 +991,10 @@ function vMG(){const m=S.mg;if(!m)return'<h1>Model game</h1><p class="sub">No mo
  if(m.lst){const L=cfg.mgHist||[];return`<h1>Previous model games</h1>`+(L.length?L.map((x,i)=>act('mgprev',esc(x.w)+' vs. '+esc(x.b)+(x.y?', '+x.y:''),esc(shortOpen(x.name||'')),i)).join(''):'<p class="dim">None yet.</p>')+act('mgback','Back to this game')}
  if(m.end){const c=m.st,line=(nm,x)=>!x?'':(x.i+x.m+x.b===0)?`<li>${esc(nm)} played a perfect game, with no inaccuracies, mistakes, or blunders</li>`:`<li>${esc(nm)}: ${[[x.i,'inaccuracy','inaccuracies','Inaccuracy'],[x.m,'mistake','mistakes','Mistake'],[x.b,'blunder','blunders','Blunder']].filter(q=>q[0]).map(q=>`<b style="color:${CL[q[3]].col}">${q[0]} ${q[0]>1?q[2]:q[1]}</b>`).join(', ')}</li>`;
   return`<h1>${esc(mgTitleEnd(g))}</h1><p style="font-weight:600;margin:16px 0 8px">Stats from this game:</p>${c?`<ul class="mgl">${line(g.w,c.w)}${line(g.b,c.b)}</ul>`:'<p class="dim">Reviewing the game\u2026</p>'}<div style="height:12px"></div>`+act('mgdone','Continue').replace('class="act"','class="act go2"')+act('mgreplay','Replay this game').replace('class="act"','class="act go2"')+act('mdl','Play through another model game').replace('class="act"','class="act go2"')}
- const info=`In this game between ${esc(g.w)}${g.we?' ('+esc(g.we)+')':''} and ${esc(g.b)}${g.be?' ('+esc(g.be)+')':''}${g.y?' in '+esc(g.y):''}${g.ev&&g.ev!=='?'?' at the "'+esc(g.ev)+'"':''}, ${g.res==='1-0'?esc(g.w)+' defeated '+esc(g.b):g.res==='0-1'?esc(g.b)+' defeated '+esc(g.w):'the game was drawn'} in ${Math.ceil(n/2)} moves.`;
+ const info=`In this game between ${esc(g.w)}${g.we?' ('+esc(g.we)+')':''} and ${esc(g.b)}${g.be?' ('+esc(g.be)+')':''}${g.y?' in '+esc(g.y):''}${g.ev&&g.ev!=='?'?' at the "'+esc(g.ev)+'"':''}, ${g.res==='1-0'?esc(g.w)+' defeated '+esc(g.b):g.res==='0-1'?esc(g.b)+' defeated '+esc(g.w):'the game was drawn'} in ${Math.ceil(n/2)} moves. Source: ${g.src==='masters'?'Lichess masters database':'high-level Lichess online games'} · <a href="https://lichess.org/${esc(g.id)}" target="_blank" rel="noopener">view game</a>`;
  return`<h1>${esc(g.w)} vs. ${esc(g.b)}${g.y?', '+g.y:''}</h1>`+mgBar()+`<div class="mgbt"><button class="act go2" data-a="mgnext"${m.busy?' disabled':''}>Play next move</button><button class="act go2" data-a="mghint">Give me a hint</button></div>`
   +(m.msg?`<div class="fade mgmsg">${m.msg}</div>`:`<p style="font-weight:600;margin:20px 0 10px">This game matches your saved moves in the ${esc(shortOpen(g.name||'opening'))}. The move order may be adjusted slightly to match yours. Move the pieces on the board to guess the move at any point.</p><p class="dim" style="font-size:14.5px;line-height:1.5">${info}</p>`)
-  +'<div style="height:14px"></div>'+act('mdl','Choose another random game')+act('mglist','View previous model games')+`<div class="act" style="cursor:default"><span>Model games source</span><span class="r">Online and master games</span></div>`}
+  +'<div style="height:14px"></div>'+act('mdl','Choose another random game')+act('mglist','View previous model games')+act('so','Model games source',sLab('mgsrc'),'mgsrc')}
 
 async function modelFrom(fen,color){try{const j=await busy(()=>explorer('masters',fen,4),'Looking up a master game'),tg=(j.topGames||[]);if(!tg.length){note('The masters database has no games from this position.',1);return}
  const pos=R.key(R.parse(fen));for(const t of tg){let txt;try{txt=await(await http('https://explorer.lichess.ovh/masters/pgn/'+t.id)).text()}catch(e){continue}const mv=parseMoves(txt);if(!mv.length)continue;const tag=k=>(txt.match(new RegExp('\\['+k+' "([^"]*)"'))||[])[1];
@@ -898,7 +1009,7 @@ async function checkUser(){const u=(cfg.names[cfg.site]||'').trim();if(!u){ust='
 /* ---- view ---- */
 const topbar=back=>`<div class="top"><button data-a="back" style="${back?'':'pointer-events:none'}">${back?'← Back':'<span style="letter-spacing:.3em;font-weight:600;color:var(--tx)">ESCHÉS</span>'}</button><button class="bgs" id="bgst" data-a="bgtoggle">${bgText()}</button>${S.v==='intro1'||S.v==='intro2'?'<span>ESCHÉS SYNC — COMING SOON</span>':'<button data-a="settings">Settings ⚙</button>'}</div>`;
 function view(k){unpreview(true);const st=P.scrollTop;const f={intro1:vI1,intro2:()=>vRating(true),home:vHome,rep:()=>S.rb?vRep():vRepHome(),rset:vRSet,afill:vAfill,model:vMG,pchoose:vPChoose,prac:vPrac,games:vGames,game:vGame,moves:vMoves,ins:vIns,open:vOpen,plans:vPlans,conn:vConn,rate:()=>vRating(false),set:vSet,acc:vAcc,sopt:vSopt}[S.v],body=f();
- P.innerHTML=topbar(S.v!=='home'&&S.v!=='intro1')+`<div class="v${k?' s':''}">${body}</div>`;if(k)P.scrollTop=st;paintU();hdr();capBar();loadPlan();if(S.v==='afill')afPaint(1);if(S.v==="game"||S.v==="moves"){const A=S.g&&anl[S.g.g.id];if(S.hev)evBar(S.hev.cp);else evBar(0)}else{const b=$('#evb');if(b)b.style.display='none'}}
+ P.innerHTML=topbar(S.v!=='home'&&S.v!=='intro1')+`<div class="v${k?' s':''}">${body}</div>`;if(k)P.scrollTop=st;paintU();hdr();capBar();loadPlan();planPaint();if(S.v==='afill')afPaint(1);if(S.v==="game"||S.v==="moves"){const A=S.g&&anl[S.g.g.id];if(S.hev)evBar(S.hev.cp);else evBar(0)}else{const b=$('#evb');if(b)b.style.display='none'}}
 const go=(v,fn)=>nav(()=>{S.v=v;fn&&fn();view()});
 const ACT={rcvp(p){reps.m.cover[S.c]=+p;sv();view(1)},tpo(){S.tpo=!S.tpo;view(1)},dsp(p){cfg.disp=p;sv();view(1);drawBoard()},ddt(p,el){const d=el.closest('.dd');const o=d.classList.contains('open');document.querySelectorAll('.dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')},ddp(p){cfg.tc=p;sv();EX.clear();view(1);if(connected())syncRating().then(()=>{EX.clear();view(1)})},i2(){S.v='intro2';view()},irate(){cfg.ratingSet=true;cfg.intro=1;sv();EX.clear();home()},iskip(){cfg.intro=1;sv();home()},rdone(){cfg.ratingSet=true;sv();EX.clear();ACT.back()},psite(){cfg.ratingPlatform=cfg.ratingPlatform==='chesscom'?'lichess':'chesscom';cfg.ratingSet=true;clampR();rmind=true;sv();EX.clear();view()},
  open:p=>nav(()=>openRep(p)),cb(){S.rb=true;S.path=[];B.on=repMove;B.lock=false;setPos(R.START,S.c,false);repLoad()},cl(){const c=S.c;nav(()=>startPrac('repo',c))},autofill(){nav(()=>{S.v='afill';S.pts=[0,0,0];view()})},afp(p){const[i,d]=p.split(':').map(Number),q=S.pts,t=q[0]+q[1]+q[2];if(d>0&&(q[i]>=4||t>=6))return;if(d<0&&q[i]<=0)return;q[i]+=d;afPaint()},afgo(){const q=S.pts;if(q[0]+q[1]+q[2]!==6||RCP.busy)return;const k=q.join('-');autofill({p:q.slice(),n:AFS[k][0]}).then(()=>{if(S.v==='afill')ACT.back()})},rset(){nav(()=>{S.v='rset';S.rdel=false;S.rsc=null;view()})},
@@ -945,6 +1056,15 @@ function trainthis(i){const G=S.g,A=anl[G.g.id],bs=bestSanFrom(G.st[i],A.bm[i]);
 
 Object.assign(ACT,{so(p){nav(()=>{S.so=p;S.v='sopt';view()})},sopick(p){const o=SOPT[S.so];if(!o)return;o.s(p);sv();view(1);if(S.so==='disp')drawBoard()},acc(){nav(()=>{S.v='acc';view()})},disc(p){cfg.names[p]='';if(cfg.site===p){const o=p==='chesscom'?'lichess':'chesscom';if(cfg.names[o])cfg.site=o}sv();note('Disconnected. Imported games stay on this device.');view(1)}});
 ACT.rate=ACT.rate||(()=>nav(()=>{S.v='rate';view()}));
+Object.assign(ACT,{keepadd(){S.keepKey=R.key(B.s);view()},prac(){nav(()=>{S.psc=null;pchoose()})},cl(){const c=S.c;nav(()=>{S.psc=c;pchoose()})},ps:p=>nav(()=>startPrac(p)),pso:p=>nav(()=>startPrac('open',p)),pres(){const rs=psAvail();if(rs)nav(()=>startPrac(rs.mode,rs.key,rs))},
+ pnext(){const P=S.pm;if(!P||P.st==='setup')return;const it=P.it;if(it&&P.q.length&&!P.midBonus&&P.lastIt===it&&pLeaf(it)&&Math.random()<.25){P.midBonus=1;return startBonus()}nextPrac()},
+ pmore(){const P=S.pm;if(!P||P.st!=='more')return;P.tk++;popAnim();clearBadge();B.lock=false;P.msg=false;P.st=P.first?'hint':'think';P.base=B.hist.length;if(P.first)pArrow(P);view(1)},
+ phint(){const P=S.pm,e=P.it.e;if(!P.failed){P.failed=true;P.bad++;e.int=0;e.due=Date.now()+6e5;e.w=(e.w||0)+1;sv()}P.hintd=true;P.st='hint';view(1)},
+ pshow(){const P=S.pm,e=P.it.e;P.tk++;while(B.hist.length>(P.base||0))popAnim();if(!P.failed){P.failed=true;P.bad++;e.int=0;e.due=Date.now()+6e5;e.w=(e.w||0)+1}e.pr=(e.pr||0)+1;e.lp=Date.now();P.done++;P.lastIt=P.it;sv();psSave(P,true);const m=R.fromSan(B.s,P.todo[0]);P.st='shown';P.san=P.todo[0];B.lock=true;B.arrow=null;if(m)play(m,'opp',false);view(1)},
+ pskip(){const P=S.pm;P.first=false;P.st='think';B.arrow=null;drawBoard();view(1)},
+ pbuild(){const P=S.pm,it=P.it;P.tk++;nav(()=>startRep(it.src==='t'?it.c:it.src,it.e.p||[]))},
+ pexit(){const P=S.pm;if(P)P.tk++;ACT.back()},
+ bfin(){const P=S.pm;if(P.q.length){B.on=pracAns;nextPrac()}else pFinish()}});
 document.addEventListener('click',e=>{if(e.target.closest('#board'))return;const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const f=ACT[el.dataset.a];if(f)f(el.dataset.p,el,e)});
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='uname'){cfg.names[cfg.site]=t.value;ust='';paintU();sv()}if(t.id==='rate')setR(Math.round(+t.value/10)*10);if(t.id==='tok'){cfg.token=t.value.trim();sv()}if(t.id==='nt'){notes['n:'+R.key(B.s)]=t.value;sv()}if(t.id==='rname'){reps.m.names[S.c]=t.value.trim()||'';sv()}});
 document.addEventListener('click',e=>{if(!e.target.closest('.dd'))document.querySelectorAll('.dd.open').forEach(x=>x.classList.remove('open'))});document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.dd.open').forEach(x=>x.classList.remove('open'))});
