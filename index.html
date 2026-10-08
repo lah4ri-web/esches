@@ -453,10 +453,10 @@ function setOp(txt,full){const o=$('#opn');if(!o)return;S.opPv=txt||null;o.class
 async function plansFor(fen){const s=R.parse(fen),j=await explorer('lichess',fen),tot=j.white+j.draws+j.black;if(tot<300||!j.moves.length)return null;
  const side=s.t==='w'?'White':'Black',pn={N:'knight',B:'bishop',R:'rook',Q:'queen',K:'king'},mv=j.moves.map(m=>({san:m.san,n:m.white+m.draws+m.black,m:R.fromSan(s,m.san)})).filter(x=>x.m&&x.n/tot>=.04),L=[];
  const sh=x=>Math.round(x.n/tot*100)+'%';
- const cs=mv.filter(x=>x.m.ca);if(cs.length){const x=cs[0];L.push(`${side} usually <b>castles ${x.m.ca==='K'?'kingside':'queenside'}</b> here (${sh(x)} of games)`)}
+ const cs=mv.filter(x=>x.m.ca);if(cs.length){const x=cs[0];L.push(`${side} usually <b>castles ${x.m.ca==='K'?'kingside':'queenside'}</b> here`)}
  const pw=mv.filter(x=>x.m.p==='P'&&!x.m.cap).slice(0,3);if(pw.length)L.push(`Common pawn moves: <b>${pw.map(x=>esc(x.san)).join(', ')}</b>`);
- const pc=mv.filter(x=>x.m.p==='N'||x.m.p==='B').slice(0,3);for(const x of pc)L.push(`The ${pn[x.m.p]} is often <b>developed to ${R.nm(x.m.t)}</b> (${sh(x)} of games)`);
- const cp=mv.filter(x=>x.m.cap).slice(0,2);for(const x of cp)L.push(`<b>${esc(x.san)}</b> captures in ${sh(x)} of games`);
+ const pc=mv.filter(x=>x.m.p==='N'||x.m.p==='B').slice(0,3);for(const x of pc)L.push(`The ${pn[x.m.p]} is often <b>developed to ${R.nm(x.m.t)}</b>`);
+ const cp=mv.filter(x=>x.m.cap).slice(0,2);for(const x of cp)L.push(`<b>${esc(x.san)}</b> captures`);
  return L.length?{side,lines:L,tot,arrows:[...cs.slice(0,1),...pw,...pc,...cp].filter((x,i,a)=>a.findIndex(y=>y.m.f===x.m.f&&y.m.t===x.m.t)===i).map(x=>({f:x.m.f,t:x.m.t}))}:null}
 let planTk=0;function loadPlan(){const v=PLAYV();if(!['rep','game','moves'].includes(v)||(v==='rep'&&!S.rb))return;const f=R.fen(B.s);if(S.plan&&S.plan.f===f)return;const tk=++planTk;S.plan={f,lines:null,loading:1};
  setTimeout(async()=>{if(tk!==planTk)return;let r=null;try{r=await plansFor(f)}catch(e){}if(tk!==planTk||R.fen(B.s)!==f)return;S.plan={f,...(r||{}),lines:r?r.lines:null};capBar();if(S.v==='rep'&&S.rb&&RD&&(RD.goal||RD.src==='sf'))view(1)},350)}
