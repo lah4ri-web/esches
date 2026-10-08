@@ -438,7 +438,7 @@ async function plansFor(fen){const s=R.parse(fen),j=await explorer('lichess',fen
  const cp=mv.filter(x=>x.m.cap).slice(0,2);for(const x of cp)L.push(`<b>${esc(x.san)}</b> captures in ${sh(x)} of games`);
  return L.length?{side,lines:L,tot,arrows:[...cs.slice(0,1),...pw,...pc,...cp].filter((x,i,a)=>a.findIndex(y=>y.m.f===x.m.f&&y.m.t===x.m.t)===i).map(x=>({f:x.m.f,t:x.m.t}))}:null}
 let planTk=0;function loadPlan(){const v=PLAYV();if(!['rep','game','moves'].includes(v)||(v==='rep'&&!S.rb))return;const f=R.fen(B.s);if(S.plan&&S.plan.f===f)return;const tk=++planTk;S.plan={f,lines:null,loading:1};
- setTimeout(async()=>{if(tk!==planTk)return;let r=null;try{r=await plansFor(f)}catch(e){}if(tk!==planTk||R.fen(B.s)!==f)return;S.plan={f,...(r||{}),lines:r?r.lines:null};capBar()},350)}
+ setTimeout(async()=>{if(tk!==planTk)return;let r=null;try{r=await plansFor(f)}catch(e){}if(tk!==planTk||R.fen(B.s)!==f)return;S.plan={f,...(r||{}),lines:r?r.lines:null};capBar();if(S.v==='rep'&&S.rb&&RD&&(RD.goal||RD.src==='sf'))view(1)},350)}
 /* ---- move annotation badge ---- */
 function badge(c,t){const b=$('#bdg');if(!b)return;if(!(c&&CL[c])){b.innerHTML='';return}if(t==null)t=B.last&&B.last.t;const bd=$('#board');if(t!=null&&bd){const fl=B.o==='b',col=fl?7-(t&7):t&7,row=fl?7-(t>>3):t>>3,q=bd.offsetWidth/8,z=Math.max(20,Math.round(q*.46));b.style.cssText=`left:${bd.offsetLeft+(col+1)*q-z*.72}px;top:${bd.offsetTop+row*q-z*.28}px;width:${z}px;height:${z}px;right:auto`}b.innerHTML=`<img src="${ICO[CL[c].ic]}" alt="${c}">`}
 const clearBadge=()=>{const b=$('#bdg');if(b)b.innerHTML=''};
@@ -561,6 +561,16 @@ async function compl(c){if(RCP.busy)return;RCP.busy=c;const thr=1/repCover(c),E=
   if(!rs.length||T<50){done+=p;tot+=p;return}const sum=rs.reduce((a,m)=>a+(m.white+m.draws+m.black),0);
   for(const m of rs){const mv=R.fromSan(s,m.san);if(!mv)continue;await node(R.make(s,mv),p*(m.white+m.draws+m.black)/sum,d+1)}}
  try{await node(R.parse(R.START),1,0);RCP[c]={pct:tot?Math.round(done/tot*100):0,partial,t:Date.now()};S.cov=RCP[c].pct}catch(e){RCP.err=e.message}finally{RCP.busy=null;if(S.v==='rep'&&!S.rb&&S.c===c)view(1)}}
+RCP.sub={};
+const subKey=(c,s)=>c+'|'+reps.m.act[c]+'|'+repCover(c)+'|'+Object.keys(reps[c]).length+'|'+R.key(s);
+async function subPct(c,s0){const thr=1/repCover(c),E=reps[c];let tot=0,done=0,calls=0;
+ async function node(s,p,d){const k=R.key(s);if(s.t===c){const e=E[k];if(!e||!e.sans.length){tot+=p;return}const m=R.fromSan(s,e.sans[0]);if(!m){tot+=p;return}return node(R.make(s,m),p,d+1)}
+  if(d>=24||++calls>25){done+=p;tot+=p;return}
+  const j=await explorer('lichess',R.fen(s)),T=j.white+j.draws+j.black,rs=j.moves.filter(m=>(m.white+m.draws+m.black)/T>=thr&&((s.t==='w'?m.white:m.black)+m.draws/2)/(m.white+m.draws+m.black)>=.4).slice(0,8);
+  if(!rs.length||T<50){done+=p;tot+=p;return}const sum=rs.reduce((a,m)=>a+(m.white+m.draws+m.black),0);
+  for(const m of rs){const mv=R.fromSan(s,m.san);if(!mv)continue;await node(R.make(s,mv),p*(m.white+m.draws+m.black)/sum,d+1)}}
+ await node(s0,1,0);return tot?Math.round(done/tot*100):0}
+async function subFill(tk){if(!RD||!RD.mv||myTurn())return;const c=S.c,s=B.s;for(const m of RD.mv){if(tk!==repTk)return;const mv=R.fromSan(s,m.san);if(!mv)continue;const s2=R.make(s,mv),k=subKey(c,s2);if(RCP.sub[k]!=null)continue;try{RCP.sub[k]=await subPct(c,s2)}catch(e){break}if(tk===repTk&&S.v==='rep'&&S.rb)view(1)}}
 async function soundLoop(c){if(RSD.busy)return;const E=reps[c],ks=Object.keys(E).filter(k=>E[k].sd==null&&E[k].sans.length).slice(0,40);if(!ks.length||ENG.state==='fail')return;RSD.busy=c;
  try{for(const k of ks){if(!(S.v==='rep'&&!S.rb&&S.c===c))break;const e=E[k],s=R.parse(e.fen),m=R.fromSan(s,e.sans[0]);if(!m)continue;const sg=s.t==='w'?1:-1,sk=()=>!(S.v==='rep'&&!S.rb&&S.c===c);
    const r0=await fgEval(e.fen,10,sk);if(!r0)break;const n=R.make(s,m),r1=R.legal(n).length?await fgEval(R.fen(n),10,sk):{cp:R.check(n)?(n.t==='w'?-30000:30000):0};if(!r1)break;e.sd=Math.round(Math.max(0,sg*(r0.cp-r1.cp)));sv()}}catch(e){}finally{RSD.busy=null;if(S.v==='rep'&&!S.rb&&S.c===c)view(1)}}
@@ -607,7 +617,7 @@ function startRep(c,path){S.v='rep';S.c=c;S.rb=true;S.path=[];S.lim=8;S.opPv=nul
 let RD=null,repTk=0,UG=null,UGn=-1,UGf={},clsTk=0;
 function buildUG(){if(UG&&UGn===games.length)return;UG={};UGf={};UGn=games.length;for(const g of games){let st=R.parse(R.START);const mv=g.mv.split(' ').slice(0,24);for(const x of mv){const m=R.fromSan(st,x);if(!m)break;const k=R.key(st),e=UG[k]||(UG[k]={}),mine=st.t===g.col,id=(mine?'m:':'o:')+moveSan(st,m),y=e[id]||(e[id]={n:0,p:0,mine});UGf[k]=st.fm;y.n++;y.p+=g.res==='win'?1:g.res==='draw'?.5:0;st=R.make(st,m)}}}
 async function repLoad(){const tk=++repTk;RD={loading:true};view();const f=R.fen(B.s);await new Promise(r=>setTimeout(r,220));if(tk!==repTk)return;
- try{if(games.length&&(!UG||UGn!==games.length))buildUG();const[a,m]=await Promise.all([explorer('lichess',f),explorer('masters',f).catch(()=>null)]);if(tk!==repTk)return;RD={a,m};repPrep()}catch(e){if(tk!==repTk)return;RD={err:e.message}}view(1);fillEval();if(RD&&RD.src==='sf')sfLoad(tk,f)}
+ try{if(games.length&&(!UG||UGn!==games.length))buildUG();const[a,m]=await Promise.all([explorer('lichess',f),explorer('masters',f).catch(()=>null)]);if(tk!==repTk)return;RD={a,m};repPrep();setTimeout(()=>subFill(tk),0)}catch(e){if(tk!==repTk)return;RD={err:e.message}}view(1);fillEval();if(RD&&RD.src==='sf')sfLoad(tk,f)}
 
 /* ---- repertoire learning: plan sidebar, ranking, Lichess -> Stockfish fallback, labels ---- */
 function planPaint(){const el=$('#planbox'),pn=S.plan&&S.plan.f===R.fen(B.s)&&S.plan.lines&&S.plan.lines.length>=2?S.plan:null,on=pn&&S.v==='rep'&&S.rb;B.arrows=on?pn.arrows:null;
@@ -622,8 +632,9 @@ function repPrep(){const a=RD.a,tot=a.white+a.draws+a.black,mine=myTurn(),thr=1/
 async function sfTop(fen,n,d){const r=await FG.run(fen,d,n);if(!r||!r.lines)return[];const s=R.parse(fen),o=[],L=R.legal(s);for(const k of Object.keys(r.lines).map(Number).sort((x,y)=>x-y)){const l=r.lines[k],m=L.find(x=>uci(x)===l.mv.slice(0,5)||uci(x)===l.mv.slice(0,4));if(m)o.push({san:R.san(s,m,L),cp:l.cp,d:l.d})}return o}
 async function sfLoad(tk,f){try{const L=await sfTop(f,5,12);if(tk!==repTk||!RD)return;RD.sf=L}catch(e){if(tk!==repTk||!RD)return;RD.sf={err:e.message}}view(1)}
 const vRadd=()=>`<h1>Add new repertoire</h1><p class="sub">A repertoire is a collection of openings for a particular color.</p><p class="sub">You should only create a new repertoire if you want something fundamentally different, such as separate repertoires for bullet and blitz. Otherwise, adding alternate moves to an existing repertoire is recommended.</p><div class="lbl"><span>Colour</span></div><div class="seg" style="margin:6px 0 14px">${[['w','White'],['b','Black']].map(([k,t])=>`<button data-a="rcol" data-p="${k}"${(S.nrc||'w')===k?' class="on"':''}>${t}</button>`).join('')}</div><div class="lbl"><span>Name</span></div><input class="in" id="rnn" placeholder="Blitz" autocomplete="off" spellcheck="false" value="${esc(S.nrn||'')}">${S.nre?`<p class="err">${S.nre}</p>`:''}<div style="height:16px"></div>`+act('rnew','Create repertoire');
-const vTheory=()=>`<div id="planbox"></div><h1 style="font-size:26px;margin-top:40px">You are no longer in discovered theory</h1><p class="sub">All moves from here onward are determined by Stockfish.</p>`+act('thok','OK, continue')+act('home','Save my progress');
-vGoal=()=>`<div id="planbox"></div><h1 style="font-size:26px;margin-top:40px">You've reached your coverage goal</h1><p class="sub">Do you want to keep adding moves, or save your progress?</p>`+act('home','Save these moves')+act('keepadd','Keep adding moves');
+const planGate=()=>{const pn=S.plan&&S.plan.f===R.fen(B.s)&&S.plan.lines&&S.plan.lines.length>=2?S.plan:null;return pn&&S.planAck!==R.key(B.s)?`<h1 style="font-size:26px;margin-top:40px">Plan for ${pn.side}</h1><div class="sbx fade">${pn.lines.map(x=>'<div style="margin:4px 0">• '+x+'</div>').join('')}</div>`+act('planok','Continue'):null};
+const vTheory=()=>`<h1 style="font-size:26px;margin-top:40px">You are no longer in discovered theory</h1><p class="sub">All moves from here onward are determined by Stockfish.</p>`+act('thok','OK, continue')+act('home','Save my progress');
+vGoal=()=>`<h1 style="font-size:26px;margin-top:40px">You've reached your coverage goal</h1><p class="sub">Do you want to keep adding moves, or save your progress?</p>`+act('home','Save these moves')+act('keepadd','Keep adding moves');
 function vSfBody(mine,n){const L=RD.sf;if(!L)return'<p class="dim"><span class="spn"></span> Lichess has too few games here. Asking Stockfish…</p>';
  if(L.err)return`<div class="cd">STOCKFISH UNAVAILABLE<small>${esc(L.err)}</small></div>`+act('retry','Try again');
  if(!L.length)return'<p class="sub">No legal moves from this position.</p>';
@@ -661,15 +672,15 @@ function vRep(){const mine=myTurn(),n=S.path.length;let h=`<h1>${!mine?'Choose a
  const a=RD.a,tot=a.white+a.draws+a.black,mm=RD.m,mt=mm?mm.white+mm.draws+mm.black:0,mmap={};if(mm)for(const x of mm.moves)mmap[x.san]=x.white+x.draws+x.black;
  const fin=()=>{const nk='n:'+R.key(B.s);return lbl('Notes','LOCAL')+`<textarea class="ta" id="nt" placeholder="Add notes for this position">${esc(notes[nk]||'')}</textarea>`+((S.pm&&S.pm.done>0)||(S.path&&S.path.length>0)?act('home','I\'ll finish later, save my progress'):'')};
  if(RD.src!=='sf')S.thOn=false;
- if(RD.src==='sf'&&!S.thOn)return vTheory();
+ if(RD.src==='sf'&&!S.thOn)return planGate()||vTheory();
  if(RD.src==='sf')h=h.replace('</h1>','</h1><p class="dim" style="margin:-2px 0 10px;font-size:12px">Beyond discovered theory · moves from Stockfish</p>');
  if(RD.src==='sf')return h+vSfBody(mine,n)+fin();
- if(RD.goal&&S.keepKey!==R.key(B.s))return vGoal();
+ if(RD.goal&&S.keepKey!==R.key(B.s))return planGate()||vGoal();
  h+='<div id="planbox"></div>';const mv=RD.mv;if(!mv.length)return h+'<p class="sub">No replies at this position reach your coverage goal.</p>'+fin();
  const lines=mv.slice(0,S.lim),kind=mine?'m':'o',sav=m=>{const k=R.fromSan(B.s,m.san);return k&&reps[S.c][R.key(R.make(B.s,k))]?1:0};
  if(!mine){let cov=0,cw=0;for(const m of mv){const t=m.white+m.draws+m.black;cw+=t;cov+=sav(m)*t}const pc=Math.round(cov/(cw||1)*100);S.cov=pc;
   h+=lbl("Opponent's move",'Expected in');
-  h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black;return`<button class="mt" data-a="pick" data-hv="${esc(m.san)}" data-p="${esc(m.san)}" style="grid-template-columns:54px 1fr auto"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}${labsHtml(m,mine)}</span><div class="dim">${esc(whyline(m.san,kind))}</div></span><span class="dim" style="text-align:right">1 in ${Math.max(1,Math.round(tot/t))} games<div class="pb" style="margin-left:auto"><i style="width:${sav(m)*100}%"></i></div></span></button>`}).join('')}
+  h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black;return`<button class="mt" data-a="pick" data-hv="${esc(m.san)}" data-p="${esc(m.san)}" style="grid-template-columns:54px 1fr auto"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}${labsHtml(m,mine)}</span><div class="dim">${esc(whyline(m.san,kind))}</div></span><span class="dim" style="text-align:right">1 in ${Math.max(1,Math.round(tot/t))} games<div class="pb" style="margin-left:auto"><i style="width:${(()=>{const mv=R.fromSan(B.s,m.san),v=mv?RCP.sub[subKey(S.c,R.make(B.s,mv))]:null;return v!=null?v:sav(m)*100})()}%"></i></div></span></button>`}).join('')}
  else{h+=`<div class="hdrg"><span>${n?'Potential moves':'Your first move'}</span><span>Masters</span><span>Evaluation</span><span>Database results</span></div>`;
   h+=lines.map((m,i)=>{const t=m.white+m.draws+m.black,cur=(reps[S.c][R.key(B.s)]||{sans:[]}).sans.includes(m.san);return`<button class="mt g5" data-a="pick" data-hv="${esc(m.san)}" data-p="${esc(m.san)}"><span class="mv">${mlabel(n,m.san)}</span><span><span class="nmx">${esc(m.opening?.name||'')}${labsHtml(m,mine)}${cur?'<span class="tag">SAVED</span>':''}</span><div class="dim">${esc(whyline(m.san,kind))}</div></span><span class="dim">${mt&&mmap[m.san]?pct(mmap[m.san],mt)+'%':'—'}</span><span class="dim ev" data-san="${esc(m.san)}">—</span>${rbar(m.white,m.draws,m.black).replace('150px','130px')}</button>`}).join('')+`<p class="dim" id="engn"></p>`}
  if(mv.length>S.lim)h+=act('more','Show more');
@@ -1111,7 +1122,7 @@ function trainthis(i){const G=S.g,A=anl[G.g.id],bs=bestSanFrom(G.st[i],A.bm[i]);
 
 Object.assign(ACT,{so(p){nav(()=>{S.so=p;S.v='sopt';view()})},sopick(p){const o=SOPT[S.so];if(!o)return;o.s(p);sv();view(1);if(S.so==='disp')drawBoard()},acc(){nav(()=>{S.v='acc';view()})},disc(p){cfg.names[p]='';if(cfg.site===p){const o=p==='chesscom'?'lichess':'chesscom';if(cfg.names[o])cfg.site=o}sv();note('Disconnected. Imported games stay on this device.');view(1)}});
 ACT.rate=ACT.rate||(()=>nav(()=>{S.v='rate';view()}));
-Object.assign(ACT,{radd(){S.nrc='w';S.nrn='';S.nre='';nav(()=>{S.v='radd';view()})},rcol(p){S.nrc=p;view(1)},rnew(){const nm=(S.nrn||'').trim();if(!nm){S.nre='Give it a name, for example Blitz.';view(1);return}const col=S.nrc||'w',id='r'+Date.now().toString(36);reps.m.list.push({id,col,name:nm,tcs:ALLTC.slice()});reps.m.data[id]={};reps.m.act[col]=id;delete RCP[col];S.nrn='';S.nre='';sv();home()},
+Object.assign(ACT,{planok(){S.planAck=R.key(B.s);view()},radd(){S.nrc='w';S.nrn='';S.nre='';nav(()=>{S.v='radd';view()})},rcol(p){S.nrc=p;view(1)},rnew(){const nm=(S.nrn||'').trim();if(!nm){S.nre='Give it a name, for example Blitz.';view(1);return}const col=S.nrc||'w',id='r'+Date.now().toString(36);reps.m.list.push({id,col,name:nm,tcs:ALLTC.slice()});reps.m.data[id]={};reps.m.act[col]=id;delete RCP[col];S.nrn='';S.nre='';sv();home()},
  rtc(x){const p=profFor(S.c);if(!p)return;const a=new Set(p.tcs&&p.tcs.length?p.tcs:ALLTC);if(a.has(x)){if(a.size===1)return;a.delete(x)}else a.add(x);p.tcs=ALLTC.filter(t=>a.has(t));p.auto=0;delete RCP[S.c];EX.clear();sv();view(1)},
  rrm(){S.rrm=true;view(1)},rrmgo(){const c=S.c,p=profFor(c),sib=reps.m.list.filter(x=>x.col===c&&x.id!==(p&&p.id));if(!p||!sib.length){S.rrm=false;view(1);return}reps.m.list=reps.m.list.filter(x=>x!==p);delete reps.m.data[p.id];reps.m.act[c]=sib[0].id;delete RCP[c];S.rrm=false;EX.clear();sv();home()},thok(){S.thOn=true;view()},keepadd(){S.keepKey=R.key(B.s);view()},prac(){nav(()=>{S.psc=null;pchoose()})},cl(){const c=S.c;nav(()=>{S.psc=c;pchoose()})},ps:p=>nav(()=>startPrac(p)),pso:p=>nav(()=>startPrac('open',p)),pres(){const rs=psAvail();if(rs)nav(()=>startPrac(rs.mode,rs.key,rs))},
  pnext(){const P=S.pm;if(!P||P.st==='setup')return;const it=P.it;if(it&&P.q.length&&!P.midBonus&&P.lastIt===it&&pLeaf(it)&&Math.random()<.25){P.midBonus=1;return startBonus()}nextPrac()},
