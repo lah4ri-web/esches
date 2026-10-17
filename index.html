@@ -217,7 +217,7 @@ function parse(fen){const[p,t,c,e,h,f]=fen.split(' '),b=[];for(const row of p.sp
  return{b,t,c:c==='-'?'':c,ep:e==='-'?-1:ix(e),hm:+h||0,fm:+f||1}}
 function fen(s){let o='';for(let r=0;r<8;r++){let e=0;for(let f=0;f<8;f++){const c=s.b[r*8+f];if(!c)e++;else{if(e){o+=e;e=0}o+=c}}if(e)o+=e;if(r<7)o+='/'}
  return[o,s.t,s.c||'-',s.ep<0?'-':nm(s.ep),s.hm,s.fm].join(' ')}
-const key=s=>fen(s).split(' ').slice(0,4).join(' ');
+const key=s=>{const f=fen(s).split(' ');if(s.ep>=0&&!legal(s).some(m=>m.e))f[3]='-';return f.slice(0,4).join(' ')};
 function att(b,sq,by){const f=sq&7,r=sq>>3,u=by==='w',at=(ff,rr,x)=>ff>=0&&ff<8&&rr>=0&&rr<8&&b[rr*8+ff]===x,pr=u?r+1:r-1,pp=u?'P':'p';
  if(at(f-1,pr,pp)||at(f+1,pr,pp))return true;
  for(const[a,c]of KN)if(at(f+a,r+c,u?'N':'n'))return true;
@@ -239,7 +239,7 @@ function make(s,m){const b=s.b.slice(),u=s.t==='w';let c=s.c;
  b[m.t]=m.pr?(u?m.pr:m.pr.toLowerCase()):b[m.f];b[m.f]=null;if(m.e)b[m.t+(u?8:-8)]=null;
  if(m.ca){const row=u?56:0;if(m.ca==='K'){b[row+5]=b[row+7];b[row+7]=null}else{b[row+3]=b[row];b[row]=null}}
  for(const[sq,ch]of[[60,'K'],[60,'Q'],[4,'k'],[4,'q'],[63,'K'],[56,'Q'],[7,'k'],[0,'q']])if(m.f===sq||m.t===sq)c=c.replace(ch,'');
- return{b,t:u?'b':'w',c,ep:m.dp?(m.f+m.t)/2:-1,hm:(m.p==='P'||m.cap)?0:s.hm+1,fm:s.fm+(u?0:1)}}
+ return{b,t:u?'b':'w',c,ep:m.dp&&(((m.t&7)>0&&b[m.t-1]===(u?'p':'P'))||((m.t&7)<7&&b[m.t+1]===(u?'p':'P')))?(m.f+m.t)/2:-1,hm:(m.p==='P'||m.cap)?0:s.hm+1,fm:s.fm+(u?0:1)}}
 const check=s=>att(s.b,s.b.indexOf(s.t==='w'?'K':'k'),s.t==='w'?'b':'w');
 function legal(s){const u=s.t==='w',k=u?'K':'k',o=u?'b':'w';return pseudo(s).filter(m=>{const n=make(s,m);return!att(n.b,n.b.indexOf(k),o)})}
 function san(s,m,L){L=L||legal(s);let o;
@@ -275,6 +275,15 @@ const profFor=c=>reps.m.list.find(x=>x.id===reps.m.act[c]),profSpeeds=p=>(p&&p.t
 reps.t=reps.t||{};const RLIM={chesscom:[0,3600],lichess:[0,3600]},RMIN={chesscom:100,lichess:400};let rmind=false;
 const clampRating=(site,v)=>{const[a,b]=RLIM[site];v=Math.round(+v);return Math.min(b,Math.max(a,Number.isFinite(v)?v:1500))};
 function clampR(){cfg.selfReportedRating=clampRating(cfg.ratingPlatform,cfg.selfReportedRating)}clampR();
+/* key migration v2: a position key now carries the en-passant square only when a legal en-passant capture exists, so transpositions share one entry. Re-key saved data once and merge collisions. */
+(function(){if((cfg.keyv||0)>=2)return;const nk=k=>{try{return R.key(R.parse(k+' 0 1'))}catch(e){return k}};
+ const fix=O=>{if(!O||typeof O!=='object')return;for(const k of Object.keys(O)){const n=nk(k);if(n===k)continue;const e=O[k];delete O[k];const t=O[n];if(!t){O[n]=e;continue}
+  if(Array.isArray(e.sans)){t.sans=t.sans||[];for(const x of e.sans)if(!t.sans.includes(x))t.sans.push(x)}
+  if(e.due&&(!t.due||e.due<t.due))t.due=e.due;if(e.int!=null&&t.int!=null)t.int=Math.min(t.int,e.int);if(!t.p&&e.p)t.p=e.p}};
+ try{for(const id of Object.keys(reps.m.data||{}))fix(reps.m.data[id]);fix(reps.t);
+  for(const k of Object.keys(notes)){if(k.slice(0,2)!=='n:')continue;const n='n:'+nk(k.slice(2));if(n===k)continue;if(notes[n]==null)notes[n]=notes[k];delete notes[k]}
+  if(cfg.psess&&Array.isArray(cfg.psess.ids))cfg.psess.ids=cfg.psess.ids.map(i=>{const j=String(i).indexOf('|');return j<0?i:i.slice(0,j+1)+nk(i.slice(j+1))});
+  cfg.keyv=2;LS.s('reps',reps);LS.s('notes',notes);LS.s('cfg',cfg)}catch(e){}})();
 /* platform switch: keep the exact rating if valid on the new platform, clamp only if not, always remind */
 async function syncRating(){const k=cfg.site,u=(cfg.names[k]||'').trim();if(!u)return;const tc=(cfg.tc||'Rapid').toLowerCase();try{let r=null;if(k==='chesscom'){const j=await(await http('https://api.chess.com/pub/player/'+encodeURIComponent(u)+'/stats')).json(),x=j['chess_'+(tc==='classical'?'daily':tc)]||j.chess_rapid;r=x&&x.last&&x.last.rating}else{const j=await(await http('https://lichess.org/api/user/'+encodeURIComponent(u))).json(),x=j.perfs&&(j.perfs[tc]||j.perfs.rapid);r=x&&x.rating}if(r&&!cfg.ratingSet){cfg.selfReportedRating=Math.round(r);cfg.ratingPlatform=k;clampR();sv()}}catch(e){}}
 function setSite(p){if(p===cfg.site&&p===cfg.ratingPlatform)return;cfg.site=p;if(!cfg.ratingSet){cfg.ratingPlatform=p;clampR();rmind=true}sv()}
@@ -331,30 +340,30 @@ const endDrag=(e,c)=>{const d=B.drag;if(!d)return;B.drag=null;if(d.g)d.g.remove(
 bd.addEventListener('pointerup',e=>endDrag(e));bd.addEventListener('pointercancel',e=>endDrag(e,1));
 /* engine: real Stockfish via vendor/stockfish (UCI worker). No fallback evaluator. Two independent workers: fg (UI) and bg (background game analysis). */
 const ENGINE_JS='./vendor/stockfish/stockfish-19-lite-single.js',ENG={state:'idle',reason:''};
-function mkEng(){const E={p:null,q:Promise.resolve(),id:0,mpv:1};
- E.get=()=>E.p=E.p||(async()=>{
+function mkEng(ST){const E={p:null,q:Promise.resolve(),id:0,mpv:1,ST};
+ E.get=()=>E.p=E.p||(async()=>{E.mpv=1;
   for(const u of[ENGINE_JS,ENGINE_JS.replace(/\.js$/,'.wasm')]){let r;try{r=await fetch(u,{method:'HEAD'})}catch(e){throw new Error('Could not reach '+u+' ('+e.message+')')}if(!r.ok)throw new Error(u+' returned HTTP '+r.status+'. Add it to the repository.')}
   return new Promise((ok,no)=>{let w;try{w=new Worker(ENGINE_JS)}catch(e){return no(new Error('Worker could not start: '+e.message))}
    const to=setTimeout(()=>{w.terminate();no(new Error('Engine did not answer UCI within 15 s.'))},15000);let st=0;
    w.onerror=ev=>{clearTimeout(to);no(new Error('Engine script failed: '+(ev.message||'load error')))};
-   w.onmessage=e=>{const m=String(e.data);if(st===0&&m.includes('uciok')){st=1;w.postMessage('isready')}else if(st===1&&m.includes('readyok')){clearTimeout(to);st=2;ENG.state='ok';ok(w)}};w.postMessage('uci')})})().catch(e=>{ENG.state='fail';ENG.reason=e.message;E.p=null;throw e});
+   w.onmessage=e=>{const m=String(e.data);if(st===0&&m.includes('uciok')){st=1;w.postMessage('isready')}else if(st===1&&m.includes('readyok')){clearTimeout(to);st=2;E.ST.state='ok';E.ST.reason='';ok(w)}};w.postMessage('uci')})})().catch(e=>{E.ST.state='fail';E.ST.reason=e.message;E.p=null;throw e});
  E.run=(fen,depth,mpv,skip)=>E.q=E.q.catch(()=>{}).then(()=>skip&&skip()?null:engOne(E,fen,depth,mpv||1));
  return E}
-const FG=mkEng(),BGE=mkEng();
+const BGS={state:'idle',reason:''},FG=mkEng(ENG),BGE=mkEng(BGS);
 const engine=()=>FG.get();
 function scoreOf(m){const c=m.match(/score cp (-?\d+)/),mt=m.match(/score mate (-?\d+)/);if(c)return{v:+c[1],mate:null};if(mt){const k=+mt[1];return{v:(k>0?1:-1)*(30000-2*Math.abs(k)),mate:k}}return null}
 async function engOne(E,fen,depth,mpv){const w=await E.get(),t=fen.split(' ')[1],id=++E.id;
  if(E.mpv!==mpv){w.postMessage('setoption name MultiPV value '+mpv);E.mpv=mpv}
- return new Promise((res,rej)=>{const r={cp:0,depth:0,best:null,pv:'',mate:null,cp2:null};const to=setTimeout(()=>{try{w.postMessage('stop')}catch(e){}rej(new Error('Engine timed out'))},20000);
-  w.onerror=ev=>{ENG.state='fail';ENG.reason='Engine crashed: '+(ev.message||'worker error');E.p=null;rej(new Error(ENG.reason))};
+ return new Promise((res,rej)=>{const r={cp:0,depth:0,best:null,pv:'',mate:null,cp2:null};let tOut=false,to2=null;const to=setTimeout(()=>{tOut=true;try{w.postMessage('stop')}catch(e){}to2=setTimeout(()=>{try{w.terminate()}catch(e){}E.p=null;rej(new Error('Engine timed out (no response to stop)'))},4000)},15000+depth*2000*(mpv>1?1.5:1));
+  w.onerror=ev=>{clearTimeout(to);clearTimeout(to2);E.ST.state='fail';E.ST.reason='Engine crashed: '+(ev.message||'worker error');E.p=null;rej(new Error(E.ST.reason))};
   w.onmessage=e=>{if(id!==E.id)return;const m=String(e.data);
    if(m.startsWith('info')&&/ score /.test(m)&&!/ (lowerbound|upperbound) /.test(m)){const sc=scoreOf(m);if(!sc)return;const mp=m.match(/ multipv (\d+)/),k=mp?+mp[1]:1,cpw=t==='w'?sc.v:-sc.v,d=m.match(/ depth (\d+)/),p=m.match(/ pv (.+)$/);
     if(k===1){r.cp=cpw;r.mate=sc.mate;if(d)r.depth=+d[1];if(p)r.pv=p[1]}else if(k===2)r.cp2=cpw;if(p)(r.lines=r.lines||{})[k]={cp:cpw,mv:p[1].split(' ')[0],d:d?+d[1]:0}}
-   if(m.startsWith('bestmove')){clearTimeout(to);r.best=m.split(' ')[1];res(r)}};
+   if(m.startsWith('bestmove')){clearTimeout(to);clearTimeout(to2);if(tOut){if(r.depth<6)return rej(new Error('Engine timed out at depth '+r.depth));r.partial=true;r.best=(r.pv||'').split(' ')[0]||m.split(' ')[1]}else r.best=m.split(' ')[1];res(r)}};
   w.postMessage('position fen '+fen);w.postMessage('go depth '+depth)})}
 /* foreground evaluation: queued (never cut short), cached, optional skip() so stale requests are dropped */
 const EVC=new Map();
-const fgEval=(fen,d,skip)=>{const k=fen+'|'+d;if(EVC.has(k))return Promise.resolve(EVC.get(k));return FG.run(fen,d,1,skip).then(r=>{if(r)EVC.set(k,r);return r})};
+const fgEval=(fen,d,skip)=>{const k=fen+'|'+d;if(EVC.has(k))return Promise.resolve(EVC.get(k));return FG.run(fen,d,1,skip).then(r=>{if(r&&!r.partial)EVC.set(k,r);return r})};
 const evalFen=(f,d)=>fgEval(f,d);
 const stEval=s=>{if(R.legal(s).length===0)return R.check(s)?(s.t==='w'?-30000:30000):0;let v=0;for(let i=0;i<64;i++){const c=s.b[i];if(!c)continue;const x=VAL[String(c).toUpperCase()]||0;v+=c===String(c).toUpperCase()?x:-x}return Math.round(v*100)};
 const evShare=cp=>Math.abs(cp)>25000?(cp>0?100:0):Math.round(100/(1+Math.exp(-cp/290)));
@@ -497,20 +506,20 @@ const findGame=id=>games.find(x=>x.id===id)||MODELS[id];
 const anlp=LS.g('anlp',{});const BG={run:false,cur:null,i:0,n:0,err:'',first:null,force:null};const RVC=new Map();
 const bgOn=()=>cfg.bg!==false&&!cfg.bgPause;
 function bgNext(){const L=games.slice().sort((a,b)=>b.t-a.t),un=g=>!(anl[g.id]&&anl[g.id].done);if(BG.first){const f=L.find(g=>g.id===BG.first&&un(g));if(f)return f}return L.find(un)}
-async function bgLoop(){if(BG.run)return;BG.run=true;BG.err='';bgPaint();try{await BGE.get();while(bgOn()||BG.force){const g=bgNext();if(!g)break;let ok=true;try{ok=await bgGame(g)}catch(e){if(/Malformed/.test(e.message)){anl[g.id]={bad:1,done:1,ev:[],t:Date.now()};sv();continue}throw e}if(BG.force===g.id)BG.force=null;if(BG.first===g.id)BG.first=null;if(!ok)break}}catch(e){BG.err=e.message}finally{BG.run=false;BG.cur=null;bgPaint()}}
+async function bgLoop(){if(BG.run)return;BG.run=true;BG.err='';bgPaint();try{await BGE.get();while(bgOn()||BG.force){const g=bgNext();if(!g)break;let ok=true;try{ok=await bgGame(g)}catch(e){if(/Malformed/.test(e.message)){anl[g.id]={bad:1,done:1,ev:[],t:Date.now()};sv();continue}throw e}BG.retry=0;if(BG.force===g.id)BG.force=null;if(BG.first===g.id)BG.first=null;if(!ok)break}}catch(e){BG.err=e.message;if(/timed out/i.test(e.message)&&(BG.retry=(BG.retry||0)+1)<=3)setTimeout(()=>{if(!BG.run)kickBg()},8000)}finally{BG.run=false;BG.cur=null;bgPaint()}}
 async function bgGame(g){const{st}=gs(g),n=st.length;BG.cur=g.id;BG.n=n;const p=anlp[g.id]||{ev:[],e2:[],bm:[],pv:[]};
  for(let i=p.ev.length;i<n;i++){if(!bgOn()&&BG.force!==g.id){anlp[g.id]=p;LS.s('anlp',anlp);return false}
-  const s=st[i];let r;if(!R.legal(s).length)r={cp:R.check(s)?(s.t==='w'?-30000:30000):0,cp2:null,best:null,pv:''};else r=await BGE.run(R.fen(s),12,2);
+  const s=st[i];let r;if(!R.legal(s).length)r={cp:R.check(s)?(s.t==='w'?-30000:30000):0,cp2:null,best:null,pv:''};else{try{r=await BGE.run(R.fen(s),12,2)}catch(e){if(!/timed out/i.test(e.message))throw e;r=await BGE.run(R.fen(s),8,2)}}
   p.ev.push(r.cp);p.e2.push(r.cp2);p.bm.push(r.best);p.pv.push((r.pv||'').split(' ').slice(0,6).join(' '));BG.i=i+1;if(i%4===3||i===n-1){anlp[g.id]=p;LS.s('anlp',anlp)}bgPaint(i%3===0)}
  const bk=await bookPlies(g);anl[g.id]={ev:p.ev,e2:p.e2,bm:p.bm,pv:p.pv,d:12,done:1,bk,t:Date.now()};delete anlp[g.id];LS.s('anlp',anlp);sv();RVC.clear();onAnlDone(g.id);return true}
 /* Book = the move exists in the Lichess masters database (>=5 games) in that position. Stops at the first non-book move. */
 async function bookPlies(g){const{st,hs}=gs(g);let k=0;try{for(let i=0;i<Math.min(16,hs.length);i++){const j=await explorer('masters',R.fen(st[i])),x=j.moves.find(m=>m.san===hs[i].san);if(x&&x.white+x.draws+x.black>=5)k++;else break}return{ok:true,n:k,src:'Lichess masters database'}}catch(e){return{ok:false,err:e.message}}}
 const bgDone=()=>games.filter(g=>anl[g.id]&&anl[g.id].done).length;
-function bgText(){if(!games.length||cfg.bg===false)return'';if(BG.err)return'Analysis unavailable';const d=bgDone();if(cfg.bgPause)return d<games.length?`Analysis paused · ${d}/${games.length} · resume`:'';if(d>=games.length)return'Complete!';return`<span class="spn"></span> Analyzing ${d}/${games.length}${BG.run&&BG.cur?` · game ply ${BG.i}/${BG.n}`:''} · pause`}
+function bgText(){if(!games.length||cfg.bg===false)return'';if(BG.err)return'Analysis unavailable · '+esc(BG.err);const d=bgDone();if(cfg.bgPause)return d<games.length?`Analysis paused · ${d}/${games.length} · resume`:'';if(d>=games.length)return'Complete!';return`<span class="spn"></span> Analyzing ${d}/${games.length}${BG.run&&BG.cur?` · game ply ${BG.i}/${BG.n}`:''} · pause`}
 let bgPT=0;function bgPaint(soft){const el=$('#bgst');if(el)el.innerHTML=bgText();if(S.v==='game'||S.v==='moves'){const q=$('#anst');if(q)q.innerHTML=anStatus()}}
 function onAnlDone(id){bgPaint();if(S.g&&S.g.g.id===id&&(S.v==='game'||S.v==='moves')){const keep=S.ply;view(1)}else if(S.v==='games'||S.v==='open'||S.v==='ins')view(1)}
 function anStatus(){const g=S.g&&S.g.g,A=g&&anl[g.id];if(A&&A.done)return'';if(!g)return'';const q=BG.cur===g.id?`Analyzing with Stockfish · ${BG.i}/${gs(g).st.length}`:anlp[g.id]?`Analysis in progress · ${anlp[g.id].ev.length}/${gs(g).st.length}`:bgOn()?'Queued for background analysis':'Background analysis is paused';return`<span class="spn"></span> ${q}`}
-function kickBg(){if(games.length&&cfg.bg!==false&&!cfg.bgPause&&ENG.state!=='fail')bgLoop()}
+function kickBg(){if(games.length&&cfg.bg!==false&&!cfg.bgPause&&BGS.state!=='fail')bgLoop()}
 /* ---- review: classification, accuracy, phases from stored Stockfish data only ---- */
 const NPM=b=>b.reduce((a,c)=>a+(c&&c.toUpperCase()!=='K'&&c.toUpperCase()!=='P'?VAL[c.toUpperCase()]:0),0);
 const lossLbl=l=>l<=1?'Best':l<=3?'Excellent':l<=6?'Good':l<=10?'Inaccuracy':l<=20?'Mistake':'Blunder';
