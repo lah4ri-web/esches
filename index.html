@@ -1119,108 +1119,119 @@ function trainthis(i){const G=S.g,A=anl[G.g.id],bs=bestSanFrom(G.st[i],A.bm[i]);
 
 Object.assign(ACT,{so(p){nav(()=>{S.so=p;S.v='sopt';view()})},sopick(p){const o=SOPT[S.so];if(!o)return;o.s(p);sv();view(1);if(S.so==='disp')drawBoard()},acc(){nav(()=>{S.v='acc';view()})},disc(p){cfg.names[p]='';if(cfg.site===p){const o=p==='chesscom'?'lichess':'chesscom';if(cfg.names[o])cfg.site=o}sv();note('Disconnected. Imported games stay on this device.');view(1)}});
 ACT.rate=ACT.rate||(()=>nav(()=>{S.v='rate';view()}));
-/* ===== Opening Library (Phase 1) =====
-   Curated starter data only: names, move lines and one-line descriptions. Not a complete opening database.
-   Every line is SAN from the standard start position and is validated against R.legal before it is used.
-   `sides` = which colours it is studied as; each line carries its own study `side`. */
+/* ===== Opening Library + learning / progress =====
+   Curated, finite library. Opening names and theory are aligned to the public
+   lichess-org/chess-openings catalogue; every SAN line is revalidated by the
+   existing ESCHÉS rules object (R) before it can be opened or studied. */
 const OLIB=[
 {id:'italian',name:'Italian Game',sides:['w'],first:['e4','e5','Nf3','Nc6','Bc4'],desc:'White develops the bishop to c4, aiming at f7, and plays for quick development and central control.',lines:[
  {name:'Giuoco Pianissimo',side:'w',sans:['e4','e5','Nf3','Nc6','Bc4','Bc5','c3','Nf6','d3','d6','O-O','O-O']},
  {name:'Two Knights: Fried Liver Attack',side:'w',sans:['e4','e5','Nf3','Nc6','Bc4','Nf6','Ng5','d5','exd5','Nxd5','Nxf7','Kxf7','Qf3+','Ke6','Nc3']}]},
-{id:'ruy',name:'Ruy Lopez',sides:['w'],first:['e4','e5','Nf3','Nc6','Bb5'],desc:'White pressures the knight that defends e5. One of the oldest and most heavily analyzed openings.',lines:[
+{id:'ruy',name:'Ruy Lopez',sides:['w'],first:['e4','e5','Nf3','Nc6','Bb5'],desc:'White pressures the knight that defends e5 and develops with tempo.',lines:[
  {name:'Closed Variation',side:'w',sans:['e4','e5','Nf3','Nc6','Bb5','a6','Ba4','Nf6','O-O','Be7','Re1','b5','Bb3','d6','c3','O-O']},
  {name:'Exchange Variation',side:'w',sans:['e4','e5','Nf3','Nc6','Bb5','a6','Bxc6','dxc6','O-O','f6','d4','exd4','Nxd4','c5','Nb3','Qxd1','Rxd1']}]},
-{id:'qg',name:"Queen's Gambit",sides:['w','b'],first:['d4','d5','c4'],desc:'White offers a c-pawn to challenge the d5 pawn and take the center. Black can accept it or decline it.',lines:[
+{id:'scotch',name:'Scotch Game',sides:['w'],first:['e4','e5','Nf3','Nc6','d4'],desc:'White opens the center immediately with d4.',lines:[
+ {name:'Classical Variation',side:'w',sans:['e4','e5','Nf3','Nc6','d4','exd4','Nxd4','Bc5','Be3','Qf6','c3','Nge7']},
+ {name:'Scotch: Schmidt Variation',side:'w',sans:['e4','e5','Nf3','Nc6','d4','exd4','Nxd4','Nf6','Nxc6','bxc6','e5','Qe7','Qe2','Nd5']}]},
+{id:'vienna',name:'Vienna Game',sides:['w'],first:['e4','e5','Nc3'],desc:'White develops the queen knight before Nf3, keeping f-pawn ideas available.',lines:[
+ {name:'Vienna Gambit',side:'w',sans:['e4','e5','Nc3','Nf6','f4','d5','fxe5','Nxe4','Nf3','Be7','d4','O-O']},
+ {name:'Max Lange Defense',side:'w',sans:['e4','e5','Nc3','Nf6','Bc4','Nc6','d3','Bb4','Ne2','d6','O-O','O-O']}]},
+{id:'fourknights',name:'Four Knights Game',sides:['w'],first:['e4','e5','Nf3','Nc6','Nc3','Nf6'],desc:'Both sides develop their knights quickly before committing the center.',lines:[
+ {name:'Spanish Variation',side:'w',sans:['e4','e5','Nf3','Nc6','Nc3','Nf6','Bb5','Bb4','O-O','O-O','d3','d6']}]},
+{id:'qg',name:"Queen's Gambit",sides:['w','b'],first:['d4','d5','c4'],desc:'White challenges d5 with c4; Black can accept, decline, or support the center.',lines:[
  {name:'Queen\'s Gambit Declined',side:'w',sans:['d4','d5','c4','e6','Nc3','Nf6','Bg5','Be7','e3','O-O','Nf3','Nbd7']},
  {name:'Queen\'s Gambit Accepted',side:'w',sans:['d4','d5','c4','dxc4','Nf3','Nf6','e3','e6','Bxc4','c5','O-O','a6']},
  {name:'Slav Defense',side:'b',sans:['d4','d5','c4','c6','Nf3','Nf6','Nc3','dxc4','a4','Bf5','e3','e6','Bxc4','Bb4']},
  {name:'Queen\'s Gambit Declined',side:'b',sans:['d4','d5','c4','e6','Nc3','Nf6','Bg5','Be7','e3','O-O','Nf3','Nbd7']}]},
-{id:'london',name:'London System',sides:['w'],first:['d4','d5','Bf4'],desc:'A flexible, solid setup: White develops the dark-squared bishop to f4 early and builds with e3, Nf3 and c3.',lines:[
+{id:'london',name:'London System',sides:['w'],first:['d4','d5','Bf4'],desc:'White develops the dark-squared bishop before closing it in with e3.',lines:[
  {name:'Standard setup',side:'w',sans:['d4','d5','Bf4','Nf6','e3','e6','Nf3','c5','c3','Nc6','Nbd2','Bd6','Bg3','O-O','Bd3']}]},
-{id:'english',name:'English Opening',sides:['w'],first:['c4'],desc:'White controls d5 from the flank. Many lines resemble a Sicilian Defense with the colors reversed.',lines:[
+{id:'english',name:'English Opening',sides:['w'],first:['c4'],desc:'White controls d5 from the flank and keeps the central pawn structure flexible.',lines:[
  {name:'Reversed Sicilian',side:'w',sans:['c4','e5','Nc3','Nf6','Nf3','Nc6','g3','d5','cxd5','Nxd5','Bg2','Nb6','O-O','Be7','d3','O-O']},
  {name:'Symmetrical Variation',side:'w',sans:['c4','c5','Nf3','Nf6','Nc3','e6','g3','b6','Bg2','Bb7','O-O','Be7']}]},
-{id:'sicilian',name:'Sicilian Defense',sides:['b'],first:['e4','c5'],desc:'Black answers 1.e4 with ...c5, fighting for the center asymmetrically and aiming for imbalanced positions.',lines:[
+{id:'reti',name:'Reti Opening',sides:['w'],first:['Nf3','d5','c4'],desc:'White attacks the center from the flank and often delays occupation with pawns.',lines:[
+ {name:'Reti Accepted',side:'w',sans:['Nf3','d5','c4','dxc4','e3','Nf6','Bxc4','e6','O-O','Be7','d4','O-O']},
+ {name:'King\'s Indian Attack setup',side:'w',sans:['Nf3','d5','g3','Nf6','Bg2','g6','O-O','Bg7','d3','O-O','Nbd2','c5','e4']}]},
+{id:'sicilian',name:'Sicilian Defense',sides:['b'],first:['e4','c5'],desc:'Black answers 1.e4 with ...c5, creating an asymmetric fight for the center.',lines:[
  {name:'Najdorf Variation',side:'b',sans:['e4','c5','Nf3','d6','d4','cxd4','Nxd4','Nf6','Nc3','a6','Be3','e5','Nb3','Be6','f3','Be7','Qd2','O-O']},
- {name:'Dragon Variation',side:'b',sans:['e4','c5','Nf3','d6','d4','cxd4','Nxd4','Nf6','Nc3','g6','Be3','Bg7','f3','O-O','Qd2','Nc6','Bc4','Bd7','O-O-O']}]},
-{id:'french',name:'French Defense',sides:['b'],first:['e4','e6','d4','d5'],desc:'Black builds a solid pawn chain with ...e6 and ...d5 and challenges White\'s e4 pawn.',lines:[
+ {name:'Dragon Variation',side:'b',sans:['e4','c5','Nf3','d6','d4','cxd4','Nxd4','Nf6','Nc3','g6','Be3','Bg7','f3','O-O','Qd2','Nc6','Bc4','Bd7','O-O-O']},
+ {name:'Classical Variation',side:'b',sans:['e4','c5','Nf3','Nc6','d4','cxd4','Nxd4','Nf6','Nc3','d6','Bg5','e6','Qd2','Be7','O-O-O','O-O']}]},
+{id:'french',name:'French Defense',sides:['b'],first:['e4','e6','d4','d5'],desc:'Black builds a solid pawn chain and attacks White’s center with ...c5.',lines:[
  {name:'Winawer Variation',side:'b',sans:['e4','e6','d4','d5','Nc3','Bb4','e5','c5','a3','Bxc3+','bxc3','Ne7','Qg4','Qc7','Qxg7','Rg8','Qxh7','cxd4','Ne2']},
  {name:'Classical Variation',side:'b',sans:['e4','e6','d4','d5','Nc3','Nf6','Bg5','Be7','e5','Nfd7','Bxe7','Qxe7','f4','O-O','Nf3','c5']},
  {name:'Advance Variation',side:'b',sans:['e4','e6','d4','d5','e5','c5','c3','Nc6','Nf3','Qb6','a3','c4']}]},
-{id:'caro',name:'Caro-Kann Defense',sides:['b'],first:['e4','c6','d4','d5'],desc:'Black supports ...d5 with the c-pawn, keeping a sound structure and freeing the light-squared bishop.',lines:[
+{id:'caro',name:'Caro-Kann Defense',sides:['b'],first:['e4','c6','d4','d5'],desc:'Black supports ...d5 with the c-pawn and usually develops the light bishop outside the pawn chain.',lines:[
  {name:'Classical Variation',side:'b',sans:['e4','c6','d4','d5','Nc3','dxe4','Nxe4','Bf5','Ng3','Bg6','h4','h6','Nf3','Nd7','h5','Bh7','Bd3','Bxd3','Qxd3','e6']},
- {name:'Panov Attack',side:'b',sans:['e4','c6','d4','d5','exd5','cxd5','c4','Nf6','Nc3','e6','Nf3','Be7','cxd5','Nxd5','Bd3','Nc6','O-O','O-O']}]},
-{id:'scandi',name:'Scandinavian Defense',sides:['b'],first:['e4','d5'],desc:'Black challenges e4 at once with ...d5 and recaptures with the queen or a knight after exd5.',lines:[
+ {name:'Panov Attack',side:'b',sans:['e4','c6','d4','d5','exd5','cxd5','c4','Nf6','Nc3','e6','Nf3','Be7','cxd5','Nxd5','Bd3','Nc6','O-O','O-O']},
+ {name:'Advance Variation',side:'b',sans:['e4','c6','d4','d5','e5','Bf5','Nf3','e6','Be2','c5','O-O','Nc6']}]},
+{id:'pirc',name:'Pirc Defense',sides:['b'],first:['e4','d6','d4','Nf6','Nc3','g6'],desc:'Black allows a broad White center, then attacks it with pieces and pawn breaks.',lines:[
+ {name:'Classical System',side:'b',sans:['e4','d6','d4','Nf6','Nc3','g6','Nf3','Bg7','Be2','O-O','O-O','c6']},
+ {name:'Austrian Attack',side:'b',sans:['e4','d6','d4','Nf6','Nc3','g6','f4','Bg7','Nf3','O-O','Bd3','Na6','O-O','c5']}]},
+{id:'petrov',name:"Petrov's Defense",sides:['b'],first:['e4','e5','Nf3','Nf6'],desc:'Black mirrors the attack on e4 and seeks rapid development and central simplification.',lines:[
+ {name:'Classical Attack',side:'b',sans:['e4','e5','Nf3','Nf6','Nxe5','d6','Nf3','Nxe4','d4','d5','Bd3','Be7','O-O','Nc6']}]},
+{id:'scandi',name:'Scandinavian Defense',sides:['b'],first:['e4','d5'],desc:'Black challenges e4 immediately with ...d5.',lines:[
  {name:'Main line: 3...Qa5',side:'b',sans:['e4','d5','exd5','Qxd5','Nc3','Qa5','d4','Nf6','Nf3','c6','Bc4','Bf5']},
  {name:'Modern: 2...Nf6',side:'b',sans:['e4','d5','exd5','Nf6','d4','Nxd5','Nf3','g6','Be2','Bg7','O-O','O-O','c4','Nb6','Nc3']}]},
-{id:'kid',name:"King's Indian Defense",sides:['b'],first:['d4','Nf6','c4','g6'],desc:'Black lets White build a big center, then attacks it with pieces and pawn breaks such as ...e5.',lines:[
+{id:'slav',name:'Slav Defense',sides:['b'],first:['d4','d5','c4','c6'],desc:'Black supports d5 with ...c6 while keeping the light bishop free.',lines:[
+ {name:'Main Line',side:'b',sans:['d4','d5','c4','c6','Nf3','Nf6','Nc3','dxc4','a4','Bf5','e3','e6','Bxc4','Bb4','O-O','Nbd7']},
+ {name:'Exchange Variation',side:'b',sans:['d4','d5','c4','c6','cxd5','cxd5','Nc3','Nf6','Nf3','Nc6','Bf4','Bf5']}]},
+{id:'kid',name:"King's Indian Defense",sides:['b'],first:['d4','Nf6','c4','g6'],desc:'Black lets White build a large center and prepares counterplay with ...e5 or ...c5.',lines:[
  {name:'Classical Variation',side:'b',sans:['d4','Nf6','c4','g6','Nc3','Bg7','e4','d6','Nf3','O-O','Be2','e5','O-O','Nc6','d5','Ne7','Ne1','Nd7']},
  {name:'Fianchetto Variation',side:'b',sans:['d4','Nf6','c4','g6','g3','Bg7','Bg2','O-O','Nc3','d6','Nf3','Nbd7','O-O','e5']}]},
-{id:'nimzo',name:'Nimzo-Indian Defense',sides:['b'],first:['d4','Nf6','c4','e6','Nc3','Bb4'],desc:'Black pins the c3 knight to control e4 and fight for the center with pieces rather than pawns.',lines:[
+{id:'nimzo',name:'Nimzo-Indian Defense',sides:['b'],first:['d4','Nf6','c4','e6','Nc3','Bb4'],desc:'Black pins the c3 knight to restrain e4 and pressures the center with pieces.',lines:[
  {name:'Rubinstein Variation',side:'b',sans:['d4','Nf6','c4','e6','Nc3','Bb4','e3','O-O','Bd3','d5','Nf3','c5','O-O','Nc6','a3','Bxc3','bxc3','dxc4','Bxc4','Qc7']},
- {name:'Classical Variation',side:'b',sans:['d4','Nf6','c4','e6','Nc3','Bb4','Qc2','O-O','a3','Bxc3+','Qxc3','b6','Bg5','Bb7']}]}
+ {name:'Classical Variation',side:'b',sans:['d4','Nf6','c4','e6','Nc3','Bb4','Qc2','O-O','a3','Bxc3+','Qxc3','b6','Bg5','Bb7']}]},
+{id:'catalan',name:'Catalan Opening',sides:['w'],first:['d4','Nf6','c4','e6','g3'],desc:'White combines a queen-pawn center with a kingside fianchetto and long-diagonal pressure.',lines:[
+ {name:'Closed Variation',side:'w',sans:['d4','Nf6','c4','e6','g3','d5','Bg2','Be7','Nf3','O-O','O-O','Nbd7','Qc2','c6']},
+ {name:'Open Variation',side:'w',sans:['d4','Nf6','c4','e6','g3','d5','Bg2','dxc4','Nf3','Be7','O-O','O-O','Qc2','a6']}]},
+{id:'grunfeld',name:'Grunfeld Defense',sides:['b'],first:['d4','Nf6','c4','g6','Nc3','d5'],desc:'Black attacks White’s center from a distance and invites an imposing pawn center to become a target.',lines:[
+ {name:'Exchange Variation',side:'b',sans:['d4','Nf6','c4','g6','Nc3','d5','cxd5','Nxd5','e4','Nxc3','bxc3','Bg7','Nf3','c5','Be3','Qa5']}]},
+{id:'dutch',name:'Dutch Defense',sides:['b'],first:['d4','f5'],desc:'Black controls e4 with the f-pawn and accepts kingside structural commitments for active play.',lines:[
+ {name:'Leningrad Variation',side:'b',sans:['d4','f5','g3','Nf6','Bg2','g6','Nf3','Bg7','O-O','O-O','c4','d6','Nc3','c6']},
+ {name:'Stonewall setup',side:'b',sans:['d4','f5','g3','Nf6','Bg2','e6','Nf3','d5','O-O','Bd6','c4','c6']}]},
+{id:'benoni',name:'Benoni Defense',sides:['b'],first:['d4','Nf6','c4','c5','d5'],desc:'Black challenges White’s space advantage with queenside pawn play and pressure on the long diagonal.',lines:[
+ {name:'Modern Benoni',side:'b',sans:['d4','Nf6','c4','c5','d5','e6','Nc3','exd5','cxd5','d6','e4','g6','Nf3','Bg7','Be2','O-O']}]}
 ];
-const OLLINES=OLIB.reduce((a,o)=>a+o.lines.length,0);
-const olById=id=>OLIB.find(o=>o.id===id);
-const olLines=(o,side)=>o.lines.filter(l=>l.side===side);
-function olValid(sans){let s=R.parse(R.START);const out=[];for(const x of sans){const m=R.fromSan(s,x);if(!m)return null;out.push(m);s=R.make(s,m)}return out}
+const OLVER=3, OLLINES=OLIB.reduce((a,o)=>a+o.lines.length,0), OLNOW=()=>Date.now();
+const olById=id=>OLIB.find(o=>o.id===id), olLines=(o,side)=>o.lines.filter(l=>l.side===side), olSideName=c=>c==='w'?'White':'Black';
+function olValid(sans){let s=R.parse(R.START),out=[];for(const x of sans){const m=R.fromSan(s,x);if(!m)return null;out.push(m);s=R.make(s,m)}return out}
 function olFmt(sans,from){from=from||0;let o='';sans.forEach((x,i)=>{const p=from+i;if(p%2===0)o+=((p>>1)+1)+'. ';else if(i===0)o+=((p>>1)+1)+'... ';o+=x+' '});return o.trim()}
 function olBoard(sans,side){let s=R.parse(R.START),last=null;for(const x of sans){const m=R.fromSan(s,x);if(!m)break;last={f:m.f,t:m.t};s=R.make(s,m)}setPos(R.fen(s),side,true);B.last=last;drawBoard()}
-/* recently viewed: its own localStorage key via the existing LS helper (not part of repertoire/game data) */
-const olRecent=()=>LS.g('olrecent',[]).filter(id=>olById(id));
-function olSeen(id){LS.s('olrecent',[id,...LS.g('olrecent',[]).filter(x=>x!==id)].slice(0,5))}
-const olSideName=c=>c==='w'?'White':'Black';
-function olMatch(){const q=(S.olq||'').trim().toLowerCase(),f=S.olf||'all';return OLIB.filter(o=>(f==='all'||o.sides.includes(f))&&(!q||o.name.toLowerCase().includes(q)))}
-function olRows(){const L=olMatch();if(!L.length)return'<p class="dim" style="margin-top:14px">No openings match. This starter library contains only '+OLIB.length+' openings.</p>';
- return L.map(o=>`<button class="mt fade" data-a="olo" data-p="${o.id}" style="grid-template-columns:1fr auto"><span><span class="nmx" style="font-weight:500">${esc(o.name)}</span><br><span class="dim">${esc(olFmt(o.first))}</span><div class="dim" style="margin-top:3px">${esc(o.desc)}</div></span><span class="r" style="display:flex;gap:6px;align-items:center">${o.sides.map(c=>`<i class="sd ${c}" data-tip="Studied as ${olSideName(c)}"></i>`).join('')}</span></button>`).join('')}
+function olId(o,l){return o.id+'|'+l.side+'|'+o.lines.indexOf(l)}
+function olParts(l){const a=l.name.split(':').map(x=>x.trim()),b=(a[1]||a[0]).split(',').map(x=>x.trim());return{variation:a[0],sub:b.length>1?b[0]:'Main line',line:b.length>1?b.slice(1).join(', '):l.name}}
+function olStage(o,l){const a=olLines(o,l.side),i=a.indexOf(l);return i===0?'essential':i===1?'common':'deep'}
+const olStageName=x=>({essential:'Essential lines',common:'Common variations',deep:'Deeper theory'})[x]||x;
+/* Separate storage: no migration touches repertoire/game/account data. */
+let OLPROG=LS.g('olprog3',{v:OLVER,pos:{},lines:{}});if(!OLPROG||typeof OLPROG!=='object')OLPROG={v:OLVER,pos:{},lines:{}};OLPROG.v=OLVER;OLPROG.pos=OLPROG.pos||{};OLPROG.lines=OLPROG.lines||{};
+const olSave=()=>LS.s('olprog3',OLPROG), olPosKey=(o,l,ply)=>olId(o,l)+'|'+ply, olLP=(o,l)=>OLPROG.lines[olId(o,l)]||(OLPROG.lines[olId(o,l)]={stage:olStage(o,l)}), olPP=(o,l,ply)=>OLPROG.pos[olPosKey(o,l,ply)]||(OLPROG.pos[olPosKey(o,l,ply)]={});
+function olUserPlies(l){return l.sans.map((_,i)=>i).filter(i=>(i%2===0?'w':'b')===l.side)}
+function olLineStat(o,l){const ps=olUserPlies(l).map(i=>OLPROG.pos[olPosKey(o,l,i)]).filter(Boolean),lr=OLPROG.lines[olId(o,l)]||{},due=ps.filter(p=>p.introduced&&p.due&&p.due<=OLNOW()).length,mastered=ps.length===olUserPlies(l).length&&ps.length>0&&ps.every(p=>(p.interval||0)>=14&&p.correct>=2);return{introduced:!!lr.introduced,learned:!!lr.learned,mastered,due,weak:ps.filter(p=>(p.errors||0)>0&&(p.correct||0)<(p.errors||0)+2).length}}
+function olSummary(side,o){let ls=[];OLIB.forEach(x=>{if(!o||x===o)ls.push(...olLines(x,side))});let a={total:ls.length,learned:0,mastered:0,progress:0,due:0};ls.forEach(l=>{const x=olSummary._o||OLIB.find(q=>q.lines.includes(l)),s=olLineStat(x,l);a.learned+=s.learned;a.mastered+=s.mastered;a.progress+=s.introduced&&!s.learned;a.due+=s.due});return a}
+function olRate(p,ok,first){const now=OLNOW();p.attempts=(p.attempts||0)+1;if(first)p.firstAttempts=(p.firstAttempts||0)+1;if(ok&&first)p.firstCorrect=(p.firstCorrect||0)+1;p.last=now;if(ok){p.correct=(p.correct||0)+1;p.interval=p.interval?Math.min(60,Math.max(1,Math.round(p.interval*2.2))):1;p.due=now+p.interval*864e5}else{p.errors=(p.errors||0)+1;p.interval=0;p.due=now+10*60e3}p.mastery=(p.interval||0)>=14?'mastered':(p.correct||0)>=1?'learning':'new'}
+function olFinishLine(o,l){const lr=olLP(o,l);lr.introduced=true;lr.last=OLNOW();lr.completions=(lr.completions||0)+1;const ps=olUserPlies(l).map(i=>OLPROG.pos[olPosKey(o,l,i)]);lr.learned=ps.every(p=>p&&p.introduced&&(p.correct||0)>0);olSave()}
+const olRecent=()=>LS.g('olrecent',[]).filter(id=>olById(id));function olSeen(id){LS.s('olrecent',[id,...LS.g('olrecent',[]).filter(x=>x!==id)].slice(0,5))}
+function olMatch(){const q=(S.olq||'').trim().toLowerCase(),f=S.olf||'all';return OLIB.filter(o=>(f==='all'||o.sides.includes(f))&&(!q||o.name.toLowerCase().includes(q)||o.lines.some(l=>l.name.toLowerCase().includes(q))))}
+function olRows(){const L=olMatch();if(!L.length)return'<p class="dim" style="margin-top:14px">No opening or variation matches this search.</p>';return L.map(o=>{const n=o.lines.length;return`<button class="mt fade" data-a="olo" data-p="${o.id}" style="grid-template-columns:1fr auto"><span><span class="nmx" style="font-weight:500">${esc(o.name)}</span><br><span class="dim">${esc(olFmt(o.first))}</span><div class="dim" style="margin-top:3px">${n} validated line${n!==1?'s':''} · ${o.sides.map(olSideName).join(' / ')}</div></span><span class="r">›</span></button>`}).join('')}
 function olEnterLib(){B.on=null;B.lock=true;S.opPv=null;B.arrow=null;setPos(R.START,'w',true)}
-function vOlib(){const f=S.olf||'all',rc=olRecent();
- return`<h1>Opening Library</h1><p class="sub">A small starter set of ${OLIB.length} openings with curated lines. It is not a complete database.</p><div class="fw"><input class="in" id="olq" placeholder="Search openings by name" autocomplete="off" spellcheck="false" value="${esc(S.olq||'')}"></div><div class="seg" style="margin:14px 0 4px">${[['all','All'],['w','White'],['b','Black']].map(([k,t])=>`<button data-a="olf" data-p="${k}"${f===k?' class="on"':''}>${t}</button>`).join('')}</div>`
- +(rc.length&&!(S.olq||'').trim()?`<p class="dim" style="margin:10px 0 0">Recently viewed: ${rc.slice(0,3).map(id=>`<button class="lnk" data-a="olo" data-p="${id}" style="text-decoration:underline dotted">${esc(olById(id).name)}</button>`).join(', ')}</p>`:'')
- +lbl(f==='all'?'Openings':'Studied as '+olSideName(f),'')+`<div id="ollist">${olRows()}</div>`}
+function vOlib(){const f=S.olf||'all',rc=olRecent(),sw=olSummary('w'),sb=olSummary('b');return`<h1>Opening Library</h1><p class="sub">${OLIB.length} opening families · ${OLLINES} included theory lines. Move sequences are validated by the ESCHÉS rules engine; this is a curated library, not a complete theory database.</p><div class="sbx"><b>White</b> ${sw.learned} learned · ${sw.mastered} mastered · ${sw.due} due<br><b>Black</b> ${sb.learned} learned · ${sb.mastered} mastered · ${sb.due} due</div><div class="fw"><input class="in" id="olq" placeholder="Search openings or variations" autocomplete="off" spellcheck="false" value="${esc(S.olq||'')}"></div><div class="seg" style="margin:14px 0 4px">${[['all','All'],['w','White'],['b','Black']].map(([k,t])=>`<button data-a="olf" data-p="${k}"${f===k?' class="on"':''}>${t}</button>`).join('')}</div>${(sw.due+sb.due)?`<button class="abtn" data-a="olreview">Review ${sw.due+sb.due} due position${sw.due+sb.due!==1?'s':''}</button>`:''}`+(rc.length&&!(S.olq||'').trim()?`<p class="dim">Recently viewed: ${rc.slice(0,3).map(id=>`<button class="lnk" data-a="olo" data-p="${id}">${esc(olById(id).name)}</button>`).join(', ')}</p>`:'')+lbl(f==='all'?'Openings':'Studied as '+olSideName(f),'')+`<div id="ollist">${olRows()}</div>`}
 function olEnterDet(){const o=olById(S.olid);if(!o){home();return false}if(!o.sides.includes(S.olside))S.olside=o.sides[0];const ls=olLines(o,S.olside);if(S.oli==null||S.oli>=ls.length)S.oli=0;B.on=null;B.lock=true;B.arrow=null;S.opPv=null;olBoard(ls[S.oli].sans,S.olside);return true}
-function vOdet(){const o=olById(S.olid);if(!o)return'<h1>Opening</h1>'+act('back','Back');const ls=olLines(o,S.olside);
- let h=`<h1>${esc(o.name)}</h1><p class="sub">${esc(o.desc)}</p>`+lbl('Initial moves')+`<div class="sbx">${esc(olFmt(o.first))}</div>`;
- h+=o.sides.length>1?lbl('Study as')+`<div class="seg" style="margin:0 0 6px">${o.sides.map(c=>`<button data-a="olside" data-p="${c}"${S.olside===c?' class="on"':''}>${olSideName(c)}</button>`).join('')}</div>`:`<p class="dim">Studied as ${olSideName(o.sides[0])}.</p>`;
- h+=lbl('Lines for '+olSideName(S.olside),ls.length+' curated')+ls.map((x,i)=>`<button class="act${i===S.oli?' on':''}" data-a="olsel" data-p="${i}" style="display:block;text-align:left"><span style="display:block">${esc(x.name)}</span><span class="dim" style="display:block;font-weight:400;margin-top:3px">${esc(olFmt(x.sans))}</span></button>`).join('');
- return h+`<p class="dim" style="margin-top:10px">The board shows the end of the selected line. These are the lines in this starter library, not every variation of the opening.</p><button class="abtn" data-a="olgo">Practice this line</button>`+act('back','Back to the library')}
-function vOlpl(){let h='<h1>Practice Openings</h1><p class="sub">Practice the curated lines from the Opening Library. Results are kept for this session only and are not saved.</p>';
- for(const side of['w','b']){const rows=[];OLIB.forEach(o=>olLines(o,side).forEach((l,i)=>rows.push([o,l,i])));if(!rows.length)continue;h+=lbl('As '+olSideName(side),rows.length+' lines')+rows.map(([o,l,i])=>act('olplgo',esc(o.name)+' · '+esc(l.name),Math.ceil(l.sans.length/2)+' moves',o.id+'|'+side+'|'+i)).join('')}
- return h}
-/* ---- line practice: uses the shared board (B), play(), popAnim(), badge() exactly as repertoire practice does ---- */
+function olLineRow(o,l,i){const p=olParts(l),s=olLineStat(o,l),tag=s.mastered?'Mastered':s.learned?'Learned':s.introduced?'In progress':'Not studied';return`<button class="act${i===S.oli?' on':''}" data-a="olsel" data-p="${i}" style="display:block;text-align:left"><span style="display:flex;justify-content:space-between;gap:12px"><b style="font-weight:500">${esc(p.variation+(p.sub!=='Main line'?' · '+p.sub:''))}</b><span class="dim">${tag}${s.due?' · '+s.due+' due':''}</span></span><span class="dim" style="display:block;font-weight:400;margin-top:4px">${esc(olFmt(l.sans))}</span></button>`}
+function vOdet(){const o=olById(S.olid);if(!o)return'<h1>Opening</h1>'+act('back','Back');const ls=olLines(o,S.olside),l=ls[S.oli],st=olLineStat(o,l),sum=olSummary(S.olside,o);let h=`<h1>${esc(o.name)}</h1><p class="sub">${esc(o.desc)}</p><div class="sbx">${sum.learned}/${sum.total} lines learned · ${sum.mastered} mastered · ${sum.due} positions due</div>`;h+=o.sides.length>1?`<div class="seg">${o.sides.map(c=>`<button data-a="olside" data-p="${c}"${S.olside===c?' class="on"':''}>${olSideName(c)}</button>`).join('')}</div>`:`<p class="dim">Study path: ${olSideName(S.olside)}</p>`;for(const stage of['essential','common','deep']){const rows=ls.map((x,i)=>[x,i]).filter(([x])=>olStage(o,x)===stage);if(rows.length)h+=lbl(olStageName(stage),rows.length+' line'+(rows.length!==1?'s':''))+rows.map(([x,i])=>olLineRow(o,x,i)).join('')}h+=`<div class="sbx"><b>Selected line</b><br>${esc(olFmt(l.sans))}<div class="dim" style="margin-top:6px">${st.introduced?(st.learned?'Learned':'In progress'):'Not studied'} · ${olStageName(olStage(o,l))}</div></div><div class="seg"><button data-a="olm" data-p="learn">Learn</button><button data-a="olm" data-p="practice"${!st.introduced?' disabled':''}>Practice</button><button data-a="olm" data-p="drill"${!st.learned?' disabled':''}>Drill</button></div>`+act('olrep',olInRep(o,l)?'Remove line from repertoire':'Add line to current '+olSideName(l.side)+' repertoire')+act('back','Back to library');return h}
+function olInRep(o,l){return !!(reps.m.olrefs&&reps.m.olrefs[profFor(l.side)?.id]?.includes(olId(o,l)))}
+function olRepToggle(o,l){const p=profFor(l.side);if(!p)return;reps.m.olrefs=reps.m.olrefs||{};let a=reps.m.olrefs[p.id]||(reps.m.olrefs[p.id]=[]),id=olId(o,l);if(a.includes(id)){reps.m.olrefs[p.id]=a.filter(x=>x!==id);sv();return false}let s=R.parse(R.START),path=[];for(const san of l.sans){const m=R.fromSan(s,san);if(!m)break;if(s.t===l.side){const k=R.key(s),e=reps[l.side][k]||(reps[l.side][k]={fen:R.fen(s),sans:[]});if(!e.sans.includes(san))e.sans.push(san);e.p=path.slice();e.nm=o.name}path.push(san);s=R.make(s,m)}a.push(id);sv();return true}
+/* learning session: one shared board, one rules engine, four modes */
 const olAlive=op=>S.op===op&&S.v==='oprac';
-function olStart(){const o=olById(S.olid),l=o&&olLines(o,S.olside)[S.oli];if(!l){note('That line is not available.',1);return}
- const mv=olValid(l.sans);if(!mv){note('This line failed validation and cannot be practiced.',1);return}
- if(!S.osess)S.osess={ok:0,n:0};
- const op=S.op={o,l,mv,k:0,ok:0,n:0,fail:false,msg:'',err:false,done:false};
- S.v='oprac';S.opPv=null;clearBadge();B.arrow=null;setPos(R.START,l.side,false);B.on=olAns;B.lock=true;view();olNext(op)}
-function olNext(op){if(!olAlive(op))return;
- if(op.k>=op.l.sans.length){op.done=true;B.lock=true;B.on=null;B.arrow=null;view(1);return}
- if(B.s.t===op.l.side){B.lock=false;view(1)}
- else{B.lock=true;setTimeout(()=>{if(!olAlive(op))return;play(op.mv[op.k],'opp');op.k++;olNext(op)},500)}}
-function olAns(){const op=S.op;if(!op||op.done)return;const h=B.hist[B.hist.length-1],m=op.mv[op.k];B.lock=true;B.arrow=null;
- if(h.m.f===m.f&&h.m.t===m.t&&(h.m.pr||'')===(m.pr||'')){op.n++;S.osess.n++;if(!op.fail){op.ok++;S.osess.ok++}op.fail=false;op.k++;op.msg='Correct.';op.err=false;badge('Right');view(1);setTimeout(()=>olNext(op),350)}
- else{op.fail=true;op.err=true;op.msg=h.san+' is not the move in this line. Try again.';badge('Wrong');view(1);setTimeout(()=>{if(!olAlive(op))return;popAnim();clearBadge();B.lock=false;view(1)},750)}}
-function vOprac(){const op=S.op;if(!op)return'<h1>Practice</h1>'+act('back','Back');const{o,l}=op,k=op.k,ss=S.osess||{ok:0,n:0},acc=(a,n)=>n?Math.round(a/n*100)+'%':'—',num=((k>>1)+1)+(k%2?'...':'.');
- let h=`<h1 style="font-size:22px">${esc(o.name)}</h1><p class="sub">${esc(l.name)} · You play ${olSideName(l.side)}</p>`
-  +`<div class="sbx">This run: <b>${op.ok}</b> of <b>${op.n}</b> moves correct on the first try<br>Session: <b>${ss.ok}</b> of <b>${ss.n}</b> (${acc(ss.ok,ss.n)})<div class="dim">Session results are not saved.</div></div>`
-  +`<div class="prow"><span class="h">${esc(olFmt(l.sans.slice(0,k))||'Starting position')}</span></div>`;
- if(op.msg)h+=`<p class="${op.err?'err':'ok'}" style="margin:0 0 10px">${esc(op.msg)}</p>`;
- if(op.done)return h+`<div class="cd fade">Line complete.<small>${op.ok} of ${op.n} correct on the first try (${acc(op.ok,op.n)}).</small></div>`+act('olretry','Retry line')+act('olex','Back to the opening');
- return h+`<p class="dim">Your move: ${num} _</p><button class="pbtn" data-a="olshow">Show me the move</button><button class="pbtn" data-a="olretry">Retry line</button><button class="pbtn" data-a="olex">Exit practice</button>`}
+function olStart(mode,forced){let o,l;if(forced){o=forced.o;l=forced.l;S.olid=o.id;S.olside=l.side;S.oli=olLines(o,l.side).indexOf(l)}else{o=olById(S.olid);l=o&&olLines(o,S.olside)[S.oli]}if(!l)return note('That line is not available.',1);const mv=olValid(l.sans);if(!mv)return note('This line failed validation and cannot be studied.',1);const lr=olLP(o,l);if(mode==='practice'&&!lr.introduced)return note('Learn this line before normal practice.',1);if(mode==='drill'&&!lr.learned)return note('Finish learning this line before drilling it.',1);lr.introduced=true;olSave();const op=S.op={o,l,mv,mode:mode||'learn',k:0,ok:0,n:0,fail:false,msg:'',err:false,done:false,revealed:false,first:true};S.v='oprac';clearBadge();B.arrow=null;setPos(R.START,l.side,false);B.on=olAns;B.lock=true;view();olNext(op)}
+function olPurpose(op,k){const s=(()=>{let x=R.parse(R.START);for(let i=0;i<k;i++)x=R.make(x,op.mv[i]);return x})(),m=op.mv[k],p=purpose(s,m,true);return p||`The move ${op.l.sans[k]} is the recorded move in this validated theory line. No source annotation is stored for this position.`}
+function olNext(op){if(!olAlive(op))return;if(op.k>=op.l.sans.length){op.done=true;B.lock=true;B.on=null;B.arrow=null;olFinishLine(op.o,op.l);view(1);return}if(B.s.t!==op.l.side){B.lock=true;const k0=op.k;setTimeout(()=>{if(!olAlive(op)||op.k!==k0)return;play(op.mv[op.k],'opp');op.k++;olNext(op)},350);return}const p=olPP(op.o,op.l,op.k);p.introduced=true;olSave();op.first=true;op.fail=false;op.revealed=false;op.msg='';op.err=false;if(op.mode==='learn'){B.lock=true;B.arrow={f:op.mv[op.k].f,t:op.mv[op.k].t};op.msg=`${op.l.sans[op.k]} — ${olPurpose(op,op.k)}`;view(1)}else{B.lock=false;view(1)}}
+function olAdvanceLearn(){const op=S.op;if(!op||op.mode!=='learn'||op.done)return;const p=olPP(op.o,op.l,op.k);olRate(p,true,true);p.introduced=true;play(op.mv[op.k],'self');op.ok++;op.n++;op.k++;B.arrow=null;olSave();olNext(op)}
+function olAns(){const op=S.op;if(!op||op.done||op.mode==='learn')return;const h=B.hist[B.hist.length-1],m=op.mv[op.k],p=olPP(op.o,op.l,op.k),ok=h.m.f===m.f&&h.m.t===m.t&&(h.m.pr||'')===(m.pr||'');B.lock=true;B.arrow=null;op.n++;if(ok){olRate(p,true,op.first&&!op.revealed);if(op.first&&!op.revealed)op.ok++;op.k++;op.msg='Correct. '+olPurpose(op,op.k-1);op.err=false;badge('Right');olSave();view(1);setTimeout(()=>{clearBadge();olNext(op)},450)}else{olRate(p,false,op.first);p.retries=(p.retries||0)+1;op.first=false;op.fail=true;op.err=true;op.msg=`${h.san} is not the recorded move here. ${op.mode==='drill'?'Try again or request a hint.':'Use a hint if you need the plan.'}`;olSave();badge('Wrong');view(1);setTimeout(()=>{if(!olAlive(op))return;popAnim();clearBadge();B.lock=false;view(1)},650)}}
+function olDueItems(weak){const now=OLNOW(),a=[];for(const o of OLIB)for(const l of o.lines)for(const ply of olUserPlies(l)){const p=OLPROG.pos[olPosKey(o,l,ply)];if(!p||!p.introduced)continue;if(weak?((p.errors||0)>0&&(p.correct||0)<(p.errors||0)+2):(p.due&&p.due<=now))a.push({o,l,ply,p})}return a.sort((x,y)=>(x.p.due||0)-(y.p.due||0))}
+function vOprac(){const op=S.op;if(!op)return'<h1>Study openings</h1>'+act('back','Back');const k=op.k,pct=Math.round(k/op.l.sans.length*100),mode=op.mode[0].toUpperCase()+op.mode.slice(1);let h=`<h1>${mode}: ${esc(op.o.name)}</h1><p class="sub">${esc(op.l.name)} · ${olSideName(op.l.side)} · ${olStageName(olStage(op.o,op.l))}</p><div class="bar"><i style="width:${pct}%"></i></div><div class="prow"><span class="h">${esc(olFmt(op.l.sans.slice(0,k))||'Starting position')}</span></div>`;if(op.msg)h+=`<div class="${op.err?'err':'coach'}">${esc(op.msg)}</div>`;if(op.done)return h+`<div class="cd">Line complete.<small>${op.ok} first-attempt correct responses out of ${op.n} tested positions. Progress and review dates were saved.</small></div>`+act('olretry','Study this line again')+act('olex','Back to opening');if(op.mode==='learn'&&B.s.t===op.l.side)return h+`<p class="dim">Move ${((k>>1)+1)+(k%2?'...':'.')} · ${esc(op.l.sans[k])}</p><button class="pbtn" data-a="olnext">Replay / play taught move</button>`+act('olswitch','Switch to goal-first practice','', 'practice')+act('olex','Exit and resume later');if(B.s.t===op.l.side){const goal=olPurpose(op,k);h+=op.mode==='practice'?`<div class="sbx"><b>Goal</b><br>${esc(goal)}</div>`:op.mode==='drill'?`<p class="dim">Recall the move without it being shown first.</p>`:`<div class="sbx"><b>Review goal</b><br>${esc(goal)}</div>`;h+=`<button class="pbtn" data-a="olhint">Hint</button><button class="pbtn" data-a="olshow">Reveal answer</button>`}return h+act('olex','Exit and resume later')}
+function vOlpl(){const sw=olSummary('w'),sb=olSummary('b'),due=olDueItems(false),weak=olDueItems(true);return`<h1>Opening Study</h1><p class="sub">Learn introduces moves before recall. Practice uses introduced lines. Drill hides the answer. Review prioritizes due saved positions.</p><div class="sbx"><b>White</b> ${sw.learned} learned · ${sw.mastered} mastered · ${sw.due} due<br><b>Black</b> ${sb.learned} learned · ${sb.mastered} mastered · ${sb.due} due</div>`+act('olreview','Review due positions',due.length+' due')+act('olweak','Review weak lines',weak.length+' weak positions')+act('olib','Browse Opening Library')}
+function olReviewStart(weak){const q=olDueItems(weak);if(!q.length){note(weak?'No weak positions are currently recorded.':'Nothing is due for review.');return}const x=q[0];olStart('review',{o:x.o,l:x.l});const op=S.op;if(op&&x.ply>0){setPos(R.START,x.l.side,false);op.k=0;for(let i=0;i<x.ply;i++){play(op.mv[i],(i%2===0?'w':'b')===x.l.side?'self':'opp',true);op.k++}B.lock=false;view(1)}}
 document.addEventListener('input',e=>{if(e.target.id==='olq'){S.olq=e.target.value;const l=$('#ollist');if(l)l.innerHTML=olRows()}});
-Object.assign(ACT,{
- olib(){nav(()=>{S.v='olib';olEnterLib();view()})},
- olpl(){nav(()=>{S.v='olpl';olEnterLib();view()})},
- olf(p){S.olf=p;view(1)},
- olo(id){const o=olById(id);if(!o)return;nav(()=>{S.olid=id;S.olside=(S.olf==='w'||S.olf==='b')&&o.sides.includes(S.olf)?S.olf:o.sides[0];S.oli=0;olSeen(id);S.v='odet';if(olEnterDet())view()})},
- olside(p){S.olside=p;S.oli=0;if(olEnterDet())view(1)},
- olsel(p){S.oli=+p;if(olEnterDet())view(1)},
- olgo(){nav(()=>{S.osess={ok:0,n:0};olStart()})},
- olplgo(p){const[id,side,i]=p.split('|');nav(()=>{S.olid=id;S.olside=side;S.oli=+i;S.osess={ok:0,n:0};olStart()})},
- olretry(){olStart()},
- olshow(){const op=S.op;if(!op||op.done||B.lock)return;op.fail=true;const m=op.mv[op.k];B.arrow={f:m.f,t:m.t};op.msg='The expected move is highlighted on the board. It counts as missed.';op.err=false;drawBoard();view(1)},
- olex(){S.op=null;ACT.back()}});
+Object.assign(ACT,{olib(){nav(()=>{S.v='olib';olEnterLib();view()})},olpl(){nav(()=>{S.v='olpl';olEnterLib();view()})},olf(p){S.olf=p;view(1)},olo(id){const o=olById(id);if(!o)return;nav(()=>{S.olid=id;S.olside=(S.olf==='w'||S.olf==='b')&&o.sides.includes(S.olf)?S.olf:o.sides[0];S.oli=0;olSeen(id);S.v='odet';if(olEnterDet())view()})},olside(p){S.olside=p;S.oli=0;if(olEnterDet())view(1)},olsel(p){S.oli=+p;if(olEnterDet())view(1)},olm(p){olStart(p)},olgo(){olStart('learn')},olretry(){olStart(S.op?.mode||'learn')},olnext(){olAdvanceLearn()},olswitch(p){olStart(p)},olhint(){const op=S.op;if(!op||op.done||B.lock)return;const m=op.mv[op.k];B.arrow={f:m.f,t:m.t};op.first=false;op.msg='Hint: '+olPurpose(op,op.k);drawBoard();view(1)},olshow(){const op=S.op;if(!op||op.done||B.lock)return;const p=olPP(op.o,op.l,op.k),m=op.mv[op.k];if(op.first)olRate(p,false,true);p.retries=(p.retries||0)+1;op.first=false;op.revealed=true;B.arrow={f:m.f,t:m.t};op.msg='Answer: '+op.l.sans[op.k]+'. '+olPurpose(op,op.k);olSave();drawBoard();view(1)},olex(){S.op=null;ACT.back()},olreview(){olReviewStart(false)},olweak(){olReviewStart(true)},olrep(){const o=olById(S.olid),l=o&&olLines(o,S.olside)[S.oli];if(!l)return;const on=olRepToggle(o,l);note(on?'Line added to the active repertoire.':'Line removed from the library link; existing repertoire moves were preserved.');view(1)}});
+
 Object.assign(ACT,{rsave(){S.snap=null;sv();note('Saved.');home()},planok(){S.planAck=R.key(B.s);view()},radd(){S.nrc='w';S.nrn='';S.nre='';S.nrt=null;nav(()=>{S.v='radd';view()})},rcol(p){S.nrc=p;view(1)},rnt(x){let a=S.nrt?S.nrt.slice():[];a=a.includes(x)?a.filter(t=>t!==x):a.concat(x);S.nrt=a.length?ALLTC.filter(t=>a.includes(t)):null;view(1)},rnew(){const col=S.nrc||'w',nm=(S.nrn||'').trim()||(col==='w'?'White':'Black'),id='r'+Date.now().toString(36);reps.m.list.push({id,col,name:nm,tcs:(S.nrt&&S.nrt.length?S.nrt:ALLTC).slice()});reps.m.data[id]={};reps.m.act[col]=id;delete RCP[col];S.nrn='';S.nre='';sv();home()},
  rtc(x){const p=profFor(S.c);if(!p)return;let a=p.tcs&&p.tcs.length?p.tcs.slice():ALLTC.slice();if(a.length===ALLTC.length)a=[x];else{a=a.includes(x)?a.filter(t=>t!==x):a.concat(x);if(!a.length)a=ALLTC.slice()}p.tcs=ALLTC.filter(t=>a.includes(t));p.auto=0;delete RCP[S.c];EX.clear();sv();view(1)},
  rrm(){S.rrm=true;view(1)},rrmgo(){const c=S.c,p=profFor(c),sib=reps.m.list.filter(x=>x.col===c&&x.id!==(p&&p.id));if(!p||!sib.length){S.rrm=false;view(1);return}reps.m.list=reps.m.list.filter(x=>x!==p);delete reps.m.data[p.id];reps.m.act[c]=sib[0].id;delete RCP[c];S.rrm=false;EX.clear();sv();home()},thok(){S.thOn=true;view()},keepadd(){S.keepKey=R.key(B.s);view()},prac(){nav(()=>{S.psc=null;pchoose()})},cl(){const c=S.c;nav(()=>{S.psc=c;pchoose()})},ps:p=>nav(()=>startPrac(p)),pso:p=>nav(()=>startPrac('open',p)),pres(){const rs=psAvail();if(rs)nav(()=>startPrac(rs.mode,rs.key,rs))},
