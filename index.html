@@ -73,7 +73,7 @@ h1{font-size:19px;font-weight:500;letter-spacing:-.015em;line-height:1.25;margin
 #cap .c1{font-size:13px}#cap .c2{margin-top:2px}#opn{font-weight:500;color:var(--tx);transition:opacity .18s;position:relative;cursor:default;pointer-events:auto}#opn.sw{opacity:0}
 #lm{color:var(--mu);font-size:13px;white-space:nowrap;transition:opacity .18s}
 .tb.dis{opacity:.7;cursor:default}.tb[data-tip]{position:relative}
-.tb[data-tip]:hover::after{content:attr(data-tip);position:absolute;top:calc(100% + 8px);right:0;background:#2a2a2a;color:var(--tx);border:1px solid var(--ln);padding:5px 9px;border-radius:3px;font-size:12px;white-space:nowrap;animation:in .15s;z-index:9}
+.tb[data-tip]:hover::after,.tb[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;top:calc(100% + 8px);right:0;background:#2a2a2a;color:var(--tx);border:1px solid var(--ln);padding:5px 9px;border-radius:3px;font-size:12px;white-space:nowrap;animation:in .15s;z-index:9}
 #board.sw{animation:bsw .22s ease}@keyframes bsw{0%{opacity:.5}100%{opacity:1}}
 #bdg{position:absolute;right:-12px;top:30px;width:30px;height:30px;pointer-events:none;z-index:8}
 #bdg img{width:100%;height:100%;display:block;animation:bdg 2.4s cubic-bezier(.2,.7,.2,1) forwards}
@@ -89,7 +89,7 @@ h1{font-size:19px;font-weight:500;letter-spacing:-.015em;line-height:1.25;margin
 
 
 .q{display:inline-block;width:15px;height:15px;border-radius:50%;background:#555;color:#151515;font-size:10px;font-weight:700;text-align:center;line-height:15px;margin-left:8px;cursor:help;position:relative}
-.q:hover::after{content:attr(data-tip);position:absolute;left:20px;top:-4px;width:300px;background:#2a2a2a;color:var(--tx);border:1px solid var(--ln);padding:8px 10px;border-radius:3px;font-size:12px;font-weight:400;line-height:1.4;text-align:left;animation:in .15s;z-index:20}
+.q:hover::after,.q:focus-visible::after{content:attr(data-tip);position:absolute;left:20px;top:-4px;width:300px;background:#2a2a2a;color:var(--tx);border:1px solid var(--ln);padding:8px 10px;border-radius:3px;font-size:12px;font-weight:400;line-height:1.4;text-align:left;animation:in .15s;z-index:20}
 .clk{width:14px;height:14px;border-radius:50%;display:inline-block;position:relative;background:var(--am)}.clk.g{background:#777}.clk::before{content:"";position:absolute;left:6.3px;top:3px;width:1.4px;height:5px;background:#222}.clk::after{content:"";position:absolute;left:6.3px;top:7px;width:4px;height:1.4px;background:#222}
 .cnt{display:flex;gap:18px;align-items:center;font-size:19px;font-weight:600;color:#ccc}.cnt span{display:inline-flex;align-items:center;gap:8px}.dot{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#1a1a1a;font-weight:800}
 .prow{border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);padding:20px 0;margin:18px 0 26px;display:flex;gap:16px;align-items:baseline;font-size:15px;min-height:64px}.prow b.n{color:var(--mu);font-size:19px;font-weight:600}.prow .h{color:#cfcfcf;font-size:14px;line-height:1.5}
@@ -154,7 +154,7 @@ select.sel{background:#1b1b1b;color:var(--tx);border:1px solid var(--ln);padding
 .srow{position:relative;cursor:pointer}.sovl{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.seg button.on{background:var(--hv);color:var(--tx)}
 #P:has(.hm){display:flex;flex-direction:column}.hm{margin:auto 0;padding-bottom:56px}input,textarea,select{text-align:left}
 /* ---- visual system v2 ---- */
-:root{--bg:#0b0c0e;--pn:#111215;--ln:#22242a;--hv:#191b20;--tx:#ece9e2;--mu:#98958d;--dm:#63615c;--ac:#c8a96b;--ac2:#c8a96b;--acx:#171309;--r:10px;--lt:#e9e7d4;--dk:#6f8f54;
+:root{--bg:#0b0c0e;--pn:#111215;--ln:#22242a;--hv:#191b20;--tx:#ece9e2;--mu:#98958d;--dm:#85827a;--ac:#c8a96b;--ac2:#c8a96b;--acx:#171309;--r:10px;--lt:#e9e7d4;--dk:#6f8f54;
 --serif:"Iowan Old Style","Palatino Linotype","Charter","Georgia",serif;--sans:"Inter","SF Pro Text","Segoe UI",system-ui,-apple-system,sans-serif}
 html,body{background:var(--bg);color:var(--tx);font-family:var(--sans);letter-spacing:.005em}
 #P{background:linear-gradient(180deg,#121317,#0f1013)}
@@ -192,7 +192,7 @@ input[type=range]{accent-color:#fff}
 #ld .t{font-family:var(--serif);font-weight:500}
 ::selection{background:rgba(200,169,107,.3)}
 a[target=_blank],a[target=_blank]:visited{color:var(--ac);text-decoration:none;border-bottom:1px solid rgba(200,169,107,.4)}a[target=_blank]:hover{border-bottom-color:var(--ac)}
-#etip{position:fixed;z-index:99999;max-width:240px;padding:7px 10px;border-radius:8px;background:#1d1f24;border:1px solid var(--ln);color:var(--tx);font-size:12px;line-height:1.4;pointer-events:none;opacity:0;transition:opacity .12s}#etip.on{opacity:1}
+#sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}[data-tip]:focus-visible{outline:2px solid var(--mu);outline-offset:2px}#etip{position:fixed;z-index:99999;max-width:240px;padding:7px 10px;border-radius:8px;background:#1d1f24;border:1px solid var(--ln);color:var(--tx);font-size:12px;line-height:1.4;pointer-events:none;opacity:0;transition:opacity .12s}#etip.on{opacity:1}
 .rbar{position:relative;height:64px;margin:6px 0 14px}.rtk{position:absolute;left:0;right:0;top:14px;height:8px;border-radius:4px;background:var(--hv)}.rin{position:absolute;left:5%;right:5%;top:0;height:36px}.rtkm{position:absolute;top:14px;width:2px;height:8px;margin-left:-1px;background:var(--dm)}.rlb{position:absolute;top:38px;transform:translateX(-50%);font-size:10px;color:var(--mu);text-decoration:none}.rng{position:absolute;left:-8px;width:calc(100% + 16px);top:0;height:36px;margin:0;-webkit-appearance:none;appearance:none;background:transparent;outline:0;cursor:pointer}.rng::-webkit-slider-runnable-track{background:transparent;height:36px}.rng::-moz-range-track{background:transparent;height:36px}.rng::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:36px;background:linear-gradient(#fff,#fff) center/2px 100% no-repeat}.rng::-moz-range-thumb{width:16px;height:36px;border:0;border-radius:0;background:linear-gradient(#fff,#fff) center/2px 100% no-repeat}
 .ldesc{font-size:11px;color:var(--mu);margin-top:3px}.ldesc .lab{margin:0;padding:0;background:none;font-size:11px;font-weight:500;line-height:1.4;color:var(--mu)}
 .tcm{display:inline-flex;gap:7px;margin-left:8px;vertical-align:middle}.tcm i{display:inline-flex;color:var(--mu);opacity:.85;cursor:help}.tcm svg{width:15px;height:15px}.tcm i.all{width:15px;height:15px;justify-content:center;align-items:center;font-style:normal;font-size:15px;line-height:15px;font-weight:500}.tca{font-size:12px;font-weight:400;color:var(--mu);margin-left:8px;letter-spacing:0;font-family:inherit}
@@ -331,7 +331,7 @@ function arrowSvg(){const fl=B.o==='b',X=i=>(fl?7-(i&7):i&7)*12.5+6.25,Y=i=>(fl?
  if(mv){const img=bd.querySelector(`.sq[data-i="${mv.t}"] .pc`);if(img&&img.animate){const X=i=>fl?7-(i&7):i&7,Y=i=>fl?7-(i>>3):i>>3;
   img.animate([{transform:`translate(${(X(mv.f)-X(mv.t))*100}%,${(Y(mv.f)-Y(mv.t))*100}%)`},{transform:'none'}],PCA())}}}
 function play(m,who,q){const L=R.legal(B.s),san=R.san(B.s,m,L);B.hist.push({s:B.s,k:B.keys.slice(),l:B.last,san,m});B.s=R.make(B.s,m);B.keys.push(R.key(B.s));B.last={f:m.f,t:m.t};B.sel=null;B.lg=[];B.promo=null;B.arrows=null;B._ak=null;
- if(!q){snd(R.check(B.s)?'check':m.pr?'promote':m.ca?'castle':m.cap?'cap':who||'self');drawBoard(m)}clearBadge();const st=R.status(B.s,B.keys);note(st?st[0].toUpperCase()+st.slice(1)+(st==='checkmate'?' · '+(B.s.t==='w'?'Black':'White')+' wins':''):'');if(!q)hdrSoon();return san}
+ if(!q){snd(R.check(B.s)?'check':m.pr?'promote':m.ca?'castle':m.cap?'cap':who||'self');drawBoard(m)}clearBadge();const st=R.status(B.s,B.keys);if(!q&&window.__say){const sp=san.replace(/^O-O-O/,'castles queenside').replace(/^O-O/,'castles kingside').replace('#',', checkmate').replace('+',', check').replace('x',' takes ').replace('=',' promotes to ');window.__say((who==='opp'?'Opponent played ':who==='self'?'You played ':'')+sp+(st&&st!=='checkmate'?'. '+st:''))}note(st?st[0].toUpperCase()+st.slice(1)+(st==='checkmate'?' · '+(B.s.t==='w'?'Black':'White')+' wins':''):'');if(!q)hdrSoon();return san}
 function undo(){const h=B.hist.pop();if(!h)return false;const oB=B.s.b;B.s=h.s;B.keys=h.k;B.last=h.l;B.sel=null;B.lg=[];drawBoard();slidePcs(oB,B.s.b,B.o==='b');clearBadge();hdrSoon();return true}
 function userMove(f,t){const ms=R.legal(B.s).filter(x=>x.f===f&&x.t===t);if(!ms.length){B.sel=null;B.lg=[];drawBoard();return}
  if(ms.length>1){B.promo={t,ms};drawBoard();return}const m=ms[0];play(m,'self');B.on&&B.on(m)}
@@ -383,11 +383,13 @@ const evCellSet=(el,cp)=>{el.innerHTML=evCellHtml(cp)};
 const fe=cp=>cp==null?'–':Math.abs(cp)>25000?(Math.abs(cp)>=30000?'#':(cp>0?'+':'−')+'M'+Math.ceil((30000-Math.abs(cp))/2)):(cp>0?'+':cp<0?'−':'')+Math.abs(cp/100).toFixed(1);
 /* network */
 async function http(u,o){let r;try{r=await fetch(u,o)}catch(e){throw new Error('Network request failed (offline, blocked, or CORS).')}
- if(r.status===404)throw new Error('User not found.');if(r.status===429){const e=new Error('Rate limited. Wait a minute and try again.');e.status=429;throw e}if(r.status===401||r.status===403)throw new Error('Access denied ('+r.status+'). The Lichess explorer may require an API token; add one in Settings.');
+ if(r.status===404)throw new Error('User not found.');if(r.status===429){const e=new Error('Rate limited. Wait a minute and try again.');e.status=429;e.retry=+r.headers.get('Retry-After')||0;throw e}if(r.status===401||r.status===403)throw new Error('Access denied ('+r.status+'). The Lichess explorer may require an API token; add one in Settings.');
  if(!r.ok)throw new Error('Server returned '+r.status+'.');return r}
 try{localStorage.removeItem('esches.ex3')}catch(e){}
 const EX=new Map(),EXP=new Map(),EXL=(()=>{const o=LS.g('ex4',{}),now=Date.now(),r={};for(const k of Object.keys(o)){const e=o[k];if(e&&e.j&&now-e.t<(k.startsWith('masters')?30:14)*864e5)r[k]=e}return r})(),RB=[0,1000,1200,1400,1600,1800,2000,2200,2500];
 let exT=0;const exSave=()=>{clearTimeout(exT);exT=setTimeout(()=>LS.s('ex4',EXL),1500)};
+/* game downloads: retry a rate-limited request up to 3 times, waiting as long as the site asks (default 5/15/45 s) */
+async function httpB(u,o){for(let i=0;;i++){try{return await http(u,o)}catch(e){if(e.status!==429||i>=3)throw e;const w=Math.min(90,e.retry||[5,15,45][i]);for(let t=w;t>0;t--){ldt('Rate limited, retrying in '+t+' s ('+(i+1)+' of 3)');await new Promise(r=>setTimeout(r,1000))}}}}
 /* request lanes: foreground first, background (book lookups) only when idle; after a 429 background waits a minute and foreground fails fast with the reason */
 const EXQ={fg:[],bg:[],run:false,pause:0};
 function exPump(){if(EXQ.run)return;EXQ.run=true;(async()=>{try{while(EXQ.fg.length||EXQ.bg.length){const paused=EXQ.pause>Date.now();let job;
@@ -395,7 +397,7 @@ function exPump(){if(EXQ.run)return;EXQ.run=true;(async()=>{try{while(EXQ.fg.len
   else{if(paused){await new Promise(r=>setTimeout(r,Math.min(2000,Math.max(100,EXQ.pause-Date.now()))));continue}job=EXQ.bg.shift()}
   await new Promise(r=>setTimeout(r,150));
   try{const r=await http(job.u,cfg.token?{headers:{Authorization:'Bearer '+cfg.token}}:undefined);job.res(await r.json())}catch(e){if(e.status===429)EXQ.pause=Date.now()+60000;job.rej(e)}}}finally{EXQ.run=false}})()}
-const exFetch=(u,bg)=>new Promise((res,rej)=>{EXQ[bg?'bg':'fg'].push({u,res,rej});exPump()});
+const exFetch=(u,bg)=>new Promise((res,rej)=>{if(!bg){const i=EXQ.bg.findIndex(j=>j.u===u);if(i>=0){const j=EXQ.bg.splice(i,1)[0],r0=j.res,e0=j.rej;j.res=v=>{r0(v);res(v)};j.rej=x=>{e0(x);rej(x)};EXQ.fg.push(j);exPump();return}}EXQ[bg?'bg':'fg'].push({u,res,rej});exPump()});
 const exSpeed=()=>profSpeeds(profFor(S.c||'w')),exBuckets=()=>[deriveRating().explorerRatingBucket];
 const exCfg=()=>`&speeds=${exSpeed()}&ratings=${exBuckets().join(',')}`;
 async function explorer(kind,fen,top,bg){const k=kind==='lichess'?['lichess',fen,cfg.ratingPlatform,exBuckets().join(','),exSpeed()].join('|'):'masters|'+fen+(top?'|t'+top:'');if(EX.has(k))return EX.get(k);const c=EXL[k];if(c){EX.set(k,c.j);return c.j}
@@ -405,14 +407,14 @@ async function explorer(kind,fen,top,bg){const k=kind==='lichess'?['lichess',fen
  EXP.set(k,pr);try{return await pr}finally{EXP.delete(k)}}
 const parseMoves=t=>t.replace(/\[[^\]]*\]/g,'').replace(/\{[^}]*\}/g,'').replace(/\([^)]*\)/g,'').replace(/\$\d+/g,'').split(/\s+/).map(x=>x.replace(/^\d+\.+/,'')).filter(x=>x&&!/^(1-0|0-1|1\/2-1\/2|\*)$/.test(x));
 function addGames(l){const m=new Map(games.map(g=>[g.id,g]));let n=0;for(const g of l){if(!m.has(g.id))n++;m.set(g.id,g)}games=[...m.values()];sv();return n}
-async function fetchCC(u,more){let m=meta.chesscom;if(!more||!m||m.u!==u){const j=await(await http('https://api.chess.com/pub/player/'+encodeURIComponent(u)+'/games/archives')).json();m=meta.chesscom={u,a:(j.archives||[]).reverse(),i:0}}
- const out=[];for(let k=0;k<3&&m.i<m.a.length;k++,m.i++){ldt(`Chess.com · archive ${m.i+1} of ${m.a.length}`);const j=await(await http(m.a[m.i])).json();
+async function fetchCC(u,more){let m=meta.chesscom;if(!more||!m||m.u!==u){const j=await(await httpB('https://api.chess.com/pub/player/'+encodeURIComponent(u)+'/games/archives')).json();m=meta.chesscom={u,a:(j.archives||[]).reverse(),i:0}}
+ const out=[];for(let k=0;k<3&&m.i<m.a.length;k++,m.i++){ldt(`Chess.com · archive ${m.i+1} of ${m.a.length}`);const j=await(await httpB(m.a[m.i])).json();
   for(const g of j.games||[]){if(g.rules!=='chess'||!g.pgn)continue;const w=g.white.username.toLowerCase()===u.toLowerCase(),me=w?g.white:g.black,op=w?g.black:g.white,mv=parseMoves(g.pgn);if(!mv.length)continue;
    const eco=((g.pgn.match(/\[ECOUrl "([^"]+)"/)||[])[1]||'').split('/').pop().replace(/-\d.*$/,'').replace(/-/g,' ');
    out.push({id:'cc:'+g.url.split('/').pop(),site:'chesscom',url:g.url,col:w?'w':'b',mr:me.rating,or:op.rating,rated:!!g.rated,term:(me.result==='win'?op.result:me.result),white:g.white.username,black:g.black.username,res:me.result==='win'?'win':op.result==='win'?'loss':'draw',tc:g.time_class,t:g.end_time*1000,open:eco,mv:mv.join(' ')})}}
  return addGames(out)}
 async function fetchLI(u,more){let m=meta.lichess;if(!more||!m||m.u!==u)m=meta.lichess={u,until:null,done:false};ldt('Lichess · requesting up to 200 games');
- const t=await(await http(`https://lichess.org/api/games/user/${encodeURIComponent(u)}?max=200&opening=true&moves=true`+(m.until?'&until='+m.until:''),{headers:{Accept:'application/x-ndjson'}})).text(),L=t.split('\n').filter(Boolean),out=[];let mn=Infinity;
+ const t=await(await httpB(`https://lichess.org/api/games/user/${encodeURIComponent(u)}?max=200&opening=true&moves=true`+(m.until?'&until='+m.until:''),{headers:{Accept:'application/x-ndjson'}})).text(),L=t.split('\n').filter(Boolean),out=[];let mn=Infinity;
  for(const l of L){let o;try{o=JSON.parse(l)}catch(e){continue}mn=Math.min(mn,o.createdAt||Infinity);if(o.variant!=='standard'||!o.moves)continue;
   const wn=o.players.white.user?.name||'Anonymous',bn=o.players.black.user?.name||'Anonymous',w=wn.toLowerCase()===u.toLowerCase();
   out.push({id:'li:'+o.id,site:'lichess',url:'https://lichess.org/'+o.id,col:w?'w':'b',mr:o.players[w?'white':'black'].rating,or:o.players[w?'black':'white'].rating,rated:!!o.rated,term:o.status,white:wn,black:bn,res:o.winner?((o.winner==='white')===w?'win':'loss'):'draw',tc:o.speed,t:o.lastMoveAt||o.createdAt,open:(o.opening?.name||'').split(':')[0],mv:o.moves})}
@@ -535,13 +537,13 @@ async function bgGame(g){const{st}=gs(g),n=st.length;BG.cur=g.id;BG.n=n;const p=
   p.ev.push(r.cp);p.e2.push(r.cp2);p.bm.push(r.best);p.pv.push((r.pv||'').split(' ').slice(0,6).join(' '));BG.i=i+1;if(i%4===3||i===n-1){anlp[g.id]=p;LS.s('anlp',anlp)}bgPaint(i%3===0)}
  await bgRefine(g,p,st);const bk=await bookPlies(g);anl[g.id]={ev:p.ev,e2:p.e2,bm:p.bm,pv:p.pv,d:12,rf:p.rf?Object.keys(p.rf).length:0,done:1,bk,t:Date.now()};delete anlp[g.id];LS.s('anlp',anlp);sv();RVC.clear();onAnlDone(g.id);return true}
 /* Second pass: re-check the user's biggest swings (and any depth-8 fallbacks) at depth 16 so mistake/blunder labels rest on a deeper search. Optional: any failure just keeps the depth-12 values. */
-async function bgRefine(g,p,st){try{const n=st.length,u=g.col==='b'?-1:1,mine=g.col==='b'?1:0,cand=[];
+let bgSlow=0;async function bgRefine(g,p,st){try{const n=st.length,u=g.col==='b'?-1:1,mine=g.col==='b'?1:0,cand=[];
  for(let i=0;i<n-1;i++){if(i%2!==mine)continue;if(Math.abs(p.ev[i])>25000||Math.abs(p.ev[i+1])>25000)continue;const d=u*(p.ev[i+1]-p.ev[i]);if(d<=-120)cand.push({i,w:-d})}
  cand.sort((a,b)=>b.w-a.w);const todo=new Set();for(const c of cand.slice(0,4)){todo.add(c.i);todo.add(c.i+1)}for(const i of(p.shi||[]).slice(0,6))todo.add(i);
  p.rf=p.rf||{};
- for(const i of[...todo].sort((a,b)=>a-b)){if(p.rf[i])continue;if(!bgOn()&&BG.force!==g.id)break;const s=st[i];if(!s||!R.legal(s).length)continue;
-  let r;try{r=await BGE.run(R.fen(s),16,2)}catch(e){continue}
-  if(!r||r.partial)continue;p.ev[i]=r.cp;p.e2[i]=r.cp2;p.bm[i]=r.best;p.pv[i]=(r.pv||'').split(' ').slice(0,6).join(' ');p.rf[i]=1}}catch(e){}}
+ for(const i of[...todo].sort((a,b)=>a-b)){if(p.rf[i])continue;if(bgSlow>=2)break;if(!bgOn()&&BG.force!==g.id)break;const s=st[i];if(!s||!R.legal(s).length)continue;
+  let r;const t0=Date.now();try{r=await BGE.run(R.fen(s),16,2)}catch(e){bgSlow++;continue}
+  if(!r||r.partial||Date.now()-t0>20000){bgSlow++;if(!r||r.partial)continue}else bgSlow=0;p.ev[i]=r.cp;p.e2[i]=r.cp2;p.bm[i]=r.best;p.pv[i]=(r.pv||'').split(' ').slice(0,6).join(' ');p.rf[i]=1}}catch(e){}}
 /* retry book lookups that failed earlier (offline / 429) once the analysis queue is idle */
 async function bkFix(){if(BG.bkRun)return;BG.bkRun=true;let left=0,n=0;try{for(const g of games){const A=anl[g.id];if(!A||!A.done||!A.bk||A.bk.ok!==false)continue;if(left||!bgOn()){left++;continue}const bk=await bookPlies(g);if(bk.ok){A.bk=bk;n++}else left++}
  if(n){sv();RVC.clear();bgPaint()}if(left&&(BG.bkTry=(BG.bkTry||0)+1)<=5)setTimeout(()=>{if(!BG.run)kickBg()},90000);else if(!left)BG.bkTry=0}finally{BG.bkRun=false}}
@@ -653,9 +655,9 @@ const myTurn=()=>B.s.t===S.c;
 function startRep(c,path){S.v='rep';S.c=c;S.rb=true;S.path=[];S.lim=3;S.opPv=null;setPos(R.START,c,false);B.on=repMove;B.lock=false;
  for(const san of path||[]){const m=R.fromSan(B.s,san);if(!m)break;const pb=B.s;play(m,'self',true);if(pb.t===c)saveMove(c,pb,san,null,S.path.slice());S.path.push(san)}drawBoard();repLoad()}
 let RD=null,repTk=0,UG=null,UGn=-1,UGf={},clsTk=0;
-function buildUG(){if(UG&&UGn===games.length)return;UG={};UGf={};UGn=games.length;for(const g of games){let st=R.parse(R.START);const mv=g.mv.split(' ').slice(0,24);for(const x of mv){const m=R.fromSan(st,x);if(!m)break;const k=R.key(st),e=UG[k]||(UG[k]={}),mine=st.t===g.col,id=(mine?'m:':'o:')+moveSan(st,m),y=e[id]||(e[id]={n:0,p:0,mine});UGf[k]=st.fm;y.n++;y.p+=g.res==='win'?1:g.res==='draw'?.5:0;st=R.make(st,m)}}}
+let UGp=null;function buildUG(){if(UG&&UGn===games.length)return Promise.resolve();if(UGp)return UGp;return UGp=(async()=>{const n=games.length,ug={},ugf={};let c=0;for(const g of games.slice()){let st=R.parse(R.START);const mv=g.mv.split(' ').slice(0,24);for(const x of mv){const m=R.fromSan(st,x);if(!m)break;const k=R.key(st),e=ug[k]||(ug[k]={}),mine=st.t===g.col,id=(mine?'m:':'o:')+moveSan(st,m),y=e[id]||(e[id]={n:0,p:0,mine});ugf[k]=st.fm;y.n++;y.p+=g.res==='win'?1:g.res==='draw'?.5:0;st=R.make(st,m)}if(++c%15===0)await new Promise(r=>setTimeout(r,0))}UG=ug;UGf=ugf;UGn=n})().finally(()=>{UGp=null})}
 async function repLoad(){const tk=++repTk;RD={loading:true};view();const f=R.fen(B.s);await new Promise(r=>setTimeout(r,220));if(tk!==repTk)return;
- try{if(games.length&&(!UG||UGn!==games.length))buildUG();const[a,m]=await Promise.all([explorer('lichess',f),explorer('masters',f).catch(()=>null)]);if(tk!==repTk)return;RD={a,m};repPrep();setTimeout(()=>subFill(tk),0)}catch(e){if(tk!==repTk)return;RD={err:e.message}}view(1);fillEval();if(RD&&RD.src==='sf')sfLoad(tk,f)}
+ try{if(games.length&&(!UG||UGn!==games.length))await buildUG();const[a,m]=await Promise.all([explorer('lichess',f),explorer('masters',f).catch(()=>null)]);if(tk!==repTk)return;RD={a,m};repPrep();setTimeout(()=>subFill(tk),0)}catch(e){if(tk!==repTk)return;RD={err:e.message}}view(1);fillEval();if(RD&&RD.src==='sf')sfLoad(tk,f)}
 
 /* ---- repertoire learning: plan sidebar, ranking, Lichess -> Stockfish fallback, labels ---- */
 function planPaint(){const el=$('#planbox'),pn=S.plan&&S.plan.f===R.fen(B.s)&&S.plan.lines&&S.plan.lines.length>=2?S.plan:null,on=pn&&S.v==='rep'&&S.rb;B.arrows=on?pn.arrows:null;
@@ -792,14 +794,14 @@ async function wrongDemo(h,alive,say){const base=B.hist.length-1;
  const restore=async()=>{if(!alive())return;B.arrow=null;while(B.hist.length>base+1){popAnim();await sl(AM(260)+200);if(!alive())return}if(B.hist.length>base){popAnim();await sl(AM(240)+120)}B.arrow=null;B.hintSq=null;drawBoard();clearBadge()};
  try{const n=R.make(h.s,h.m);if(!R.legal(n).length){say('That move is incorrect. Try again.');await sl(900);await restore();return}
   say('Checking why that move is wrong…');
-  const[r0,r1]=await Promise.all([fgEval(R.fen(h.s),10),fgEval(R.fen(n),10)]);if(!alive())return;
+  const[r0,r1]=await Promise.race([Promise.all([fgEval(R.fen(h.s),10),fgEval(R.fen(n),10)]),new Promise((_,j)=>setTimeout(()=>j(new Error('Engine did not answer')),15000))]);if(!alive())return;
   const sg=h.s.t==='w'?1:-1,loss=r0&&r1?Math.max(0,sg*(r0.cp-r1.cp)):0,bm=r1&&r1.best?R.legal(n).find(x=>uci(x)===r1.best.slice(0,5)||uci(x)===r1.best.slice(0,4)):null;
   if(r0&&r1){const c=classify({s:h.s,m:h.m,e0:r0.cp,e1:r1.cp,best:r0.best,e2:null,book:false,prevLoss:0}).c;badge(cfg.pind==='std'?c:'Wrong')} if(bm&&loss>=60){const sanR=R.san(n,bm),cp=bm.cap?n.b[bm.t]:null;B.arrow={f:bm.f,t:bm.t};drawBoard();say(`Stockfish's answer: ${sanR}`);await sl(AM(500)+900);if(!alive())return;
    play(bm,'opp');B.arrow=null;const mate=!R.legal(B.s).length&&R.check(B.s);
    const why=mate?`${sanR} is checkmate.`:cp?`${sanR} captures your ${PNAME[cp.toLowerCase()]||'piece'}${bm.t===h.m.t?' — the piece you just moved was hanging':''}.`:`${sanR} punishes this move (evaluation swings by ${(loss/100).toFixed(1)} pawns against you).`;
    say(why);await sl(1700);if(!alive())return;await restore();say(why+' Try again.')}
   else{say("That move isn't the one saved for this position. Try again.");await sl(1000);await restore()}
- }catch(e){await restore()}}
+ }catch(e){if(!alive())return;say("That move isn't the one saved for this position. Try again. (Explanation unavailable: "+(e&&e.message||'engine error')+")");await sl(1200);await restore()}}
 function hintText(P){const e=P.it.e,s=R.parse(e.fen),m=R.fromSan(s,e.sans[0]);const t=m?purpose(s,m,true):'';return t||'Think about development, the center and king safety.'}
 
 function vPrac(){const P=S.pm;if(P.empty)return`<h1>${pItems().length?'Nothing to practice here':'No lines yet'}</h1><p class="sub">${pItems().length?'This selection has no moves right now.':'Build a repertoire first. Lines you choose are saved here and practiced offline.'}</p>`+act('back','Back');
@@ -883,7 +885,7 @@ function vSet(){const ck=k=>{const o=SOPT[k];if(1)return act('scyc',o.t,sLab(k),
  +sec('Board settings')+ck('disp')+ck('anim')+ck('snd')+ck('hap')+act('crd','Board coordinates',cfg.coords?'On':'Off')
  +'<div style="height:10px"></div>'+lbl('Stockfish','LOCAL')+act('bgset','Analyze games in the background',cfg.bg===false?'Off':'On')+(cfg.bg!==false&&bgDone()<games.length?act('bgp',cfg.bgPause?'Resume analysis':'Pause analysis',bgDone()+'/'+games.length+' analyzed'):'')
  +lbl('Lichess API token','Optional')+`<input class="in" id="tok" type="password" placeholder="Needed only if the explorer returns 401" value="${esc(cfg.token)}">`
- +lbl('Data on this device','LOCAL')+`<p class="dim">${rcount('w')+rcount('b')} repertoire positions · ${games.length} games</p>`+act('exp','Export data (JSON)')+act('imp','Restore from backup (JSON)')+act('erase','Erase local data')
+ +lbl('Data on this device','LOCAL')+`<p class="dim">${rcount('w')+rcount('b')} repertoire positions · ${games.length} games</p>`+act('exp','Export data (JSON)')+act('expslim','Export repertoire and notes only (small file)')+act('imp','Restore from backup (replaces everything)')+act('impm','Merge a backup into this device')+act('erase','Erase local data')
  +lbl('ESCHÉS account')+act('x','ESCHÉS SYNC','COMING SOON').replace('data-a="x"','disabled style="opacity:.5;cursor:default"')}
 function vSopt(){const o=SOPT[S.so];if(!o)return'<h1>Settings</h1>';const cur=String(o.g()),ck='<svg width="15" height="15" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
  return`<h1 style="font-size:24px;margin-top:40px">${o.t}</h1>`+(o.d?`<p class="sub">${o.d}</p>`:'')+o.o.map(([v,l])=>act('sopick',l,String(v)===cur?ck:'',String(v)).replace('class="act"',`class="act${String(v)===cur?' on':''}"`)).join('')}
@@ -936,7 +938,7 @@ function vGame(){const G=S.g,g=G.g;if(g.model)return vModel(G,g);const rv=review
  let h=`<h1 style="font-size:22px">${esc(g.white)} vs ${esc(g.black)}</h1><p class="sub">${g.res==='draw'?termTxt(g)+' · '+(g.col==='w'?'White':'Black'):termTxt(g)+' as '+(g.col==='w'?'White':'Black')} · ${esc(g.open?shortOpen(g.open):'Unknown opening')}${g.open?'':''}</p>`+`<button class="abtn" data-a="am">Analyze Moves<svg width="14" height="14" viewBox="0 0 14 14"><path d="M5 3l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
  if(!rv){h+=`<p class="dim" id="anst" style="margin-top:14px">${anStatus()||'Analysis data is not available for this game.'}</p>`;if(!(BG.cur===g.id||anlp[g.id]))h+=act('anl','Analyze this game now');return h+`<div class="sbx" style="margin-top:20px">Moves</div><div id="mlist">${moveList(G,null,S.ply)}</div>`}
  const me=g.col,q=coachQuote(G,rv);{const nc=rv.cl.filter(c=>CRIT.includes(c)).length;h+=`<div class="coach">${esc(q)}<div class="dim" style="margin-top:6px">${nc?`${nc===1?'One move changed the trajectory of this game. Find it.':'Find the '+nc+' moves that changed the trajectory of the game.'}`:'No turning points here — this game ran true to form.'}</div></div>`}
- h+=evGraph(g,A,rv,S.ply).replace('class="evg"','class="evg" id="gph"');
+ h+=evGraph(g,A,rv,S.ply).replace('class="evg"','class="evg" id="gph"');if(!(BG.cur===g.id||anlp[g.id]))h+=`<button class="lnk" data-a="reanl" style="margin-top:8px">Re-analyze this game</button>`;
  const hsN=G.hs.length,cell=(c,x)=>`<div class="v${c===me?' me':''}">${x}</div>`;
  const calc=(()=>{const ev=A.ev,u=c=>c==='w'?1:-1,mat=st=>{let t=0;for(const x of st.b){const k=x&&x.toLowerCase();t+=k==='n'||k==='b'?3:k==='r'?5:k==='q'?9:0}return t},be=(()=>{let b=-1;rv.cl.forEach((c,i)=>{if(c==='Book')b=i});return b+1})(),ob=be>0?Math.min(be,20):20;
   const o={w:{cp:[],ph:{o:[],m:[],e:[]},ta:[],st:[]},b:{cp:[],ph:{o:[],m:[],e:[]},ta:[],st:[]}};
@@ -1148,7 +1150,7 @@ const ACT={rcvc(){const L=[20,50,100,150,300,500],c=repCover(S.c),i=L.indexOf(c)
   const h=hist.pop();if(!h){if(S.v==='game'){S.v='games';return view()}return home()}restore(h)},
  home,retry:repLoad,more(){S.lim+=3;view(1);fillEval()},mg(){S.show+=5;view(1)},pick,
  site(p){setSite(p);ust='';S.dsEdit=S.dsEdit===p&&!cfg.names[p]?null:p;view(1);setTimeout(()=>{const i=$('#uname');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},30)},dsgo:async()=>{if(S.dsBusy)return;const ui=$('#uname');if(ui)cfg.names[cfg.site]=ui.value;const u=(cfg.names[cfg.site]||'').trim();if(!u){note('Enter a username first.',1);return}S.dsBusy=1;view(1);try{await checkUser();if(ust==='ok'){await connect();await syncRating()}else note(ust==='no'?'That username was not found.':'Could not verify that username.',1)}catch(e){note(e.message,1)}S.dsBusy=0;view(1)},connect:()=>connect(false),older:()=>connect(true),
- og:id=>nav(()=>openGame(id)),ply:p=>{if(S.rv&&S.rv.on)rvStop();setPly(+p)},anl(){const g=S.g.g;BG.first=g.id;BG.force=g.id;bgLoop();bgPaint();view(1)},am(){const g=S.g.g;S.rv=null;S.v='moves';if(!anl[g.id]||!anl[g.id].done){BG.first=g.id;if(!bgOn())BG.force=g.id;kickBg();if(BG.force)bgLoop()}view()},
+ og:id=>nav(()=>openGame(id)),ply:p=>{if(S.rv&&S.rv.on)rvStop();setPly(+p)},reanl(){const g=S.g.g;if(!confirm('Run Stockfish on this game again? The current analysis is replaced when it finishes.'))return;delete anl[g.id];delete anlp[g.id];LS.s('anlp',anlp);sv();ACT.anl()},anl(){const g=S.g.g;BG.first=g.id;BG.force=g.id;bgLoop();bgPaint();view(1)},am(){const g=S.g.g;S.rv=null;S.v='moves';if(!anl[g.id]||!anl[g.id].done){BG.first=g.id;if(!bgOn())BG.force=g.id;kickBg();if(BG.force)bgLoop()}view()},
  graph(p,el,e){const r=el.getBoundingClientRect(),n=S.g.hs.length;const k=Math.min(n,Math.max(1,Math.floor((e.clientX-r.left)/r.width*n)+1));if(S.rv&&S.rv.on)rvGo(k);else setPly(k)},
  trainc(){const G=S.g,A=anl[G.g.id],i=S.ply-1;if(i<0)return;trainthis(i)},
  plans(){if(!(S.plan&&S.plan.lines))return;S.pv=S.v;S.v='plans';view()},pback2(){S.v=S.pv;view()},
@@ -1162,9 +1164,17 @@ const ACT={rcvc(){const L=[20,50,100,150,300,500],c=repCover(S.c),i=L.indexOf(c)
  bgset(){cfg.bg=cfg.bg===false;sv();if(cfg.bg!==false)kickBg();view(1)},bgp(){cfg.bgPause=!cfg.bgPause;sv();if(!cfg.bgPause)kickBg();view(1);bgPaint()},bgtoggle(){if(cfg.bg===false)return;if(BG.err){BG.err='';kickBg();return}cfg.bgPause=!cfg.bgPause;sv();if(!cfg.bgPause)kickBg();bgPaint()},
  snd(){cfg.sound=!cfg.sound;sv();view(1)},crd(){cfg.coords=!cfg.coords;sv();view(1);drawBoard()},
  exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'esches',v:2,cfg:{...cfg,token:''},reps,games,notes,anl,meta,olprog3:LS.g('olprog3',null),olrecent:LS.g('olrecent',[])},null,1)],{type:'application/json'}));a.download='esches-data.json';a.click()},
- imp(){const i=document.createElement('input');i.type='file';i.accept='application/json,.json';i.onchange=async()=>{const f=i.files&&i.files[0];if(!f)return;let o;try{o=JSON.parse(await f.text())}catch(e){note('That file is not valid JSON.',1);return}
+ expslim(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'esches',v:2,slim:1,cfg:{...cfg,token:''},reps,games:[],notes,anl:{},meta:{},olprog3:LS.g('olprog3',null),olrecent:LS.g('olrecent',[])},null,1)],{type:'application/json'}));a.download='esches-repertoire.json';a.click()},
+ impm(){ACT.imp(true)},
+ imp(merge){const i=document.createElement('input');i.type='file';i.accept='application/json,.json';i.onchange=async()=>{const f=i.files&&i.files[0];if(!f)return;let o;try{o=JSON.parse(await f.text())}catch(e){note('That file is not valid JSON.',1);return}
   if(!o||typeof o!=='object'||!o.reps||!o.reps.m||!o.reps.m.data||!o.cfg||!Array.isArray(o.games)){note('That does not look like an ESCHÉS export.',1);return}
   const nR=Object.values(o.reps.m.data).reduce((a,d)=>a+Object.keys(d||{}).length,0);
+  if(merge===true){if(!confirm('Merge this backup into this device? It adds '+nR+' repertoire positions and '+o.games.length+' games that are missing here. Nothing you already have is overwritten.'))return;
+   try{const mg=(t,e)=>{if(!t||!e)return;for(const k of Object.keys(e)){const x=e[k],y=t[k];if(!y){t[k]=x;continue}if(Array.isArray(x.sans)){y.sans=y.sans||[];for(const q of x.sans)if(!y.sans.includes(q))y.sans.push(q)}if(x.due&&(!y.due||x.due<y.due))y.due=x.due;if(!y.p&&x.p)y.p=x.p}};
+    const bm=o.reps.m;for(const p of bm.list||[]){const ex=reps.m.list.find(z=>z.id===p.id);if(!ex){reps.m.list.push(p);reps.m.data[p.id]=bm.data[p.id]||{}}else mg(reps.m.data[p.id],bm.data[p.id])}
+    mg(reps.t,o.reps.t);const have=new Set(games.map(g=>g.id));let ng=0;for(const g of o.games)if(g&&g.id&&!have.has(g.id)){games.push(g);ng++}
+    for(const k of Object.keys(o.notes||{}))if(notes[k]==null)notes[k]=o.notes[k];for(const k of Object.keys(o.anl||{}))if(anl[k]==null)anl[k]=o.anl[k];
+    sv();location.reload()}catch(e){note('Merge failed: '+e.message,1)}return}
   if(!confirm('Restore this backup? It replaces everything on this device with '+nR+' repertoire positions and '+o.games.length+' games. Your Lichess token is kept.'))return;
   try{window.__restoring=true;const put=(k,v)=>{if(v!==undefined&&v!==null)localStorage.setItem('esches.'+k,JSON.stringify(v))};put('cfg',{...o.cfg,token:cfg.token||''});put('reps',o.reps);put('games',o.games);put('notes',o.notes||{});put('anl',o.anl||{});put('meta',o.meta||{});put('olprog3',o.olprog3);put('olrecent',o.olrecent);localStorage.removeItem('esches.anlp');location.reload()}catch(e){window.__restoring=false;note('Restore failed: '+e.message,1)}};i.click()},
  erase(){if(confirm('Erase all ESCHÉS data on this device?')){Object.keys(localStorage).filter(k=>k.startsWith('esches.')).forEach(k=>localStorage.removeItem(k));location.reload()}},
@@ -1312,9 +1322,10 @@ ldN++;$('#ls').textContent='';$('#ld').classList.add('on');setTimeout(()=>{if(--
 setTimeout(kickBg,1500);
 /* keyboard play: arrows move a cursor, Enter/Space selects or moves, Escape cancels, Q/R/B/N choose a promotion piece */
 (function(){const bd=$('#board');if(!bd)return;
- bd.addEventListener('focus',()=>{if(B.kc==null)B.kc=B.sel!=null?B.sel:(B.o==='b'?12:52)});
+ const sync=()=>{if(B._ko!==B.o){B._ko=B.o;B.kc=null}};
+ bd.addEventListener('focus',()=>{sync();if(B.kc==null)B.kc=B.sel!=null?B.sel:(B.o==='b'?12:52)});
  bd.addEventListener('blur',()=>{if(B.kf){B.kf=false;drawBoard()}});
- bd.addEventListener('keydown',e=>{if(e.altKey||e.ctrlKey||e.metaKey)return;const k=e.key,stop=()=>{e.preventDefault();e.stopPropagation()};
+ bd.addEventListener('keydown',e=>{if(e.altKey||e.ctrlKey||e.metaKey)return;sync();const k=e.key,stop=()=>{e.preventDefault();e.stopPropagation()};
   if(B.promo){const q=k.length===1?k.toUpperCase():'';const m=B.promo.ms.find(x=>x.pr===q);if(m){stop();play(m,'self');B.on&&B.on(m)}else if(k==='Escape'){stop();B.promo=null;drawBoard()}return}
   const fl=B.o==='b',c=B.kc==null?(fl?12:52):B.kc;
   const d={ArrowLeft:[fl?1:-1,0],ArrowRight:[fl?-1:1,0],ArrowUp:[0,fl?1:-1],ArrowDown:[0,fl?-1:1]}[k];
@@ -1329,11 +1340,23 @@ window.__esches={R,S,B,reps,get games(){return games},anl,cfg,ACT,review,gs,clas
 document.addEventListener('change',e=>{const t=e.target;if(t.id==='rnum'){setR(t.value,true);t.value=cfg.selfReportedRating}else if(t.dataset&&t.dataset.sk){const o=SOPT[t.dataset.sk];if(o){o.s(t.value);sv();view(1);if(t.dataset.sk==='disp')drawBoard()}}});
 document.addEventListener('input',e=>{if(e.target.id==='rnn')S.nrn=e.target.value});
 
-(function(){const t=document.createElement('div');t.id='etip';document.body.appendChild(t);let cur=null;
-const skip=e=>e.matches('.ftip,.tb');
-document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-tip]');if(!el||skip(el)){if(cur){cur=null;t.classList.remove('on')}return}if(el===cur)return;cur=el;t.textContent=el.getAttribute('data-tip');const r=el.getBoundingClientRect();t.classList.add('on');const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+'px';t.style.top=(r.top-h-8<6?r.bottom+8:r.top-h-8)+'px'});
-document.addEventListener('mouseout',e=>{if(cur&&!(e.relatedTarget&&cur.contains(e.relatedTarget))){cur=null;t.classList.remove('on')}});
-document.addEventListener('scroll',()=>{cur=null;t.classList.remove('on')},true)})();
+(function(){const t=document.createElement('div');t.id='etip';t.setAttribute('role','tooltip');document.body.appendChild(t);let cur=null,hz=0,lt=0;
+const skip=e=>e.matches('.ftip,.tb,.q'),hide=()=>{cur=null;clearTimeout(hz);t.classList.remove('on')},
+show=el=>{if(el===cur)return;cur=el;t.textContent=el.getAttribute('data-tip');const r=el.getBoundingClientRect();t.classList.add('on');const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+'px';t.style.top=(r.top-h-8<6?r.bottom+8:r.top-h-8)+'px'},
+tipOf=e=>{const el=e.target.closest&&e.target.closest('[data-tip]');return el&&!skip(el)?el:null};
+document.addEventListener('mouseover',e=>{if(Date.now()-lt<800)return;const el=tipOf(e);if(!el){if(cur)hide();return}show(el)});
+document.addEventListener('mouseout',e=>{if(Date.now()-lt<800)return;if(cur&&!(e.relatedTarget&&cur.contains(e.relatedTarget)))hide()});
+document.addEventListener('focusin',e=>{const el=tipOf(e);if(el&&el.matches(':focus-visible'))show(el)});
+document.addEventListener('focusout',()=>{if(Date.now()-lt>800)hide()});
+document.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;lt=Date.now();const el=tipOf(e);if(!el){hide();return}show(el);clearTimeout(hz);hz=setTimeout(hide,2600)},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&cur)hide()});
+document.addEventListener('scroll',hide,true);
+/* tooltip targets that are not buttons or links become keyboard-focusable */
+let ft=0;const mk=()=>{ft=0;document.querySelectorAll('[data-tip]:not([tabindex])').forEach(el=>{if(!el.matches('button,a,input,select,textarea,summary,[contenteditable]'))el.tabIndex=0})};
+new MutationObserver(()=>{if(!ft)ft=requestAnimationFrame(mk)}).observe(document.body,{childList:true,subtree:true});mk()})();
+/* screen-reader announcements for moves and board orientation */
+(function(){const r=document.createElement('div');r.id='sr';r.setAttribute('role','status');r.setAttribute('aria-live','polite');r.setAttribute('aria-atomic','true');document.body.appendChild(r);
+window.__say=m=>{r.textContent='';setTimeout(()=>{r.textContent=m},30)}})();
 
 /* Hidden self-test: open index.html?test to run perft and SAN round-trip checks on the rules engine. */
 (function(){if(!/[?&]test(=|&|$)/.test(location.search))return;
