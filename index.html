@@ -273,7 +273,7 @@ return{START,parse,fen,key,legal,make,san,fromSan,check,status,nm,ix}})();
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const LSC={};const LS={g(k,d){try{return JSON.parse(localStorage.getItem('esches.'+k))??d}catch(e){return d}},s(k,v){if(window.__restoring)return;let str;try{str=JSON.stringify(v)}catch(e){return}if(LSC[k]===str)return;try{localStorage.setItem('esches.'+k,str);LSC[k]=str}catch(e){try{localStorage.removeItem('esches.ex4');localStorage.setItem('esches.'+k,str);LSC[k]=str}catch(e2){note('Local storage is full. Export your data from Settings, then erase old games or analysis.',1)}}}};
 const note=(m,e)=>{const n=$('#note');n.textContent=m||'';n.className=e?'e':''};
-let cfg={site:'chesscom',names:{chesscom:'',lichess:''},sound:true,coords:true,token:'',tc:'Rapid',selfReportedRating:1500,ratingPlatform:null,intro:0,...LS.g('cfg',{})};delete cfg.rmin;delete cfg.rmax;cfg.ratingPlatform=cfg.ratingPlatform||cfg.site;cfg.mgsrc=cfg.mgsrc||'both';cfg.pmode=cfg.pmode||'single';cfg.goal=cfg.goal||10;cfg.pause=cfg.pause||'never';cfg.anim=cfg.anim||'normal';if(cfg.hap==null)cfg.hap=true;if(cfg.intro&&cfg.ratingSet==null)cfg.ratingSet=true;
+let cfg={site:'chesscom',names:{chesscom:'',lichess:''},sound:true,coords:true,token:'',tc:'Rapid',selfReportedRating:1500,ratingPlatform:null,intro:0,...LS.g('cfg',{})};delete cfg.rmin;delete cfg.rmax;cfg.ratingPlatform=cfg.ratingPlatform||cfg.site;cfg.mgsrc=cfg.mgsrc||'both';cfg.pmode=cfg.pmode||'single';cfg.goal=cfg.goal||10;cfg.pause=cfg.pause||'never';cfg.anim=cfg.anim||(matchMedia('(prefers-reduced-motion:reduce)').matches?'off':'normal');if(cfg.hap==null)cfg.hap=true;if(cfg.intro&&cfg.ratingSet==null)cfg.ratingSet=true;
 let reps=LS.g('reps',{w:{},b:{}}),games=LS.g('games',[]),meta=LS.g('meta',{}),notes=LS.g('notes',{}),anl=LS.g('anl',{});
 const sv=()=>{if(window.__restoring)return;syncTcProfs();LS.s('cfg',cfg);const sn_=typeof S!=='undefined'&&S.snap,cur_=sn_?reps.m.data[sn_.id]:0;if(sn_)reps.m.data[sn_.id]=JSON.parse(sn_.json);try{LS.s('reps',reps)}finally{if(sn_)reps.m.data[sn_.id]=cur_}LS.s('games',games);LS.s('meta',meta);LS.s('notes',notes);LS.s('anl',anl)};
 const ALLTC=['Bullet','Blitz','Rapid','Classical'],TCQ={Bullet:'ultraBullet,bullet',Blitz:'blitz',Rapid:'rapid',Classical:'classical'};
@@ -1334,4 +1334,28 @@ const skip=e=>e.matches('.ftip,.tb');
 document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-tip]');if(!el||skip(el)){if(cur){cur=null;t.classList.remove('on')}return}if(el===cur)return;cur=el;t.textContent=el.getAttribute('data-tip');const r=el.getBoundingClientRect();t.classList.add('on');const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+'px';t.style.top=(r.top-h-8<6?r.bottom+8:r.top-h-8)+'px'});
 document.addEventListener('mouseout',e=>{if(cur&&!(e.relatedTarget&&cur.contains(e.relatedTarget))){cur=null;t.classList.remove('on')}});
 document.addEventListener('scroll',()=>{cur=null;t.classList.remove('on')},true)})();
+
+/* Hidden self-test: open index.html?test to run perft and SAN round-trip checks on the rules engine. */
+(function(){if(!/[?&]test(=|&|$)/.test(location.search))return;
+const T=[['Start position','rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',[20,400,8902,197281]],
+['Kiwipete (castling, pins)','r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1',[48,2039,97862]],
+['Endgame (en passant, discovered check)','8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1',[14,191,2812,43238]],
+['Promotions and castling rights','r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1',[6,264,9467]],
+['Promotion with check','rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8',[44,1486,62379]],
+['Middlegame','r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10',[46,2079,89890]]];
+const pf=(s,d)=>{const L=R.legal(s);if(d===1)return L.length;let n=0;for(const m of L)n+=pf(R.make(s,m),d-1);return n};
+const box=document.createElement('pre');box.setAttribute('role','status');box.style.cssText='position:fixed;inset:0;z-index:99999;margin:0;padding:16px;overflow:auto;background:#111;color:#eee;font:13px/1.5 monospace;white-space:pre-wrap';
+document.addEventListener('DOMContentLoaded',()=>{},{once:true});(document.body||document.documentElement).appendChild(box);
+const out=t=>{box.textContent+=t+'\n'},nx=()=>new Promise(r=>setTimeout(r,0));
+(async()=>{out('ESCHÉS rules self-test (perft)\n');let bad=0,tot=0;const t0=performance.now();
+for(const[n,f,ex]of T){out(n);for(let i=0;i<ex.length;i++){await nx();const g=pf(R.parse(f),i+1);tot+=g;const ok=g===ex[i];if(!ok)bad++;out('  depth '+(i+1)+': '+g+(ok?'  OK':'  FAIL, expected '+ex[i]))}}
+out('\nSAN round-trip');let sb=0,sn=0;
+for(const[n,f]of T){await nx();const s=R.parse(f);for(const m of R.legal(s)){for(const m2 of R.legal(R.make(s,m))){const r=R.make(R.make(s,m),m2);const a=R.san(s,m),h=R.fromSan(s,a);sn++;if(!h||h.f!==m.f||h.t!==m.t||h.pr!==m.pr){sb++;if(sb<6)out('  FAIL '+n+' '+a)}}}}
+out('  '+sn+' moves checked, '+sb+' failures');bad+=sb;
+out('\nPosition key: en-passant square only counts when a capture is legal');
+const e1=R.key(R.parse('rnbqkbnr/pppp1ppp/8/8/3Pp3/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 3')),e2=R.key(R.parse('rnbqkbnr/pppp1ppp/8/8/3Pp3/8/PPP1PPPP/RNBQKBNR b KQkq - 0 3'));
+out('  capturable ep kept: '+(e1!==e2?'OK':'FAIL'));if(e1===e2)bad++;
+const e3=R.key(R.parse('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1')),e4=R.key(R.parse('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1'));
+out('  uncapturable ep dropped: '+(e3===e4?'OK':'FAIL'));if(e3!==e4)bad++;
+out('\n'+(bad?'FAILURES: '+bad:'ALL PASS')+'  ('+tot+' nodes, '+Math.round(performance.now()-t0)+' ms)');document.title=(bad?'FAIL':'PASS')+' - ESCHÉS test'})()})();
 </script></body></html>
