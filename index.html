@@ -600,7 +600,10 @@ let hvEl=null;
 function preview(san){unpreview(true);const m=R.fromSan(B.s,san);if(!m)return;B.pv={s:B.s,last:B.last,m};B.s=R.make(B.s,m);B.last={f:m.f,t:m.t};drawBoard(m)}
 function unpreview(silent){const p=B.pv;if(!p)return;const oB=B.s.b;B.pv=null;B.s=p.s;B.last=p.last;drawBoard();if(!silent)slidePcs(oB,B.s.b,B.o==='b')}
 document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-hv]');if(el&&el!==hvEl){hvEl=el;preview(el.dataset.hv);paintL5();schedEval()}});
-document.addEventListener('mouseout',e=>{if(!hvEl)return;if(e.relatedTarget&&hvEl.contains(e.relatedTarget))return;hvEl=null;unpreview();paintL5();schedEval()});
+document.addEventListener('mouseout',e=>{if(!hvEl)return;if(lastPT!=='mouse'&&tapPrev&&hvEl===tapPrev)return;if(e.relatedTarget&&hvEl.contains(e.relatedTarget))return;hvEl=null;unpreview();paintL5();schedEval()});
+/* touch: first tap on a move previews it, a second tap on the same move picks it */
+let lastPT='mouse',tapPrev=null;document.addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';if(lastPT!=='mouse'&&tapPrev&&!(e.target.closest&&e.target.closest('[data-hv]')===tapPrev)){tapPrev=null;if(hvEl){hvEl=null;unpreview();paintL5();schedEval()}}},true);
+document.addEventListener('click',e=>{if(lastPT==='mouse'||!e.isTrusted)return;const el=e.target.closest&&e.target.closest('[data-hv][data-a]');if(!el)return;if(el===tapPrev&&hvEl===el)return;e.stopPropagation();e.preventDefault();tapPrev=el;if(hvEl!==el){hvEl=el;preview(el.dataset.hv);paintL5();schedEval()}},true);
 /* ---- navigation: a real history of snapshots ---- */
 const hist=[];
 const snap=()=>({v:S.v,c:S.c,path:S.path.slice(),rb:S.rb,gid:S.g&&S.g.g.id,ply:S.ply,okey:S.okey,so:S.so,psc:S.psc,pm:S.pm&&{mode:S.pm.mode,key:S.pm.key},ol:{id:S.olid,side:S.olside,li:S.oli}});
@@ -644,10 +647,16 @@ async function subPct(c,s0){const thr=1/repCover(c),E=reps[c];let tot=0,done=0,c
 async function subFill(tk){if(!RD||!RD.mv||myTurn())return;const c=S.c,s=B.s;for(const m of RD.mv){if(tk!==repTk)return;const mv=R.fromSan(s,m.san);if(!mv)continue;const s2=R.make(s,mv),k=subKey(c,s2);if(RCP.sub[k]!=null)continue;try{RCP.sub[k]=await subPct(c,s2)}catch(e){break}if(tk===repTk&&S.v==='rep'&&S.rb)view(1)}}
 function discardWork(){const sn=S.snap;if(!sn)return;S.snap=null;reps.m.data[sn.id]=JSON.parse(sn.json);delete RCP[sn.c];EX.clear()}
 function openRep(c){S.v='rep';S.c=c;S.rb=false;S.path=[];{const id=reps.m.act[c];if(!S.snap||S.snap.id!==id)S.snap={id,c,json:JSON.stringify(reps.m.data[id]||{})}}B.on=null;S.opPv=null;setPos(R.START,c,true);view();compl(c)}
+/* PGN movetext -> list of lines: the main line first, then one full line per variation (nested ones too) */
+function parseLines(t){t=t.replace(/\[[^\]]*\]/g,'').replace(/\{[^}]*\}/g,'').replace(/;[^\n]*/g,'').replace(/\$\d+/g,'');let cur=[],out=[];const stack=[];
+ for(const x of t.match(/\(|\)|[^\s()]+/g)||[]){if(x==='('){stack.push(cur);cur=cur.slice(0,-1)}else if(x===')'){if(stack.length){out.push(cur);cur=stack.pop()}}else{const y=x.replace(/^\d+\.+/,'');if(y&&!/^(1-0|0-1|1\/2-1\/2|\*)$/.test(y))cur.push(y)}}
+ while(stack.length){out.push(cur);cur=stack.pop()}return[cur,...out].filter(l=>l.length)}
 function importPgn(t){const c=S.c;let n=0,gN=0,stopped=0,empty=0;const chunks=t.split(/\[Event /).filter(x=>x.trim());
- for(const ch of(chunks.length>1?chunks:[t])){const mv=parseMoves(ch.replace(/^[^\n]*\]\n/,''));if(!mv.length){empty++;continue}gN++;let s=R.parse(R.START),path=[],bad=false;
-  for(const x of mv){const m=R.fromSan(s,x);if(!m){bad=true;break}if(s.t===c){const k=R.key(s),e=reps[c][k]||(reps[c][k]={fen:R.fen(s),sans:[]}),san=moveSan(s,m);if(!e.sans.includes(san)){e.sans.push(san);n++}e.p=path.slice()}path.push(moveSan(s,m));s=R.make(s,m)}
-  if(bad)stopped++}
+ for(const ch of(chunks.length>1?chunks:[t])){const lines=parseLines(ch.replace(/^[^\n]*\]\n/,''));if(!lines.length){empty++;continue}gN++;let badAny=false;
+  for(const mv of lines){let s=R.parse(R.START),path=[],bad=false;
+   for(const x of mv){const m=R.fromSan(s,x);if(!m){bad=true;break}if(s.t===c){const k=R.key(s),e=reps[c][k]||(reps[c][k]={fen:R.fen(s),sans:[]}),san=moveSan(s,m);if(!e.sans.includes(san)){e.sans.push(san);n++}e.p=path.slice()}path.push(moveSan(s,m));s=R.make(s,m)}
+   if(bad)badAny=true}
+  if(badAny)stopped++}
  sv();const extra=[stopped?stopped+' stopped at an unreadable move':'',empty?empty+' had no moves':''].filter(Boolean).join(', ');
  note(n?'Imported '+n+' move'+(n>1?'s':'')+' from '+gN+' game'+(gN>1?'s':'')+(extra?' ('+extra+')':'')+'.':'No readable moves found'+(extra?' ('+extra+')':'')+'.',!n);S.rsc=null;view(1)}
 /* ---- repertoire builder (existing system) ---- */
@@ -920,7 +929,7 @@ function refreshLive(){/* update only the parts that depend on the current ply, 
 const PNN={P:'pawn',N:'knight',B:'bishop',R:'rook',Q:'queen',K:'king'};
 function pvSan(s,pv,max){const o=[];let st=s;for(const u of (pv||'').split(' ').filter(Boolean).slice(0,max||5)){const m=R.legal(st).find(x=>uci(x)===u);if(!m)break;o.push((st.t==='w'?st.fm+'. ':(o.length?'':st.fm+'... '))+moveSan(st,m));st=R.make(st,m)}return o.join(' ')}
 function moveList(G,rv,ply){let h='';const hs=G.hs,A=anl[G.g.id],tm=termMark(G.g);for(let i=0;i<hs.length;i+=2){h+=`<div class="ml"><span class="mn">${(i>>1)+1}.</span>`;for(const j of[i,i+1]){if(j>=hs.length){h+='<span></span>';continue}const c=rv?rv.cl[j]:null,cr=CRIT.includes(c),ev=A&&A.ev&&A.ev[j+1]!=null?fe(A.ev[j+1]):'';
-  h+=`<button class="mc${j+1===ply?' cur':''}${cr?' crit':''}" data-a="ply" data-p="${j+1}" style="${cr?'color:'+CL[c].col:''}">${esc(hs[j].san)}${cr?`<b class="sy" data-tip="${c}" style="color:${CL[c].col}">${CL[c].sy}</b>`:''}${j===hs.length-1&&tm?`<span data-tip="${tm.t}" style="color:var(--mu)">${tm.sy}</span>`:''}<small>${ev}</small></button>`}h+='</div>'}return h}
+  h+=`<button aria-current="${j+1===ply?'true':'false'}" class="mc${j+1===ply?' cur':''}${cr?' crit':''}" data-a="ply" data-p="${j+1}" style="${cr?'color:'+CL[c].col:''}">${esc(hs[j].san)}${cr?`<b class="sy" data-tip="${c}" style="color:${CL[c].col}">${CL[c].sy}</b>`:''}${j===hs.length-1&&tm?`<span data-tip="${tm.t}" style="color:var(--mu)">${tm.sy}</span>`:''}<small>${ev}</small></button>`}h+='</div>'}return h}
 function curMoveBox(){const G=S.g,k=S.ply;if(!k)return'<p class="dim">Starting position. Use the arrow keys or the list to walk through the game.</p>';const i=k-1,rv=review(G.g),A=anl[G.g.id],m=G.hs[i].m,s0=G.st[i],mover=s0.t==='w'?'White':'Black';
  let h=`<div class="sbx fade"><b>${(i>>1)+1}${i%2?'...':'.'} ${esc(G.hs[i].san)}</b>${rv?' '+cic(rv.cl[i],18)+' '+rv.cl[i]:''}`;
  if(rv){const b=rv.bw[i];h+=`<span class="mini">Stockfish</span><div>Evaluation ${fe(A.ev[i+1])}${i?` (was ${fe(A.ev[i])})`:''} · depth ${A.d}</div>`;
