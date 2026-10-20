@@ -289,6 +289,19 @@ select.sel{height:34px;padding:0 10px}
 @media(max-width:600px){#P{padding:0 16px 40px}h1{font-size:20px}}
 .nmx:empty,.nmx:empty+br{display:none}.mt{align-items:center}
 .act.res,.act.on{border-radius:var(--r);margin-left:-12px;margin-right:-12px;width:calc(100% + 24px);padding-left:12px;padding-right:12px;border-bottom-color:transparent}
+
+/* ===== Home: Quiet ledger (scoped to .hm so no other view changes) ===== */
+.hm .act{border:0;border-radius:10px;margin:0 -12px;width:calc(100% + 24px);padding:0 12px!important;min-height:46px;font-size:13.5px;color:var(--tx);transition:background .18s ease-out,transform .12s ease-out}
+.hm .act .r{color:var(--tx);font-weight:400;font-variant-numeric:tabular-nums}
+.hm .act:active{opacity:1;transform:scale(.99)}
+.hm .act:hover,.hm .act:focus-visible{margin:0 -12px;width:calc(100% + 24px);padding:0 12px!important;background:rgba(255,255,255,.055);outline:none}
+.hm .act:hover .r{color:var(--tx)}
+.hm>*{animation:in .22s cubic-bezier(.23,1,.32,1) both}
+.hm>:nth-child(1){animation-delay:22ms}.hm>:nth-child(2){animation-delay:44ms}.hm>:nth-child(3){animation-delay:66ms}.hm>:nth-child(4){animation-delay:88ms}.hm>:nth-child(5){animation-delay:110ms}.hm>:nth-child(6){animation-delay:132ms}.hm>:nth-child(7){animation-delay:154ms}.hm>:nth-child(8){animation-delay:176ms}.hm>:nth-child(9){animation-delay:198ms}.hm>:nth-child(10){animation-delay:220ms}.hm>:nth-child(11){animation-delay:242ms}.hm>:nth-child(12){animation-delay:264ms}.hm>:nth-child(13){animation-delay:286ms}.hm>:nth-child(14){animation-delay:308ms}.hm>:nth-child(15){animation-delay:308ms}.hm>:nth-child(16){animation-delay:308ms}.hm>:nth-child(17){animation-delay:308ms}.hm>:nth-child(18){animation-delay:308ms}.hm>:nth-child(19){animation-delay:308ms}.hm>:nth-child(20){animation-delay:308ms}.hm>:nth-child(21){animation-delay:308ms}.hm>:nth-child(22){animation-delay:308ms}.hm>:nth-child(23){animation-delay:308ms}.hm>:nth-child(24){animation-delay:308ms}.hm>:nth-child(25){animation-delay:308ms}
+.v.s .hm>*{animation:none}
+@media(hover:none){.hm .act:hover{background:transparent}}
+/* piece motion: same ease-out family as the UI */
+.pc{will-change:transform}
 </style></head><body>
 <div id="app"><div id="L"><div id="col"><div id="crumb"></div><div id="evb"><i></i></div><div id="bdg"></div><div id="board" role="listbox" aria-label="Chess board. Arrow keys move the cursor, Enter selects and moves." tabindex="0"></div><div id="cap"></div><div id="note" role="status" aria-live="polite"></div></div></div><div id="sp"></div><aside id="P"></aside></div>
 <div id="ld"><div class="kn" id="kn"></div><div class="t">ESCHÉS</div><div class="s" id="ls"></div></div>
@@ -395,7 +408,7 @@ const pcUrl=ch=>PCS[disp()][(ch<'a'?'w':'b')+ch.toUpperCase()];
 let ldN=0;async function busy(fn,label){ldN++;$('#ls').textContent=label||'';$('#ld').classList.add('on');await new Promise(r=>requestAnimationFrame(r));try{return await fn()}finally{if(--ldN===0)$('#ld').classList.remove('on')}}
 const ldt=t=>$('#ls').textContent=t;
 /* sound: uses the files you supplied; missing ones are silent rather than invented */
-const PCA=()=>({duration:AM(190),easing:'cubic-bezier(.25,.8,.25,1)'});const AM=ms=>{const f={slow:1.8,normal:1,fast:.6,vfast:.3}[cfg.anim];return f==null?0:ms*f},hap=k=>{if(cfg.hap&&navigator.vibrate)try{navigator.vibrate(k==='cap'?14:8)}catch(e){}};const SA={};function snd(k){hap(k);if(!cfg.sound)return;const u=SNDS[{self:'self',opp:'opponent',castle:'castle',check:'check',promote:'promote',cap:'capture'}[k]];if(!u)return;try{(SA[u]=SA[u]||new Audio(u)).cloneNode().play().catch(()=>{})}catch(e){}}
+const PCA=()=>({duration:AM(200),easing:'cubic-bezier(.23,1,.32,1)'});const AM=ms=>{const f={slow:1.8,normal:1,fast:.6,vfast:.3}[cfg.anim];return f==null?0:ms*f},hap=k=>{if(cfg.hap&&navigator.vibrate)try{navigator.vibrate(k==='cap'?14:8)}catch(e){}};const SA={};function snd(k){hap(k);if(!cfg.sound)return;const u=SNDS[{self:'self',opp:'opponent',castle:'castle',check:'check',promote:'promote',cap:'capture'}[k]];if(!u)return;try{(SA[u]=SA[u]||new Audio(u)).cloneNode().play().catch(()=>{})}catch(e){}}
 /* board */
 const B={s:R.parse(R.START),keys:[],o:'w',last:null,sel:null,lg:[],promo:null,lock:false,on:null,hist:[],drag:null};B.keys=[R.key(B.s)];
 function setPos(fen,o,lock){B.arrows=null;B._ak=null;B.s=R.parse(fen||R.START);B.keys=[R.key(B.s)];B.hist=[];B.last=null;B.sel=null;B.lg=[];B.promo=null;B.o=o||'w';B.lock=!!lock;drawBoard()}
@@ -414,7 +427,7 @@ function arrowSvg(){const fl=B.o==='b',X=i=>(fl?7-(i&7):i&7)*12.5+6.25,Y=i=>(fl?
  if(mv){const img=bd.querySelector(`.sq[data-i="${mv.t}"] .pc`);if(img&&img.animate){const X=i=>fl?7-(i&7):i&7,Y=i=>fl?7-(i>>3):i>>3;
   img.animate([{transform:`translate(${(X(mv.f)-X(mv.t))*100}%,${(Y(mv.f)-Y(mv.t))*100}%)`},{transform:'none'}],PCA())}}}
 function play(m,who,q){const L=R.legal(B.s),san=R.san(B.s,m,L);B.hist.push({s:B.s,k:B.keys.slice(),l:B.last,san,m});B.s=R.make(B.s,m);B.keys.push(R.key(B.s));B.last={f:m.f,t:m.t};B.sel=null;B.lg=[];B.promo=null;B.arrows=null;B._ak=null;
- if(!q){snd(R.check(B.s)?'check':m.pr?'promote':m.ca?'castle':m.cap?'cap':who||'self');drawBoard(m)}clearBadge();const st=R.status(B.s,B.keys);if(!q&&window.__say){const sp=san.replace(/^O-O-O/,'castles queenside').replace(/^O-O/,'castles kingside').replace('#',', checkmate').replace('+',', check').replace('x',' takes ').replace('=',' promotes to ');window.__say((who==='opp'?'Opponent played ':who==='self'?'You played ':'')+sp+(st&&st!=='checkmate'?'. '+st:''))}note(st?st[0].toUpperCase()+st.slice(1)+(st==='checkmate'?' · '+(B.s.t==='w'?'Black':'White')+' wins':''):'');if(!q)hdrSoon();return san}
+ if(!q){snd(R.check(B.s)?'check':m.pr?'promote':m.ca?'castle':m.cap?'cap':who||'self');drawBoard(m);slidePcs(B.hist[B.hist.length-1].s.b,B.s.b,B.o==='b')}clearBadge();const st=R.status(B.s,B.keys);if(!q&&window.__say){const sp=san.replace(/^O-O-O/,'castles queenside').replace(/^O-O/,'castles kingside').replace('#',', checkmate').replace('+',', check').replace('x',' takes ').replace('=',' promotes to ');window.__say((who==='opp'?'Opponent played ':who==='self'?'You played ':'')+sp+(st&&st!=='checkmate'?'. '+st:''))}note(st?st[0].toUpperCase()+st.slice(1)+(st==='checkmate'?' · '+(B.s.t==='w'?'Black':'White')+' wins':''):'');if(!q)hdrSoon();return san}
 function undo(){const h=B.hist.pop();if(!h)return false;const oB=B.s.b;B.s=h.s;B.keys=h.k;B.last=h.l;B.sel=null;B.lg=[];drawBoard();slidePcs(oB,B.s.b,B.o==='b');clearBadge();hdrSoon();return true}
 function userMove(f,t){const ms=R.legal(B.s).filter(x=>x.f===f&&x.t===t);if(!ms.length){B.sel=null;B.lg=[];drawBoard();return}
  if(ms.length>1){B.promo={t,ms};drawBoard();return}const m=ms[0];play(m,'self');B.on&&B.on(m)}
@@ -938,10 +951,11 @@ function vBonus(){const b=S.pm.bonus;let h='<h1>Bonus move</h1>';if(b.load)retur
 const omCount=g=>{const rv=review(g);if(!rv)return 0;let n=0;for(let i=0;i<Math.min(20,rv.cl.length);i++)if((i%2===0)===(g.col==='w')&&['Mistake','Blunder','Miss','Missed win'].includes(rv.cl[i]))n++;return n};
 const omGames=()=>games.filter(g=>omCount(g)>0);
 const connected=()=>!!(cfg.names.chesscom||cfg.names.lichess||games.length);
+const olLibDue=()=>new Set(olDueItems(false).map(x=>x.o.id)).size;
 function vHome(){const du=pItems().filter(x=>!x.e.due||x.e.due<=Date.now()).length,cn=connected();
  const rr=c=>`<button class="act" data-a="open" data-p="${c}"><span style="display:flex;align-items:center;gap:10px"><i class="sd ${c}"></i>${c==='w'?'White':'Black'} openings</span><span class="r">${rcount(c)} positions saved</span></button>`;
  return'<div class="hm">'+lbl('Repertoires','<button class="lnk" data-a="radd" data-tip="Add new repertoire" style="font-size:20px;line-height:1">+</button>')+reps.m.list.map(p=>`<button class="act" data-a="open" data-p="${p.id}"><span style="display:flex;align-items:center;gap:10px"><i class="sd ${p.col}"></i><span>${esc(p.name)}${tcMarkP(p)}</span></span><span class="r">${Object.keys(reps.m.data[p.id]||{}).length} positions saved</span></button>`).join('')
- +lbl('Openings')+act('olib','Opening Library',olLearnedCount()+'/'+OLIB.length+' studied')+act('olpl','Practice Openings',olDueItems(false).length?olDueItems(false).length+' due':'Nothing due')+lbl('Daily tasks')+act('prac','Practice moves',du?du+' due':'Nothing due')+act('mdl','Play through a model game')
+ +lbl('Openings')+act('olib','Opening Library',olLibDue()+' due')+act('olpl','Practice Openings',olDueItems(false).length+' due')+lbl('Daily tasks')+act('prac','Practice moves',du+' due')+act('mdl','Play through a model game')
  +lbl('Your Games',cn?'<span class="tag" style="margin:0">CONNECTED</span>':'')
  +(cn?act('games','Your games',games.length?games.length+' games':'')+act('ins','Your openings report'):act('conn','Your games','Not connected')+act('conn','Your openings report','Not connected')+`<div style="height:10px"></div>`+act('conn','Connect account'))+'</div>'}
 const rcount=c=>Object.keys(reps[c]).length;
@@ -1117,8 +1131,15 @@ function vOpen(){const L=insGames(),G=opGroups(L).find(x=>x.key===S.okey);if(!G)
 let opHv=null;
 document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-opk]');if(!el||el===opHv)return;opHv=el;opPreview(+el.dataset.opk)});
 document.addEventListener('mouseout',e=>{if(!opHv)return;if(e.relatedTarget&&opHv.contains(e.relatedTarget))return;opHv=null;opRestore()});
-function slidePcs(a,b,fl){const bd=$('#board');if(!bd||!a||!bd.animate&&!bd.querySelector)return;const X=i=>fl?7-(i&7):i&7,Y=i=>fl?7-(i>>3):i>>3,gone=[];for(let j=0;j<64;j++)if(a[j]&&a[j]!==b[j])gone.push(j);
- for(let i=0;i<64;i++){if(!b[i]||a[i]===b[i])continue;let bj=-1,bd2=1e9;gone.forEach((j,n)=>{if(a[j]===b[i]){const d=Math.abs(X(i)-X(j))+Math.abs(Y(i)-Y(j));if(d<bd2){bd2=d;bj=n}}});if(bj<0)continue;const j=gone.splice(bj,1)[0],img=bd.querySelector(`.sq[data-i="${i}"] .pc`);if(img&&img.animate)img.animate([{transform:`translate(${(X(j)-X(i))*100}%,${(Y(j)-Y(i))*100}%)`},{transform:'none'}],PCA())}}
+function slidePcs(a,b,fl){const bd=$('#board');if(!bd||!a||!b||!bd.querySelector||RMq.matches)return;const X=i=>fl?7-(i&7):i&7,Y=i=>fl?7-(i>>3):i>>3,gone=[],un=[],sq=i=>bd.querySelector(`.sq[data-i="${i}"]`),dist=(i,j)=>Math.abs(X(i)-X(j))+Math.abs(Y(i)-Y(j));
+ const slide=(i,j)=>{const img=sq(i)&&sq(i).querySelector('.pc:not(.gh)');if(!img||!img.animate)return;img.getAnimations().forEach(x=>x.cancel());img.style.zIndex=4;const an=img.animate([{transform:`translate(${(X(j)-X(i))*100}%,${(Y(j)-Y(i))*100}%)`},{transform:'none'}],PCA());an.onfinish=()=>{img.style.zIndex=''}};
+ for(let j=0;j<64;j++)if(a[j]&&a[j]!==b[j])gone.push(j);
+ const near=(i,ok)=>{let k=-1,d0=1e9;gone.forEach((j,n)=>{if(ok(a[j])){const d=dist(i,j);if(d<d0){d0=d;k=n}}});return k};
+ for(let i=0;i<64;i++){if(!b[i]||a[i]===b[i])continue;const k=near(i,p=>p===b[i]);if(k<0){un.push(i);continue}slide(i,gone.splice(k,1)[0])}
+ for(const i of un.slice()){if(/[pP]/.test(b[i]))continue;const k=near(i,p=>p===(b[i]<'a'?'P':'p'));if(k<0)continue;slide(i,gone.splice(k,1)[0]);un.splice(un.indexOf(i),1)}
+ const d=AM(150);if(!d)return;
+ for(const j of gone){const s=sq(j);if(!s)continue;const g=document.createElement('img');g.className='pc gh';g.src=pcUrl(a[j]);g.alt='';g.style.zIndex=1;s.appendChild(g);const an=g.animate([{opacity:1,transform:'none'},{opacity:0,transform:'scale(.9)'}],{duration:d,easing:'cubic-bezier(.23,1,.32,1)',fill:'forwards'});an.onfinish=()=>g.remove()}
+ for(const i of un){const img=sq(i)&&sq(i).querySelector('.pc:not(.gh)');if(img&&img.animate)img.animate([{opacity:0,transform:'scale(.92)'},{opacity:1,transform:'none'}],{duration:d,easing:'cubic-bezier(.23,1,.32,1)'})}}
 let OPD=null,opnOn=null;
 let OPP=null;
 let OPR=[],OPK=null,OPST={state:'idle',files:0,n:0,src:'',err:''};
