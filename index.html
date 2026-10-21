@@ -88,8 +88,9 @@ h1{font-size:19px;font-weight:500;letter-spacing:-.015em;line-height:1.25;margin
 .lnk{background:none;border:0;color:var(--mu);cursor:pointer;padding:0;font-size:13px;transition:color .15s}.lnk:hover{color:var(--tx)}
 
 
-.q{display:inline-block;width:15px;height:15px;border-radius:50%;background:#555;color:#151515;font-size:10px;font-weight:700;text-align:center;line-height:15px;margin-left:8px;cursor:help;position:relative}
-.q:hover::after,.q:focus-visible::after{content:attr(data-tip);position:absolute;left:20px;top:-4px;width:300px;background:#2a2a2a;color:var(--tx);border:1px solid var(--ln);padding:8px 10px;border-radius:3px;font-size:12px;font-weight:400;line-height:1.4;text-align:left;animation:in .15s;z-index:20}
+.q{display:inline-block;width:15px;height:15px;border-radius:50%;background:#555;color:#151515;font-size:10px;font-weight:700;text-align:center;line-height:15px;margin-left:8px;cursor:help;position:relative;transition:opacity .15s,background-color .15s}
+.q:hover::after,.q:focus-visible::after{content:attr(data-tip);position:absolute;left:20px;top:-4px;width:300px;background:#2a2a2a;color:var(--tx);border:1px solid var(--ln);padding:8px 10px;border-radius:3px;font-size:12px;font-weight:400;line-height:1.4;text-align:left;animation:in .15s;z-index:20;transition:opacity .15s}
+.q:hover::after{opacity:1}
 .clk{width:14px;height:14px;border-radius:50%;display:inline-block;position:relative;background:var(--am)}.clk.g{background:#777}.clk::before{content:"";position:absolute;left:6.3px;top:3px;width:1.4px;height:5px;background:#222}.clk::after{content:"";position:absolute;left:6.3px;top:7px;width:4px;height:1.4px;background:#222}
 .cnt{display:flex;gap:18px;align-items:center;font-size:19px;font-weight:600;color:#ccc}.cnt span{display:inline-flex;align-items:center;gap:8px}.dot{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#1a1a1a;font-weight:800}
 .prow{border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);padding:20px 0;margin:18px 0 26px;display:flex;gap:16px;align-items:baseline;font-size:15px;min-height:64px}.prow b.n{color:var(--mu);font-size:19px;font-weight:600}.prow .h{color:#cfcfcf;font-size:14px;line-height:1.5}
@@ -1085,7 +1086,7 @@ function rvBox(G,g,rv,A){const R_=S.rv,k=S.ply;if(!k)return`<div class="coach">P
  else{if(bad)h+=B_('rvexpl','Explain');if(bad&&bs)h+=B_('rvbest','Best');if(bad&&mine)h+=B_('rvretry','Try again');h+=B_('rvn','Next').replace('data-a="rvn"','data-a="rvn" data-p="next"')}
  return h+'</div>'}
 function explainText(G,rv,A,i){const b=rv.bw[i],s0=G.st[i],m=G.hs[i].m,who=s0.t==='w'?'White':'Black';let t=`The evaluation moved from ${fe(A.ev[i])} to ${fe(A.ev[i+1])}, costing ${who} about ${b.loss.toFixed(0)} points of win chance.`;const bs=bestSanFrom(s0,A.bm[i]);if(bs&&uci(m)!==A.bm[i])t+=` Stockfish preferred ${bs}.`;
- const n=G.st[i+1],rep=A.bm[i+1],r=rep&&R.legal(n).find(x=>uci(x)===rep);if(r&&r.cap)t+=` The reply ${moveSan(n,r)} captures a ${PNN[r.cap.toUpperCase()]}.`;if(A.pv&&A.pv[i])t+=` Engine line: ${pvSan(s0,A.pv[i],4)}.`;return t}
+ const n=G.st[i+1],rep=A.bm[i+1],r=rep&&R.legal(n).find(x=>uci(x)===rep);if(r&&r.cap)t+=` The reply ${moveSan(n,r)} captures a ${PNN[r.cap.toUpperCase()]}`;return t}
 function rvRepaint(){const b=$('#rvbox');if(b)b.innerHTML=rvBox(S.g,S.g.g,review(S.g.g),anl[S.g.g.id])}
 function rvGo(k){S.rv.retry=null;S.rv.expl=S.rv.best=S.rv.hint=false;S.rv.msg=S.rv.ok='';B.arrow=null;B.lock=true;B.on=null;setPly(k);rvRepaint();const pl=$('#rvplay');if(pl)pl.innerHTML=S.rv.play?RVI.pause:RVI.play;rvNavState()}
 function rvNavState(){const n=S.g.hs.length;document.querySelectorAll('.nav button').forEach(b=>{const p=b.dataset.p;b.disabled=(p==='first'||p==='prev')?S.ply<=0:(p==='next'||p==='last')?S.ply>=n:false})}
