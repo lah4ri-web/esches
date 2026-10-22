@@ -1399,13 +1399,10 @@ function olGameStats(){const key=(typeof games!=='undefined'?games.length:0)+'|'
  for(const a of m.values())a.eff=a.exn?a.ex/a.exn:null;OLGS={k:key,m};return m}
 function olRec(o){const a=olGameStats().get(o.id);if(!a||a.n<3||a.eff==null)return null;if(a.eff<=-.05)return'work';if(a.eff>=.1)return'strength';return null}
 function olRank(o){return(o.gen?0:1000)+o.lines.length}
-const OLSORTS=[['played','Most played'],['win','Best results'],['adapt','For you'],['pop','Popular'],['rare','Offbeat']];
+const OLSORTS=[['played','Most played'],['win','Best results']];
 function olSorted(L){const g=olGameStats(),k=S.olsort||'played',nm=(a,b)=>a.name.localeCompare(b.name),gs=o=>g.get(o.id)||{n:0,w:0,eff:null};
  const f={played:(a,b)=>gs(b).n-gs(a).n||olRank(b)-olRank(a)||nm(a,b),
- win:(a,b)=>{const x=gs(a),y=gs(b);if(!x.n||!y.n)return(y.n?1:0)-(x.n?1:0)||olRank(b)-olRank(a)||nm(a,b);return y.w/y.n-x.w/x.n||y.n-x.n||nm(a,b)},
- adapt:(a,b)=>{const sc=o=>{const r=olRec(o),x=gs(o);return r==='work'?3000-(x.eff||0)*1000:r==='strength'?2000+(x.eff||0)*1000:x.n?1000:0};return sc(b)-sc(a)||gs(b).n-gs(a).n||olRank(b)-olRank(a)||nm(a,b)},
- pop:(a,b)=>olRank(b)-olRank(a)||nm(a,b),
- rare:(a,b)=>olRank(a)-olRank(b)||nm(a,b)};return L.sort(f[k]||f.played)}
+ win:(a,b)=>{const x=gs(a),y=gs(b);if(!x.n||!y.n)return(y.n?1:0)-(x.n?1:0)||olRank(b)-olRank(a)||nm(a,b);return y.w/y.n-x.w/x.n||y.n-x.n||nm(a,b)};return L.sort(f[k]||f.played)}
 function olMatch(){const q=(S.olq||'').trim().toLowerCase(),f=S.olf||'all';return OLIB.filter(o=>(f==='all'||o.sides.includes(f))&&(!q||o.name.toLowerCase().includes(q)||o.lines.some(l=>l.name.toLowerCase().includes(q))))}
 function olFam(o){const seen=new Set(),L=[];for(const l of o.lines){const k=l.sans.join(' ');if(seen.has(k))continue;seen.add(k);L.push(l)}return L}
 function olCount(o){const c={m:0,sd:0,lm:0,ls:0};for(const l of olFam(o)){const side=olKind(l)==='side',d=olLineStat(o,l).learned?1:0;if(side){c.sd++;c.ls+=d}else{c.m++;c.lm+=d}}return c}
