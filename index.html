@@ -280,6 +280,7 @@ body.oloff .ost:not(.ld){display:none}
 @keyframes grow{from{transform:scaleX(0)}}
 .v.s .sr .m i{animation:none}
 .gapb{height:18px}
+.act small.sb{display:block;margin-top:3px;font-size:12px;color:var(--mu);font-weight:400;line-height:1.4}.act>span:first-child{min-width:0}.rpw{margin-top:18px}.rpp{margin:16px 0 4px}
 #pzmin{-moz-appearance:textfield}#pzmin::-webkit-inner-spin-button,#pzmin::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .skl{display:grid;margin-top:26px;animation:sklp 1.3s ease-in-out infinite}.skl .sr1{display:grid;grid-template-columns:54px minmax(0,1fr) 52px 56px 118px;column-gap:14px;align-items:center;padding:14px 0}.skl i{display:block;height:14px;border-radius:5px;background:rgba(255,255,255,.07)}.skl .sr1 i:nth-child(2){height:30px}@keyframes sklp{50%{opacity:.5}}.rwn{animation:in .34s var(--ease) both}@media(prefers-reduced-motion:reduce){.skl{animation:none}.rwn{animation:none}}
 .sb{display:block;font-weight:400;margin-top:2px;font-size:12.5px;color:var(--mu)}
@@ -742,7 +743,7 @@ document.addEventListener('click',e=>{if(lastPT==='mouse'||!e.isTrusted)return;c
 const hist=[];
 const snap=()=>({v:S.v,c:S.c,path:S.path.slice(),rb:S.rb,gid:S.g&&S.g.g.id,ply:S.ply,okey:S.okey,so:S.so,psc:S.psc,pm:S.pm&&{mode:S.pm.mode,key:S.pm.key},ol:{id:S.olid,side:S.olside,li:S.oli}});
 const nav=fn=>{hist.push(snap());fn()};
-function restore(n){B.on=null;B.lock=false;S.c=n.c;({home,rep:()=>n.rb?startRep(n.c,n.path):openRep(n.c),pchoose:()=>{S.psc=n.psc;pchoose()},prac:()=>startPrac(n.pm.mode,n.pm.key),games:()=>{S.v='games';view()},game:()=>openGame(n.gid,n.ply),moves:()=>openGame(n.gid,n.ply,1),ins:()=>{S.v='ins';view()},open:()=>{S.okey=n.okey;S.v='open';view()},set:()=>{S.v='set';view()},rate:()=>{S.v='rate';view()},conn:()=>{S.v='conn';view()},rset:()=>{S.v='rset';view()},model:()=>{S.v='model';if(S.mg)mgBoard();view()},acc:()=>{S.v='acc';view()},sopt:()=>{S.so=n.so;S.v='sopt';view()},olib:()=>{S.v='olib';olEnterLib();view()},puz:()=>{S.v='puz';olEnterLib();view()},puzp:()=>{S.v='puz';olEnterLib();view()},olpl:()=>{S.v='olpl';olEnterLib();view()},odet:()=>{S.olid=n.ol.id;S.olside=n.ol.side;S.oli=n.ol.li;S.v='odet';if(olEnterDet())view()},oprac:()=>{S.olid=n.ol.id;S.olside=n.ol.side;S.oli=n.ol.li;olStart()}}[n.v]||home)()}
+function restore(n){B.on=null;B.lock=false;S.c=n.c;({home,rep:()=>n.rb?startRep(n.c,n.path):openRep(n.c),pchoose:()=>{S.psc=n.psc;pchoose()},prac:()=>startPrac(n.pm.mode,n.pm.key),games:()=>{S.v='games';view()},game:()=>openGame(n.gid,n.ply),moves:()=>openGame(n.gid,n.ply,1),ins:()=>{S.v='ins';view()},rptev:()=>{S.v='ins';view()},rptex:()=>{S.v='ins';view()},open:()=>{S.okey=n.okey;S.v='open';view()},set:()=>{S.v='set';view()},rate:()=>{S.v='rate';view()},conn:()=>{S.v='conn';view()},rset:()=>{S.v='rset';view()},model:()=>{S.v='model';if(S.mg)mgBoard();view()},acc:()=>{S.v='acc';view()},sopt:()=>{S.so=n.so;S.v='sopt';view()},olib:()=>{S.v='olib';olEnterLib();view()},puz:()=>{S.v='puz';olEnterLib();view()},puzp:()=>{S.v='puz';olEnterLib();view()},olpl:()=>{S.v='olpl';olEnterLib();view()},odet:()=>{S.olid=n.ol.id;S.olside=n.ol.side;S.oli=n.ol.li;S.v='odet';if(olEnterDet())view()},oprac:()=>{S.olid=n.ol.id;S.olside=n.ol.side;S.oli=n.ol.li;olStart()}}[n.v]||home)()}
 const home=()=>{S.v='home';B.on=null;B.lock=false;S.opPv=null;S.capL='';setPos(R.START,'w',false);view()};
 /* ---- repertoire overview (reference layout) ---- */
 reps.m=reps.m||{names:{},cover:{}};const TCI={"Bullet": "<path d='M4 9h9a6 3 0 010 6H4z'/>", "Blitz": "<path d='M13 3L5 13h6l-1 8 8-10h-6z'/>", "Rapid": "<circle cx='12' cy='13' r='7'/><path d='M12 13V9M10 3h4'/>", "Classical": "<path d='M7 3h10M7 21h10M8 3c0 5 4 6 4 9s-4 4-4 9M16 3c0 5-4 6-4 9s4 4 4 9'/>"};
@@ -1004,7 +1005,7 @@ function vHome(){const du=pItems().filter(x=>!x.e.due||x.e.due<=Date.now()).leng
  return'<div class="hm">'+lbl('Repertoires','<button class="lnk" data-a="radd" data-tip="Add new repertoire" style="font-size:20px;line-height:1">+</button>')+reps.m.list.map(p=>`<button class="act" data-a="open" data-p="${p.id}"><span style="display:flex;align-items:center;gap:10px"><i class="sd ${p.col}"></i><span>${esc(p.name)}${tcMarkP(p)}</span></span><span class="r">${Object.keys(reps.m.data[p.id]||{}).length} positions saved</span></button>`).join('')
  +lbl('Openings')+act('olib','Opening Library',olLibDue()+' due')+act('olpl','Practice Openings',olDueItems(false).length+' due')+lbl('Practice')+act('prac','Practice moves',du+' due')+act('puz','Puzzles')+act('mdl','Play through a model game')
  +lbl('Your Games',cn?'<span class="tag" style="margin:0">CONNECTED</span>':'')
- +(cn?act('games','Your games',games.length?games.length+' games':'')+act('ins','Your openings report'):act('conn','Your games','Not connected')+act('conn','Your openings report','Not connected')+`<div style="height:10px"></div>`+act('conn','Connect account'))+'</div>'}
+ +(cn?act('games','Your games',games.length?games.length+' games':'')+act('ins','Your Report'):act('conn','Your games','Not connected')+act('conn','Your Report','Not connected')+`<div style="height:10px"></div>`+act('conn','Connect account'))+'</div>'}
 const rcount=c=>Object.keys(reps[c]).length;
 function vConn(){return`<h1>Connect your online accounts</h1>`
  +['lichess','chesscom'].map(k=>`<div class="lbl"><span>${SITE[k].n}</span><span id="cs-${k}" class="dim"></span></div><div class="fw"><input class="in cin" data-site="${k}" placeholder="Connect…" value="${esc(cfg.names[k])}" autocomplete="off" spellcheck="false"></div>`).join('')
@@ -1166,12 +1167,12 @@ function opGroups(L){const base=perfOf(L),m={};for(const g of L){if(!g.open||g.o
 const secHtml=(title,arr,key,cls)=>{if(!arr.length)return lbl(title)+'<p class="dim">None in this period.</p>';const show=S.sm[key]?arr:arr.slice(0,2);
  return lbl(title,'Total Elo · Per game')+`<div class="fade">`+show.map(r=>{const i=S.insG.indexOf(r);return`<button class="orow" data-a="oo" data-p="${i}" data-opk="${i}"><i class="sd ${r.col}" data-tip="Played as ${r.col==='w'?'White':'Black'}"></i><span>${esc(shortOpen(r.open))}<span class="dim"> · ${r.n} games</span></span><span style="text-align:right"><span class="pf ${r.diff>0?'p':r.diff<0?'n':'z'}" data-tip="Total Elo gained or lost across all ${r.n} games">${sgn(r.diff)} Elo</span><span class="dim" style="display:block;font-size:11px" data-tip="Average result per game versus expectation, from -100 to +100">${sgn(r.eff)} / game</span></span></button>`}).join('')+`</div>`+(arr.length>2&&!S.sm[key]?act('sm','Show more','',key):'')};
 S.sm={b:0,w:0,d:0};
-function vIns(){if(cfg.days)S.days=cfg.days;if(S.opOpen&&OLN){const L=OLN;S.opOpen=0;B.on=null;setTimeout(()=>{runLine(L,0);setOp(null)},0)}else{S.opOpen=0;setPos(R.START,'w',true);B.on=null}if(!games.length)return'<h1>Insights by Opening</h1><div class="cd">NOT CONNECTED<small>Insights are computed only from games you have retrieved.</small></div>'+act('conn','Connect account');
+function vInsOld(){if(cfg.days)S.days=cfg.days;if(S.opOpen&&OLN){const L=OLN;S.opOpen=0;B.on=null;setTimeout(()=>{runLine(L,0);setOp(null)},0)}else{S.opOpen=0;setPos(R.START,'w',true);B.on=null}if(!games.length)return'<h1>Insights by Opening</h1><div class="cd">NOT CONNECTED<small>Insights are computed only from games you have retrieved.</small></div>'+act('conn','Connect account');
  const win=games.filter(g=>g.t>=Date.now()-S.days*864e5),tcs=[...new Set(win.map(g=>g.tc).filter(Boolean))],rated=win.some(g=>g.rated);if(S.itc!=='all'&&S.itc!=='rated'&&!tcs.includes(S.itc))S.itc='all';
  const L=insGames(),G=opGroups(L);S.insG=G;const miss=L.filter(g=>g.or==null).length;
  if(S.itc==='all'||S.itc==='rated'){const f=tcs.slice().sort((x,y)=>win.filter(g=>g.tc===y).length-win.filter(g=>g.tc===x).length)[0];if(f)S.itc=f}
  const L2=insGames(),G2=opGroups(L2);S.insG=G2;const RT=games.some(g=>g.rated);
- let h='<h1>Your openings report</h1>'+act('tpo','Time period','Last '+S.days+' days')+(S.tpo?`<div class="fade">${[90,60,30,15].map(d=>act('dr','Last '+d+' days',S.days===d?'\u2713':'',d).replace('class="act"',`class="act${S.days===d?' on':''}"`)).join('')}</div>`:'')
+ let h='<h1>Openings</h1>'+act('tpo','Time period','Last '+S.days+' days')+(S.tpo?`<div class="fade">${[90,60,30,15].map(d=>act('dr','Last '+d+' days',S.days===d?'\u2713':'',d).replace('class="act"',`class="act${S.days===d?' on':''}"`)).join('')}</div>`:'')
   +`<div class="seg" style="margin:10px 0 0">${[['tot','Total impact'],['eff','Per-game efficiency']].map(([k,t])=>`<button data-a="isort" data-p="${k}"${(S.isort||'tot')===k?' class="on"':''}>${t}</button>`).join('')}</div><div class="tabs">${tcs.map(t=>`<button data-a="tcf" data-p="${esc(t)}" class="${S.itc===t?'on':''}">${esc(cap1(t))}${RT?', Rated':''}</button>`).join('')}</div>`;
  if(!L2.length)return h+`<p class="sub fade">No games in the last ${S.days} days for this selection. Try a longer period.</p>`;
  if(!G2.length)h+=`<p class="sub fade">Not enough data: an opening needs at least 3 games with opponent ratings in this period.</p>`;
@@ -1320,7 +1321,7 @@ const BARQ='.bar i,.pb i,.pbar i';
 function barSnap(){return{v:S.v,w:[...P.querySelectorAll(BARQ)].map(e=>e.style.width)}}
 function barAnim(sn){if(!sn||sn.v!==S.v)return;const els=[...P.querySelectorAll(BARQ)];if(els.length!==sn.w.length)return;const tg=els.map(e=>e.style.width),ch=els.map((e,i)=>sn.w[i]&&sn.w[i]!==tg[i]);els.forEach((e,i)=>{if(ch[i]){e.style.transition='none';e.style.width=sn.w[i]}});void P.offsetWidth;els.forEach((e,i)=>{if(ch[i]){e.style.transition='';e.style.width=tg[i]}})}
 const fxLeaves=root=>{const m=new Map(),c={};if(!root)return m;root.querySelectorAll('*').forEach(e=>{if(e.children.length||!e.textContent.trim()||e.closest('[data-nofx]'))return;const sig=e.tagName+'.'+(e.getAttribute('class')||'');c[sig]=(c[sig]||0)+1;m.set(sig+'#'+c[sig],e)});return m};
-function view(k){const _fxOld=k?fxLeaves(P.querySelector('.v')):null;if(S._pv!==S.v){if(S._pv!==undefined){B.arrow=null;B.hintSq=null;B.arrows=null;B._ak=null}S._pv=S.v}if(S.snap&&S.v!=='rep')discardWork();unpreview(true);const st=P.scrollTop;const f={intro1:vI1,intro2:()=>vRating(true),home:vHome,rep:()=>S.rb?vRep():vRepHome(),rset:vRSet,model:vMG,pchoose:vPChoose,prac:vPrac,games:vGames,game:vGame,moves:vMoves,ins:vIns,open:vOpen,plans:vPlans,conn:vConn,rate:()=>vRating(false),set:vSet,acc:vAcc,sopt:vSopt,radd:vRadd,olib:vOlib,odet:vOdet,olpl:vOlpl,oprac:vOprac,puz:vPuz,puzp:vPuzP}[S.v],body=f();
+function view(k){const _fxOld=k?fxLeaves(P.querySelector('.v')):null;if(S._pv!==S.v){if(S._pv!==undefined){B.arrow=null;B.hintSq=null;B.arrows=null;B._ak=null}S._pv=S.v}if(S.snap&&S.v!=='rep')discardWork();unpreview(true);const st=P.scrollTop;const f={intro1:vI1,intro2:()=>vRating(true),home:vHome,rep:()=>S.rb?vRep():vRepHome(),rset:vRSet,model:vMG,pchoose:vPChoose,prac:vPrac,games:vGames,game:vGame,moves:vMoves,ins:vRpt,rptev:vRptEv,rptex:vRptEx,open:vOpen,plans:vPlans,conn:vConn,rate:()=>vRating(false),set:vSet,acc:vAcc,sopt:vSopt,radd:vRadd,olib:vOlib,odet:vOdet,olpl:vOlpl,oprac:vOprac,puz:vPuz,puzp:vPuzP}[S.v],body=f();
  const _bw=barSnap();P.innerHTML=topbar(S.v!=='home'&&S.v!=='intro1')+`<div class="v${k?' s':''}">${body}</div>`;if(k)P.scrollTop=st;barAnim(_bw);if(_fxOld&&!RMq.matches){const nw=fxLeaves(P.querySelector('.v'));for(const[key,e]of nw){const o=_fxOld.get(key);if(o&&o.textContent!==e.textContent&&e.animate)e.animate([{opacity:0,transform:'translateY(3px)'},{opacity:1,transform:'none'}],{duration:240,easing:'cubic-bezier(.23,1,.32,1)'})}}paintU();hdr();capBar();loadPlan();planPaint();if(S.v==='game'||S.v==='moves'){evBar(S.hev&&S.hev.f===R.fen(B.s)?S.hev.cp:0)}else{const b=$('#evb');if(b)b.style.display='none'}}
 const go=(v,fn)=>nav(()=>{S.v=v;fn&&fn();view()});
 const ACT={rcvc(){const L=[20,50,100,150,300,500],c=repCover(S.c),i=L.indexOf(c);reps.m.cover[S.c]=L[(i+1)%L.length];sv();view(1)},isort(p){S.isort=p;view(1)},scyc(k){const o=SOPT[k];if(!o)return;const i=o.o.findIndex(x=>String(x[0])===String(o.g()));o.s(o.o[(i+1)%o.o.length][0]);sv();view(1);if(k==='disp')drawBoard()},psetp(p){if(!RLIM[p])return;cfg.ratingPlatform=p;cfg.ratingSet=true;clampR();if(S.v==='intro2')cfg.disp=p;sv();EX.clear();view(1);if(S.v==='intro2')drawBoard()},rcvp(p){reps.m.cover[S.c]=+p;sv();view(1)},tpo(){S.tpo=!S.tpo;view(1)},dsp(p){cfg.disp=p;sv();view(1);drawBoard()},i2(){S.v='intro2';view()},irate(){if(cfg.selfReportedRating<RMIN[cfg.ratingPlatform]){view(1);return}cfg.ratingSet=true;cfg.disp=cfg.ratingPlatform;cfg.intro=1;sv();EX.clear();home()},iskip(){cfg.disp=cfg.ratingPlatform;cfg.intro=1;sv();home()},rdone(){if(cfg.selfReportedRating<RMIN[cfg.ratingPlatform]){view(1);return}cfg.ratingSet=true;sv();EX.clear();ACT.back()},psite(){cfg.ratingPlatform=cfg.ratingPlatform==='chesscom'?'lichess':'chesscom';cfg.ratingSet=true;clampR();rmind=true;sv();EX.clear();view()},
@@ -1622,6 +1623,271 @@ let olH2=null;
 document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-olhl2]');if(!el||el===olH2||S.v!=='olib')return;olH2=el;const id=el.dataset.p,[oid,sd]=id.split('|'),o=olById(oid),l=o&&olLines(o,sd).find(x=>olId(o,x)===id);if(l)showLine(l.sans,sd)});
 document.addEventListener('mouseout',e=>{if(!olH2)return;if(e.relatedTarget&&olH2.contains(e.relatedTarget))return;olH2=null;if(S.v==='olib')opRestore()});
 document.addEventListener('input',e=>{if(e.target.id==='pzmin'){const v=Math.max(0,Math.min(180,Math.floor(+e.target.value||0)));pzc().time=v;sv()}if(e.target.id==='olq'){S.olq=e.target.value;const l=$('#ollist');if(l)l.innerHTML=olRows()}});
+
+/* ---------- Your Report: cross-game skill diagnostics built on stored Stockfish analysis ---------- */
+const RPV={P:1,N:3,B:3,R:5,Q:9,K:100},rpCol=p=>p<'a'?'w':'b',rpSame=(a,b)=>!!a&&!!b&&a.f===b.f&&a.t===b.t&&(a.pr||'')===(b.pr||'');
+const RPGD=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+function rpAtt(b,from,to){const p=b[from];if(!p||from===to)return false;const T=p.toUpperCase(),fx=from&7,fy=from>>3,dx=(to&7)-fx,dy=(to>>3)-fy,ax=Math.abs(dx),ay=Math.abs(dy);
+ if(T==='P'){const d=p==='P'?-1:1;return dy===d&&ax===1}
+ if(T==='N')return(ax===1&&ay===2)||(ax===2&&ay===1);
+ if(T==='K')return Math.max(ax,ay)===1;
+ const dg=ax===ay,st=(dx===0)!==(dy===0);if(!((T==='B'&&dg)||(T==='R'&&st)||(T==='Q'&&(dg||st))))return false;
+ const sx=Math.sign(dx),sy=Math.sign(dy);let x=fx+sx,y=fy+sy;while(x!==(to&7)||y!==(to>>3)){if(b[y*8+x])return false;x+=sx;y+=sy}return true}
+const rpAtkrs=(b,sq,col)=>{const o=[];for(let i=0;i<64;i++){const p=b[i];if(p&&i!==sq&&rpCol(p)===col&&rpAtt(b,i,sq))o.push(i)}return o};
+/* static exchange evaluation of move m (material won by the mover, in pawns) */
+function rpSee(s,m){const b=s.b.slice(),V=x=>RPV[x.toUpperCase()],mover=b[m.f];let on=m.pr?9:V(mover);const g=[m.cap?V(m.cap):0];b[m.f]=null;if(m.e)b[m.t+(s.t==='w'?8:-8)]=null;b[m.t]=mover;let side=s.t==='w'?'b':'w',d=0;
+ for(;d<30;){const a=rpAtkrs(b,m.t,side).sort((x,y)=>V(b[x])-V(b[y]))[0];if(a==null)break;d++;g[d]=on-g[d-1];on=V(b[a]);b[m.t]=b[a];b[a]=null;side=side==='w'?'b':'w'}
+ while(--d>0)g[d-1]=-Math.max(-g[d-1],g[d]);return g[0]}
+function rpPins(b,col){const out=[];for(let i=0;i<64;i++){const p=b[i];if(!p||rpCol(p)!==col)continue;const T=p.toUpperCase();if(T!=='B'&&T!=='R'&&T!=='Q')continue;
+  for(const[a,c]of(T==='B'?RPGD.slice(4):T==='R'?RPGD.slice(0,4):RPGD)){let x=(i&7)+a,y=(i>>3)+c,first=-1;while(x>=0&&x<8&&y>=0&&y<8){const q=b[y*8+x];if(q){if(first<0){if(rpCol(q)===col)break;first=y*8+x}else{if(rpCol(q)!==col)out.push({a:i,f:first,t:y*8+x});break}}x+=a;y+=c}}}return out}
+const rpKing=(b,col)=>b.indexOf(col==='w'?'K':'k');
+/* Geometrically verified tactical motifs of move m. pv (uci list) lets the engine's line confirm material-winning follow-ups. */
+function rpMotifs(s,m,pv,last){const c=s.t,e=c==='w'?'b':'w',n=R.make(s,m),b0=s.b,b1=n.b,V=x=>RPV[x.toUpperCase()],mover=b1[m.t],out={},ek=rpKing(b1,e),chk=R.check(n);
+ if(m.cap&&V(m.cap)>=3&&rpAtkrs(b1,m.t,e).length===0)out.hang={sq:m.t};
+ if(!m.ca&&!m.pr){const tg=[];for(let i=0;i<64;i++){const q=b1[i];if(!q||rpCol(q)!==e||i===m.t||!rpAtt(b1,m.t,i))continue;const vq=V(q),df=rpAtkrs(b1,i,e).length;if(q==='k'||q==='K'||vq>V(mover)||(df===0&&vq>=3))tg.push(i)}
+  if(tg.length>=2){const cap=rpAtkrs(b1,m.t,e).sort((x,y)=>V(b1[x])-V(b1[y]))[0];const safe=cap==null||rpSee({b:b1,t:e},{f:cap,t:m.t,cap:mover,p:b1[cap].toUpperCase()})<=0;if(safe)out.fork={sq:m.t,tg}}}
+ const p0=rpPins(b0,c),p1=rpPins(b1,c),had=new Set(p0.map(x=>x.a+'>'+x.f+'>'+x.t));
+ for(const x of p1){if(x.a!==m.t||had.has(x.a+'>'+x.f+'>'+x.t))continue;const vf=V(b1[x.f]),vt=V(b1[x.t]);if(vt>vf&&vt>=3&&!out.pin)out.pin={a:x.a,f:x.f,t:x.t,abs:b1[x.t]==='k'||b1[x.t]==='K'};else if(vf>vt&&vf>=5&&vt>=3&&!out.skewer)out.skewer={a:x.a,f:x.f,t:x.t}}
+ for(let i=0;i<64;i++){const p=b1[i];if(!p||rpCol(p)!==c||i===m.t)continue;const T=p.toUpperCase();if(T!=='B'&&T!=='R'&&T!=='Q')continue;
+  for(let j=0;j<64;j++){const q=b1[j];if(!q||rpCol(q)!==e||!rpAtt(b1,i,j)||rpAtt(b0,i,j)&&b0[j]===q)continue;const k=q==='k'||q==='K';if(!k&&V(q)<3)continue;if(rpAtt(b1,m.t,j))continue;if(k||rpAtkrs(b1,j,e).length===0||V(q)>V(p)){out.disc={a:i,t:j,chk:k};break}}if(out.disc)break}
+ if(ek>=0&&chk){const nc=rpAtkrs(b1,ek,c).length;if(nc>=2)out.dcheck={n:nc}}
+ if(chk&&!R.legal(n).length){out.mate={back:(ek>>3)===(e==='b'?0:7)&&'RQrq'.includes(mover)&&(m.t>>3)===(ek>>3)}}
+ if(m.pr)out.promo={pr:m.pr};
+ if(m.cap&&pv&&pv.length>=3){const nx=pv[2],tt=nx?(8-(+nx[3]))*8+(nx.charCodeAt(2)-97):-1;if(tt>=0){for(let y=0;y<64;y++){const q=b0[y];if(!q||rpCol(q)!==e||y===m.t||V(q)<3||!rpAtt(b0,m.t,y))continue;if(tt===y&&b1[y]&&rpAtkrs(b1,y,c).length>0){out.remdef={tgt:y,def:m.t};break}}}}
+ if(last&&last.m&&last.m.cap&&m.t!==last.m.t&&(chk||m.cap)&&rpSee(s,m)>=0)out.zw={}; 
+ return out}
+const RPTHR=['fork','pin','skewer','disc','hang'];
+/* tactical threats available to the side to move; for the opponent's threats the side to move is flipped (null move) */
+function rpThreats(s,nul){const q=nul?{...s,t:s.t==='w'?'b':'w',ep:-1}:s,set=new Set();let L;try{L=R.legal(q)}catch(e){return set}for(const m of L){if(set.size>=RPTHR.length)break;const mo=rpMotifs(q,m,null,null);for(const k of RPTHR)if(mo[k]&&!set.has(k)){if(k==='fork'||k==='hang'||k==='disc'){if(rpSee(q,m)<0)continue}set.add(k)}}return set}
+const rpPhase=(s,i)=>i<20?'open':NPM(s.b)<=14?'end':'mid';
+function rpEndType(b){let r=0,q=0,mi=0;for(const p of b){if(!p)continue;const T=p.toUpperCase();if(T==='R')r++;else if(T==='Q')q++;else if(T==='N'||T==='B')mi++}if(!r&&!q&&!mi)return'pawn';if(r&&!q&&!mi)return'rook';if(!r&&!q&&mi)return'minor';if(q&&!r&&!mi)return'queen';return'mixed'}
+
+/* id, name, group, quality (e = engine-verified, h = heuristic), what an opportunity is, why it matters, what to study, Lichess theme */
+const RPS=[
+['a:fork','Finding forks','tac','e','a position where a fork was the engine\'s strongest move','Forks win material outright and turn equal positions into winning ones.','Fork patterns with knights, queens and pawns, then fork puzzles.','fork'],
+['a:pin','Finding pins','tac','e','a position where creating a pin was the strongest move','Pins freeze pieces and often win them.','Pins against the king and the queen, and how to pile up on a pinned piece.','pin'],
+['a:skewer','Finding skewers','tac','e','a position where a skewer was the strongest move','Skewers win the piece behind a valuable target.','Skewers along files, ranks and diagonals.','skewer'],
+['a:disc','Discovered attacks and checks','tac','e','a position where a discovered attack or check was the strongest move','A discovered attack creates two threats at once.','Aligned batteries and the pieces that can move with tempo.','discoveredAttack'],
+['a:dcheck','Double checks','tac','e','a position where a double check was the strongest move','A double check can only be answered by moving the king.','Double-check patterns and the mates they lead to.','doubleCheck'],
+['a:hang','Exploiting hanging pieces','tac','e','a position where an unprotected piece could be captured','Free material is the simplest advantage to convert.','A routine of checking what the opponent\'s last move left undefended.','hangingPiece'],
+['a:remdef','Removing the defender','tac','e','a position where capturing a defender won material','Removing a defender collapses the pieces it protected.','Spotting which pieces carry the defence of others.','capturingDefender'],
+['a:mate','Finding forced mates','tac','e','a position with a forced mate','Mating attacks end the game on the spot.','Basic mating patterns and checks-captures-threats ordering.','mate'],
+['a:promo','Promotion tactics','tac','e','a position where promotion was the strongest move','A new queen usually decides the game.','Pawn races and promotion tricks.','promotion'],
+['a:zwisch','Intermediate moves','tac','h','a position where an in-between move beat the automatic recapture','Intermediate moves change the outcome of an exchange.','Checking for a stronger move before every recapture.','intermezzo'],
+['a:force','Finding forcing moves','tac','e','a position where a check or capture was clearly best','Forcing moves restrict the opponent and win tempo.','Looking at every check and capture before choosing a move.',null],
+['d:fork','Recognizing opponent forks','def','h','an opponent fork threat or a fork that landed','Forks against you cost material immediately.','Before each move, look for squares where an enemy knight or queen would hit two of your pieces.',null],
+['d:pin','Recognizing opponent pins','def','h','an opponent pin threat or a pin that landed','Pins against your pieces limit your moves and lose material.','Check every enemy slider aimed at your king or queen.',null],
+['d:skewer','Recognizing opponent skewers','def','h','an opponent skewer threat or a skewer that landed','Skewers win the piece behind a valuable one.','Keep valuable pieces off lines enemy sliders can reach.',null],
+['d:disc','Recognizing opponent discovered attacks','def','h','an opponent discovered-attack threat or one that landed','Discovered attacks come from pieces that look harmless.','Learn to spot aligned enemy pieces and the threat when the front one moves.',null],
+['d:hang','Keeping pieces defended','def','h','a piece left en prise or a position that needed a defender','Hanging pieces hand the opponent material for free.','A checklist: is every piece defended or safe after my move?',null],
+['d:remdef','Protecting key defenders','def','h','a position where the opponent could remove a defender','Losing a defender often loses the piece it protected.','Noticing which of your pieces are overloaded.',null],
+['d:mate','Recognizing mate threats','def','e','a position where the opponent could force mate','Mate threats leave no room for second chances.','Back-rank and king-side mating patterns against you.',null],
+['c:threat','Anticipating immediate threats','calc','e','a move where the opponent had a strong capture or check in reply','Missing a forcing reply loses material quickly.','Asking what the opponent\'s most forcing reply is before every move.',null],
+['c:reply','Finding the opponent\'s strongest quiet reply','calc','e','a move where the opponent had a strong quiet reply','Quiet refutations are the ones most often overlooked.','Candidate-move practice: always look at the opponent\'s best non-forcing move.',null],
+['c:exch','Calculating exchanges','calc','e','a capture that allowed a recapture','Misjudged exchanges give up material or the initiative.','Counting attackers and defenders on a square before capturing.',null],
+['c:defres','Finding defensive resources','calc','e','a worse position where only one defence held','Finding the only move saves games that look lost.','Defensive puzzles and counting forcing replies.','defensiveMove'],
+['p:convert','Converting advantages','pos','e','a clearly better position that had to be converted','Winning positions are worth nothing if they slip away.','Simplification, prophylaxis and avoiding counterplay when ahead.',null],
+['p:king','King safety','pos','h','a position where castling or shelter mattered','An exposed king is the main target of attacks.','Castling timing and keeping the pawn shield intact.',null],
+['p:dev','Development and piece activity','pos','h','an opening position where developing a piece was best','Undeveloped pieces fall behind in the race for the initiative.','Developing every minor piece once before moving any piece twice.',null],
+['p:file','Using open files','pos','h','a position where a rook belonged on an open file','Rooks on open files create real pressure.','Doubling rooks and invading on open files.',null],
+['p:break','Timing pawn breaks','pos','h','a position where a pawn break was the best idea','Pawn breaks open the position in your favour at the right moment.','Typical pawn breaks for your openings.',null],
+['p:struct','Pawn structure','pos','h','a pawn capture that changed the structure','Structural damage is permanent.','Doubled and isolated pawns: when they are worth accepting.',null],
+['e:pawn','Pawn endgames','end','e','a move in a pawn endgame','Pawn endgames are decided by exact technique.','Opposition, key squares and pawn races.','pawnEndgame'],
+['e:rook','Rook endgames','end','e','a move in a rook endgame','Rook endgames are the most common endgames.','Rook activity, cutting off the king and the Lucena and Philidor positions.','rookEndgame'],
+['e:minor','Minor-piece endgames','end','e','a move in a bishop or knight endgame','Minor-piece endgames reward careful piece placement.','Good and bad bishops, knight outposts and passed pawns.','bishopEndgame'],
+['e:queen','Queen endgames','end','e','a move in a queen endgame','Queen endgames turn on checks and king safety.','Perpetual-check awareness and promotion tactics.','queenEndgame'],
+['e:opp','Opposition and king activity','end','h','a pawn-ending position where the kings faced each other','Opposition decides most pawn endings.','Direct opposition and key squares.','pawnEndgame'],
+['e:conv','Converting winning endgames','end','e','a game that reached the endgame clearly better','Converting extra material is a core endgame skill.','Trading down, creating a passed pawn and activating the king.','advantage'],
+['e:defend','Defending worse endgames','end','e','a game that reached the endgame clearly worse','Many worse endgames can be held with active defence.','Active defence and counter-chances.','defensiveMove'],
+['o:end','Position after the opening','open','e','a game after its first eight moves','Equal positions after the opening give you a stable middlegame.','The structures and plans of your openings.',null]];
+const RPX=Object.fromEntries(RPS.map(r=>[r[0],{id:r[0],n:r[1],g:r[2],q:r[3],opp:r[4],why:r[5],study:r[6],th:r[7]}]));
+const RPGR={tac:'Tactical vision',def:'Defensive awareness',calc:'Calculation',pos:'Positional understanding',open:'Opening preparation',end:'Endgame technique'};
+const RPSK_MAP={fork:'a:fork',pin:'a:pin',skewer:'a:skewer',disc:'a:disc',dcheck:'a:dcheck',hang:'a:hang',remdef:'a:remdef',mate:'a:mate',promo:'a:promo',zw:'a:zwisch'};
+const RPDEF_MAP={fork:'d:fork',pin:'d:pin',skewer:'d:skewer',disc:'d:disc',dcheck:'d:disc',hang:'d:hang',remdef:'d:remdef'};
+const RPMOT={fork:'fork',pin:'pin',skewer:'skewer',disc:'discovered attack',dcheck:'double check',hang:'capture of an unprotected piece',remdef:'removal of a defender',mate:'checkmate',promo:'promotion',zw:'intermediate move'};
+/* Per-game extraction. Every opportunity is tallied as handled (h) or missed (m); positions where the result is ambiguous are not counted. */
+function rptGame(g,acc){const A=anl[g.id],rv=review(g);if(!rv)return false;const{st,hs}=gs(g),n=hs.length,me=g.col,u=me==='w'?1:-1,ev=A.ev,e2=A.e2||[],pov=i=>ev[i]==null?null:u*ev[i],en=me==='w'?'b':'w';
+ const T=(id,res,i,x)=>{const k=acc.sk[id]||(acc.sk[id]={o:0,h:0,m:0,g:new Set(),mg:new Set(),sev:0,ev:[],ph:{}});k.o++;k[res]++;k.g.add(g.id);const ph=rpPhase(st[i],i),pp=k.ph[ph]||(k.ph[ph]={h:0,m:0});pp[res]++;if(res==='m'){k.sev+=rv.ls[i]||0;k.mg.add(g.id)}
+  k.ev.push({id,res,gid:g.id,i,ply:i,fen:R.fen(st[i]),pl:i<n?hs[i].san:'',ls:Math.round(rv.ls[i]||0),ph,col:me,cp:pov(i),cp1:pov(i+1),...x})};
+ const gapAt=i=>e2[i]!=null&&ev[i]!=null?Math.abs(ev[i]-e2[i]):null,sanOf=(s,m)=>m?R.san(s,m):'';
+ let endIdx=-1;
+ for(let i=0;i<n;i++){const s=st[i],ph=rpPhase(s,i);if(s.t!==me)continue;const m=hs[i].m,ls=rv.ls[i]||0;
+  const A0=acc.ph[ph]||(acc.ph[ph]={mv:0,big:0,sum:0});A0.mv++;A0.sum+=ls;if(ls>=10)A0.big++;
+  if(ev[i]==null||ev[i+1]==null)continue;
+  const bmU=A.bm[i],mb=bmU?pzUci(s,bmU):null,pv=(A.pv[i]||'').split(' ').filter(Boolean),gap=gapAt(i),real=gap!=null?gap>=60:ls>=8,P=pov(i),P1=pov(i+1),last=i>0?hs[i-1]:null,bs=sanOf(s,mb);
+  const base=()=>({bm:bmU||null,bs,gap:gap==null?null:Math.round(gap)});
+  /* attacking skills */
+  if(P>=25000){if(P1>=25000)T('a:mate','h',i,{...base(),why:'A forced mate was available and the move kept it.'});else T('a:mate','m',i,{...base(),why:'A forced mate was available; the move played gave it up.'})}
+  else if(mb&&real&&Math.abs(P)<25000){const mo=rpMotifs(s,mb,pv,last),mp=rpMotifs(s,m,null,last);
+   for(const k of Object.keys(mo)){const id=k==='mate'?'a:mate':RPSK_MAP[k];if(!id||(k==='zw'&&gap!=null&&gap<80))continue;const ok=rpSame(m,mb)||(mp[k]&&ls<=3);const why=`The strongest move ${bs} was a verified ${RPMOT[k]}${mo[k].tg?' hitting '+mo[k].tg.length+' pieces':''}.`;if(ok&&ls<=5)T(id,'h',i,{...base(),why,mot:k});else if(ls>=8)T(id,'m',i,{...base(),why,mot:k})}
+   if(mb&&(mb.cap||R.check(R.make(s,mb)))&&gap!=null&&gap>=100){const ok=rpSame(m,mb);if(ok&&ls<=3)T('a:force','h',i,{...base(),why:`${bs} was a clearly best check or capture.`});else if(ls>=8)T('a:force','m',i,{...base(),why:`${bs} was a clearly best check or capture and was not played.`})}}
+  /* defending against tactics */
+  if(i+1<n&&ls>=8){const s1=st[i+1],mb1=A.bm[i+1]?pzUci(s1,A.bm[i+1]):null;
+   if(mb1){const pv1=(A.pv[i+1]||'').split(' ').filter(Boolean),mo1=rpMotifs(s1,mb1,pv1,hs[i]),rs=sanOf(s1,mb1);
+    if(P1<=-25000&&pov(i+1)<=-25000)T('d:mate','m',i,{...base(),ref:A.bm[i+1],rs,why:`The move allowed ${rs}, leading to a forced mate.`});
+    else for(const k of Object.keys(mo1)){const id=RPDEF_MAP[k];if(!id)continue;T(id,'m',i,{...base(),ref:A.bm[i+1],rs,why:`The move allowed ${rs}, a verified ${RPMOT[k]} against you.`,mot:k})}}}
+  else if(i>=6&&i+1<n&&ls<8&&Math.abs(P)<800&&!R.check(s)){const th0=rpThreats(s,true);if(th0.size){const th1=rpThreats(st[i+1],false);for(const k of th0)if(!th1.has(k))T(RPDEF_MAP[k],'h',i,{...base(),why:`The opponent threatened a ${RPMOT[k]}; the move played removed it.`,mot:k,heur:1})}}
+  /* calculation */
+  if(i+1<n){const s1=st[i+1],g1=gapAt(i+1),mb1=A.bm[i+1]?pzUci(s1,A.bm[i+1]):null;
+   if(mb1&&g1!=null&&g1>=80&&Math.abs(P1)<25000&&Math.abs(P)<25000){const forcing=mb1.cap||R.check(R.make(s1,mb1)),id=forcing?'c:threat':'c:reply',rs=sanOf(s1,mb1);
+    if(ls>=8)T(id,'m',i,{...base(),ref:A.bm[i+1],rs,why:`After the move, ${rs} was a strong ${forcing?'forcing':'quiet'} reply for the opponent.`});else if(ls<=3)T(id,'h',i,{...base(),ref:A.bm[i+1],rs,why:`The opponent had a strong ${forcing?'forcing':'quiet'} reply (${rs}) and the move still held up.`})}}
+  if(m.cap){const af=R.make(s,m);if(rpAtkrs(af.b,m.t,en).length>0){const see=rpSee(s,m);if(see<0&&ls>=8)T('c:exch','m',i,{...base(),why:`The capture loses material in the exchange on ${R.nm(m.t)}.`});else if(see>=0&&ls<=3)T('c:exch','h',i,{...base(),why:`The capture on ${R.nm(m.t)} was a sound exchange.`})}}
+  if(P<=-150&&P>-25000&&gap!=null&&gap>=80){if(rpSame(m,mb)||ls<=3)T('c:defres','h',i,{...base(),why:`Only one defence held here (${bs}) and it was found.`});else if(ls>=8)T('c:defres','m',i,{...base(),why:`Only one defence held here (${bs}) and it was missed.`})}
+  /* positional */
+  if(P>=200&&P<25000){if(ls<=5)T('p:convert','h',i,{...base(),why:'A clearly better position was handled accurately.'});else if(ls>=10&&P1<150)T('p:convert','m',i,{...base(),why:'A clearly better position slipped to near equality.'})}
+  if(mb&&mb.ca&&i<30&&(gap==null||gap>=30||ls>=8)){if(m.ca&&ls<=3)T('p:king','h',i,{...base(),why:'Castling was the best move and was played.',heur:1});else if(ls>=8)T('p:king','m',i,{...base(),why:`Castling (${bs}) was the best move.`,heur:1})}
+  {const kq=rpKing(s.b,me),kf=kq&7,back=me==='w'?7:0;if(m.p==='P'&&kq>=0&&(kq>>3)===back&&(kf>=5||kf<=2)&&((kf>=5&&(m.f&7)>=5)||(kf<=2&&(m.f&7)<=2))&&s.b.some(x=>x===(en==='w'?'Q':'q'))){if(ls>=8)T('p:king','m',i,{...base(),why:'A pawn in front of the castled king was moved while the enemy queen was on the board.',heur:1});else if(ls<=3)T('p:king','h',i,{...base(),why:'A shelter pawn move was safe.',heur:1})}}
+  if(i<24){const home=me==='w'?7:0,isDev=x=>x&&((x.p==='N'||x.p==='B')&&(x.f>>3)===home||x.ca);if(mb&&isDev(mb)&&(gap==null||gap>=30||ls>=8)){if(isDev(m)&&ls<=3)T('p:dev','h',i,{...base(),why:'A developing move was needed and played.',heur:1});else if(!isDev(m)&&ls>=8)T('p:dev','m',i,{...base(),why:`Developing with ${bs} was best; ${hs[i].san} lost time.`,heur:1})}}
+  if(mb&&mb.p==='R'&&!mb.cap&&gap!=null&&gap>=30){const f=mb.t&7;let own=0;for(let y=0;y<8;y++){const q=s.b[y*8+f];if(q===(me==='w'?'P':'p'))own++}if(!own){if(rpSame(m,mb)&&ls<=3)T('p:file','h',i,{...base(),why:'A rook belonged on this open or half-open file.',heur:1});else if(ls>=8)T('p:file','m',i,{...base(),why:`${bs} placed a rook on an open or half-open file.`,heur:1})}}
+  if(mb&&mb.p==='P'&&!mb.cap&&gap!=null&&gap>=30){const af=R.make(s,mb);let lever=false;for(let q=0;q<64;q++){const x=af.b[q];if(x===(en==='w'?'P':'p')&&rpAtt(af.b,mb.t,q))lever=true}if(lever){if(rpSame(m,mb)&&ls<=3)T('p:break','h',i,{...base(),why:'A pawn break was the best idea and was played.',heur:1});else if(ls>=8)T('p:break','m',i,{...base(),why:`${bs} was a pawn break that was not played.`,heur:1})}}
+  if(m.p==='P'&&m.cap){const f=m.t&7;let before=0,after=0;const af=R.make(s,m),pc=me==='w'?'P':'p';for(let y=0;y<8;y++){if(s.b[y*8+f]===pc)before++;if(af.b[y*8+f]===pc)after++}if(after>=2&&before===0&&ls>=8)T('p:struct','m',i,{...base(),why:`The capture doubled pawns on the ${'abcdefgh'[f]}-file.`,heur:1})}
+  /* endgames */
+  if(ph==='end'&&Math.abs(P)<800){if(endIdx<0)endIdx=i;const et=rpEndType(s.b);if(et!=='mixed'){const id='e:'+et;if(ls<=3)T(id,'h',i,{...base(),why:`A ${et} endgame move was accurate.`,et});else if(ls>=10)T(id,'m',i,{...base(),why:`A ${et} endgame move lost ${Math.round(ls)} points of winning chances.`,et})}
+   if(et==='pawn'){const k1=rpKing(s.b,me),k2=rpKing(s.b,en),dx=Math.abs((k1&7)-(k2&7)),dy=Math.abs((k1>>3)-(k2>>3));if((dx===0&&dy===2)||(dy===0&&dx===2)||(dx===2&&dy===2)){if(ls<=3)T('e:opp','h',i,{...base(),why:'The kings faced each other and the opposition was handled correctly.',heur:1});else if(ls>=10)T('e:opp','m',i,{...base(),why:'The kings faced each other and the opposition was misplayed.',heur:1})}}}}
+ /* whole-game checks */
+ const ie=(()=>{for(let i=0;i<=n;i++)if(rpPhase(st[i],i)==='end'&&i>=20)return i;return -1})();
+ if(ie>=0&&ev[ie]!=null){const P=pov(ie);if(P>=200&&P<25000)T('e:conv',g.res==='win'?'h':'m',ie,{why:g.res==='win'?'The game was won after reaching a clearly better endgame.':'The game was not won after reaching a clearly better endgame.',res:g.res});else if(P<=-150&&P>-25000)T('e:defend',g.res==='loss'?'m':'h',ie,{why:g.res==='loss'?'The game was lost after reaching a clearly worse endgame.':'The game was held after reaching a clearly worse endgame.',res:g.res})}
+ const io=Math.min(16,n);if(ev[io]!=null){const P=pov(io),eq=Math.max(0,wp(0)-wp(P));T('o:end',P>=-50?'h':'m',io,{pl:io>0?hs[io-1].san:'',ls:Math.round(eq),why:P>=-50?`The position after eight moves was acceptable (${fe(P)}).`:`The position after eight moves was already worse (${fe(P)}).`,eval:P,open:g.open||''})}
+ /* opening by name and colour, book exits */
+ {const nm=shortOpen(g.open||'')||'Unknown opening',key=nm+'|'+me,o=acc.op[key]||(acc.op[key]={name:nm,col:me,n:0,w:0,l:0,d:0,sum:0,sn:0,bad:0,ex:[]});o.n++;if(g.res==='win')o.w++;else if(g.res==='loss')o.l++;else o.d++;if(ev[io]!=null){o.sum+=pov(io);o.sn++;if(pov(io)<-50)o.bad++}
+  const bk=A.bk&&A.bk.ok?A.bk.n:null;if(bk!=null&&bk<n&&st[bk].t===me&&ev[bk]!=null&&ev[bk+1]!=null){const l=rv.ls[bk]||0;o.ex.push({gid:g.id,i:bk,fen:R.fen(st[bk]),key:R.key(st[bk]),pl:hs[bk].san,ls:Math.round(l),bm:A.bm[bk]||null,bs:A.bm[bk]?sanOf(st[bk],pzUci(st[bk],A.bm[bk])):'',book:bk})}
+  let cas=-1;for(let i=0;i<Math.min(n,30);i++)if(st[i].t===me&&hs[i].m.ca){cas=i;break}acc.cas.push(cas>=0?1:0)}
+ acc.games.push({id:g.id,res:g.res,col:me,tc:g.tc,open:g.open||'',t:g.t});return true}
+
+const rpConf=(o,gc,q)=>{if(o<3||(gc<2&&o<5))return'none';let c=o>=8&&gc>=4?'high':o>=5&&gc>=3?'medium':'low';if(q==='h'&&c==='high')c='medium';return c};
+const RPCN={none:'Insufficient data',low:'Low confidence',medium:'Medium confidence',high:'High confidence'};
+function rpLabel(a,q){if(a.conf==='none')return'Insufficient data';const r=a.h/(a.h+a.m||1);if(r>=.8&&a.h>=6&&a.g>=3&&a.conf!=='low'&&q==='e')return'Clear strength';if(r>=.7&&a.h>=4)return'Relative strength';if(r>=.45)return'Developing';if(r>=.3||a.m<4)return'Needs improvement';return'Significant recurring weakness'}
+const rpPct=(h,o)=>o?Math.round(h/o*100):0;
+function rptFinish(acc,used,skipped,opts){const sk={},uni={};for(const[id,k]of Object.entries(acc.sk)){const q=RPX[id].q,a={o:k.o,h:k.h,m:k.m,g:k.g.size,mg:k.mg.size,sev:Math.round(k.sev/Math.max(1,k.m)*10)/10,ph:k.ph,q};a.conf=rpConf(a.o,a.g,q);a.label=rpLabel(a,q);
+  const ms=k.ev.filter(e=>e.res==='m').sort((x,y)=>y.ls-x.ls).slice(0,5),hs=k.ev.filter(e=>e.res==='h').sort((x,y)=>(y.gap||0)-(x.gap||0)).slice(0,2);a.ev=ms.concat(hs);sk[id]=a;uni[id]=k}
+ const grp=(ids)=>{const o={o:0,h:0,m:0,gs:new Set(),e:0};for(const id of ids){const k=uni[id];if(!k)continue;o.o+=k.o;o.h+=k.h;o.m+=k.m;k.g.forEach(x=>o.gs.add(x));if(RPX[id].q==='e')o.e+=k.o}return o};
+ const prof=[],mk=(key,name,ids,link)=>{const g=grp(ids),q=g.o&&g.e/g.o>=.6?'e':'h',a={o:g.o,h:g.h,m:g.m,g:g.gs.size,q};a.conf=rpConf(a.o,a.g,q);a.label=a.o<5&&a.conf!=='none'?'Insufficient data':rpLabel(a,q);prof.push({key,name,...a,link})};
+ const by=p=>RPS.filter(r=>r[0].startsWith(p)).map(r=>r[0]);
+ mk('tac','Tactical vision',by('a:'),'tac');mk('calc','Calculation',by('c:').filter(x=>x!=='c:defres'),'calc');mk('def','Defensive awareness',by('d:'),'def');mk('pos','Positional understanding',by('p:').filter(x=>x!=='p:convert'),'pos');mk('open','Opening preparation',['o:end'],'open');
+ {const p=acc.ph.mid||{mv:0,big:0,sum:0},r=p.mv?p.big/p.mv:0;let label=p.mv<15?'Insufficient data':r<=.05?'Relative strength':r<=.10?'Developing':r<=.16?'Needs improvement':'Significant recurring weakness';prof.push({key:'mid',name:'Middlegame performance',o:p.mv,h:p.mv-p.big,m:p.big,g:acc.games.length,conf:p.mv>=40?'high':p.mv>=25?'medium':p.mv>=15?'low':'none',label,q:'e',link:'mid'})}
+ mk('end','Endgame technique',by('e:').filter(x=>x!=='e:opp'),'end');mk('prac','Practical play',['p:convert','e:conv','e:defend','c:defres'],'prac');
+ const pr=a=>{const rate=a.m/(a.o||1);return rate*Math.sqrt(a.m)*(1+a.sev/15)*({low:.6,medium:.85,high:1}[a.conf]||0)*(a.q==='h'?.85:1)};
+ const weak=Object.entries(sk).filter(([id,a])=>a.m>=3&&a.mg>=2&&a.conf!=='none'&&(a.label==='Needs improvement'||a.label==='Significant recurring weakness')).sort((x,y)=>pr(y[1])-pr(x[1])).map(x=>x[0]);
+ const wk=[],gc={};for(const id of weak){const g=RPX[id].g;if((gc[g]||0)>=2)continue;gc[g]=(gc[g]||0)+1;wk.push(id)}
+ const str=Object.entries(sk).filter(([id,a])=>a.q==='e'&&a.h>=5&&a.g>=3&&a.conf!=='low'&&a.conf!=='none'&&a.h/a.o>=.75).sort((x,y)=>y[1].h-x[1].h).map(x=>x[0]).slice(0,3);
+ const ops=Object.values(acc.op).map(o=>{const rep={};for(const x of o.ex)if(x.ls>=10)(rep[x.key]=rep[x.key]||[]).push(x);return{name:o.name,col:o.col,n:o.n,w:o.w,l:o.l,d:o.d,avg:o.sn?Math.round(o.sum/o.sn):null,bad:o.bad,sn:o.sn,rep:Object.values(rep).filter(a=>a.length>=2).map(a=>a.slice(0,3)),ex:o.ex.filter(x=>x.ls>=10).slice(0,4)}}).sort((a,b)=>b.n-a.n);
+ const res={w:0,l:0,d:0};acc.games.forEach(g=>{res[g.res==='win'?'w':g.res==='loss'?'l':'d']++});
+ const rep={v:2,t:Date.now(),opts,n:used,skipped,tcs:[...new Set(acc.games.map(g=>g.tc).filter(Boolean))],cols:[...new Set(acc.games.map(g=>g.col))],sk,prof,weak:wk,str,ph:acc.ph,op:ops,res,cas:{n:acc.cas.length,c:acc.cas.reduce((a,b)=>a+b,0)},first:Math.min(...acc.games.map(g=>g.t||0)),last:Math.max(...acc.games.map(g=>g.t||0))};
+ rep.plan=rptPlan(rep);return rep}
+function rptEx(rep,id){const a=rep.sk[id];if(!a||id==='o:end')return[];return a.ev.filter(e=>e.res==='m'&&e.bm&&e.gap!=null&&e.gap>=50&&e.fen&&R.parse(e.fen).t===e.col&&pzUci(R.parse(e.fen),e.bm))}
+function rptPlan(rep){const out=[];for(const id of rep.weak){const a=rep.sk[id],x=RPX[id],ex=rptEx(rep,id).length;out.push({id,name:x.n,why:`${a.m} of ${a.o} relevant positions went wrong across ${a.mg} games (${RPCN[a.conf].toLowerCase()}).`,study:x.study,exercise:ex?`Solve ${Math.min(ex,5)} positions from your own games${x.th?`, then Lichess puzzles tagged "${x.th}"`:''}.`:x.th?`Lichess puzzles tagged "${x.th}".`:'No exercise is available for this skill yet; study the topic and review the evidence positions.',time:'10 minutes a day for a week',measure:`Exercise success is tracked here. The next report will compare your handled rate (now ${a.h} of ${a.o}); a change only counts with at least 6 relevant positions in both reports.`,ex:ex,th:x.th||null})}
+ const rp=rep.op.filter(o=>o.rep.length).sort((a,b)=>b.rep.length-a.rep.length)[0];if(rp)out.push({id:'o:rep',name:`Repeated problem in the ${rp.name}`,why:`You left known theory with a costly move from the same position in ${rp.rep[0].length} games.`,study:'Study the position and the plan behind the better move rather than memorizing a long line.',exercise:'Review the position in the opening library, then add the improved line to your repertoire.',time:'15 minutes, once',measure:'The next report shows whether the same position still appears.',op:rp.name});return out}
+/* ---- run: analyse (reusing the background engine and its cache), then build ---- */
+const RPZ={run:false,cancel:false,i:0,n:0,msg:''};
+function rptIds(o){let L=games.filter(g=>g.mv&&(o.tc==='all'||g.tc===o.tc)&&(o.col==='all'||g.col===o.col)).sort((a,b)=>b.t-a.t);return L.slice(0,o.n).map(g=>g.id)}
+async function rptEnsure(g){let tries=0;while(!(anl[g.id]&&anl[g.id].done)){if(RPZ.cancel)return false;BG.first=g.id;BG.force=g.id;if(!BG.run){if(tries++>3)throw new Error(BG.err||'The analysis engine is not available.');BG.err='';bgLoop()}RPZ.msg=BG.cur===g.id?`Analyzing game ${RPZ.i+1} of ${RPZ.n} · move ${BG.i} of ${BG.n}`:`Preparing game ${RPZ.i+1} of ${RPZ.n}`;rptPaint();await slp(450);if(BG.err&&!BG.run&&!(anl[g.id]&&anl[g.id].done))throw new Error(BG.err)}return true}
+function rptPaint(){const e=$('#rpprog');if(e)e.textContent=RPZ.msg;const b=$('#rpbar');if(b)b.style.width=Math.round((RPZ.i+(BG.n&&BG.cur?BG.i/BG.n:0))/Math.max(1,RPZ.n)*100)+'%'}
+async function rptRun(){if(RPZ.run)return;const o={...S.rpo},ids=rptIds(o);if(!ids.length){note('No games match those settings.',1);return}RPZ.run=true;RPZ.cancel=false;RPZ.i=0;RPZ.n=ids.length;RPZ.msg='Starting';if(S.v==='ins')view(1);
+ const acc={sk:{},ph:{},op:{},cas:[],games:[]};let used=0,skipped=0;
+ try{for(const id of ids){if(RPZ.cancel)break;const g=findGame(id);if(!g)continue;let ok=false;try{ok=await rptEnsure(g)}catch(e){if(/engine|worker|timed|unavailable|load/i.test(e.message)){note('Analysis stopped: '+e.message,1);RPZ.cancel=1;break}skipped++}
+   if(ok){RPZ.msg=`Reading game ${RPZ.i+1} of ${RPZ.n}`;rptPaint();await slp(0);try{if(rptGame(g,acc))used++;else skipped++}catch(e){skipped++}}RPZ.i++}
+  BG.force=null;if(!RPZ.cancel&&used){const rep=rptFinish(acc,used,skipped,o);cfg.rpt=rep;(cfg.rph=cfg.rph||[]).push({t:rep.t,n:rep.n,sk:Object.fromEntries(Object.entries(rep.sk).map(([k,a])=>[k,[a.o,a.h,a.m,a.g]])),prof:Object.fromEntries(rep.prof.map(p=>[p.key,p.label])),weak:rep.weak,str:rep.str});cfg.rph=cfg.rph.slice(-15);sv();note('Report ready.')}else if(RPZ.cancel)note('Analysis cancelled.');else note('None of those games could be analyzed.',1)}
+ finally{RPZ.run=false;BG.force=null;if(S.v==='ins')view(1)}}
+
+/* ---- Your Report: interface ---- */
+const rpDate=t=>new Date(t).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+const rpRow=(a,p,name,label,sub)=>`<button class="act" data-a="${a}" data-p="${esc(p)}"><span>${esc(name)}${sub?`<small class="sb">${esc(sub)}</small>`:''}</span><span class="r">${esc(label)}</span></button>`;
+const rpKV=(a,b)=>`<div class="kv"><span>${a}</span><span>${b}</span></div>`;
+const rpMv=i=>((i>>1)+1)+(i%2?'...':'.');
+const rpSub=a=>a.conf==='none'?`${a.o} relevant position${a.o===1?'':'s'}`:`${a.h} of ${a.o} handled · ${a.g} game${a.g===1?'':'s'}`;
+const rpEvKind=q=>q==='e'?'Engine-supported conclusion':'Heuristic interpretation';
+function rpWilson(h,o){if(!o)return[0,1];const z=1.96,p=h/o,d=1+z*z/o,c=p+z*z/(2*o),w=z*Math.sqrt(p*(1-p)/o+z*z/(4*o*o));return[(c-w)/d,(c+w)/d]}
+function vRpt(){S.rpo=S.rpo||{n:10,tc:'all',col:'all'};const tab=S.rpt||'overview',rep=cfg.rpt;let body='';
+ const tcs=[...new Set(games.map(g=>g.tc).filter(Boolean))];
+ if(tab==='openings'&&games.length)body=vInsOld().replace(/^<h1>[^<]*<\/h1>/,'');else{S.opOpen=0;setPos(R.START,'w',true);B.on=null;S.opPv=null}
+ let h=`<h1>Your Report</h1><p class="sub">Finds your strengths, weaknesses and training priorities across your recent games.</p>`;
+ if(rep)h+=rpKV('Games analyzed',`${rep.n}${rep.skipped?` (${rep.skipped} skipped)`:''}`)+rpKV('Last analysis',rpDate(rep.t))+rpKV('Time controls',esc(rep.tcs.map(cap1).join(', ')||'Unknown')+(rep.opts&&rep.opts.col!=='all'?' · '+(rep.opts.col==='w'?'White':'Black')+' only':''));
+ if(RPZ.run)h+=`<div class="rpp"><div class="bar"><i id="rpbar" style="width:0"></i></div><p class="dim" id="rpprog" style="margin:6px 0 0">${esc(RPZ.msg)}</p></div><button class="abtn w" data-a="rpcancel">Cancel analysis</button>`;
+ else if(games.length){const ns=[5,10,20,30].filter((n,i,a)=>n<=Math.max(5,games.length)||i===0);
+  h+=`<div class="seg" style="margin:14px 0 0">${[5,10,20,30].map(n=>`<button data-a="rpn" data-p="${n}"${S.rpo.n===n?' class="on"':''}>${n} games</button>`).join('')}</div>`+btn('rpgo',rep?'Analyze Recent Games':'Analyze Recent Games','','pri w')
+   +`<button class="lnk" data-a="rpset" style="margin-top:10px">${S.rps?'Hide settings':'Analysis settings'}</button>`
+   +(S.rps?`<div class="fade"><div class="fl" style="margin-top:8px"><div class="seg">${['all',...tcs].map(t=>`<button data-a="rptcf" data-p="${esc(t)}"${S.rpo.tc===t?' class="on"':''}>${t==='all'?'Any time control':esc(cap1(t))}</button>`).join('')}</div></div><div class="fl"><div class="seg">${[['all','Both colors'],['w','White'],['b','Black']].map(([k,t])=>`<button data-a="rpcol" data-p="${k}"${S.rpo.col===k?' class="on"':''}>${t}</button>`).join('')}</div></div>`
+    +lbl('Import PGN games','')+`<textarea class="ta" id="rppgn" placeholder="Paste one or more PGN games"></textarea>`+btn('rpimp','Import games','','w')+`</div>`:'')}
+ if(!games.length)return h+`<div class="cd">NO GAMES YET<small>Connect an account in Settings, or paste PGN games here to create your first report.</small></div>`+act('conn','Connect account')+lbl('Import PGN games','')+`<textarea class="ta" id="rppgn" placeholder="Paste one or more PGN games"></textarea>`+btn('rpimp','Import games','','w');
+ h+=`<div class="seg tabs" style="margin-top:18px;flex-wrap:wrap">${[['overview','Overview'],['skills','Skills'],['openings','Openings'],['phases','Game Phases'],['history','History']].map(([k,t])=>`<button data-a="rptab" data-p="${k}"${tab===k?' class="on"':''}>${t}</button>`).join('')}</div>`;
+ if(tab==='openings')return h+body;
+ if(!rep&&tab!=='history')return h+`<div class="cd">NO REPORT YET<small>Pick how many recent games to read and press Analyze Recent Games. Stockfish checks each game once and the results are saved on this device.</small></div>`;
+ return h+(tab==='skills'?rpSkills(rep):tab==='phases'?rpPhases(rep):tab==='history'?rpHistory():rpOverview(rep))}
+function rpWeak(rep,id){const a=rep.sk[id],x=RPX[id],ex=rptEx(rep,id).length;
+ return`<div class="sbx rpw"><b>${esc(x.n)}</b><div>${esc(`In ${a.m} of ${a.o} positions with ${x.opp}, the right idea was missed or allowed.`)}</div>`
+  +rpKV('Evidence',rpEvKind(a.q))+rpKV('Relevant opportunities',a.o)+rpKV('Games affected',`${a.mg} of ${rep.n}`)+rpKV('Confidence',RPCN[a.conf].replace(' confidence',''))
+  +`<div style="margin-top:6px">${esc(x.why)}</div><div style="margin-top:6px"><i style="font-style:normal;font-weight:600">Training</i> ${esc(x.study)}</div>`
+  +(ex?act('rpprac','Practice Now',ex+' position'+(ex>1?'s':''),id):'')+act('rpev','View Evidence','',id)+`</div>`}
+function rpOverview(rep){let h=lbl('Your chess profile','')+rep.prof.map(p=>rpRow('rpgoto',p.key,p.name,p.label,rpSub(p))).join('');
+ h+=`<div class="gapb"></div>`+lbl('Your biggest weaknesses','');
+ h+=rep.weak.length?rep.weak.slice(0,3).map(id=>rpWeak(rep,id)).join(''):`<p class="dim">No skill reached the evidence needed to call it a recurring weakness (at least three misses across two games). Analyze more games for a clearer picture.</p>`;
+ h+=`<div class="gapb"></div>`+lbl('Your strengths','');
+ h+=rep.str.length?rep.str.map(id=>{const a=rep.sk[id];return`<div class="sbx"><b>${esc(RPX[id].n)}</b><div>${a.h} of ${a.o} relevant positions handled across ${a.g} games, ${RPCN[a.conf].toLowerCase()}.</div>${act('rpev','View Evidence','',id)}</div>`}).join(''):`<p class="dim">No skill has yet been shown to be a strength. A strength needs at least five correct handlings, in three games, at a high success rate.</p>`;
+ h+=`<div class="gapb"></div>`+lbl('Recommended training','');
+ h+=rep.plan.length?rep.plan.map((p,i)=>`<div class="sbx"><b>${i+1}. ${esc(p.name)}</b><div>${esc(p.why)}</div><div style="margin-top:4px"><i style="font-style:normal;font-weight:600">Study</i> ${esc(p.study)}</div><div><i style="font-style:normal;font-weight:600">Exercise</i> ${esc(p.exercise)}</div><div><i style="font-style:normal;font-weight:600">Time</i> ${esc(p.time)}</div><div><i style="font-style:normal;font-weight:600">Progress</i> ${esc(p.measure)}</div>${p.ex?act('rpprac','Practice Now',p.ex+' position'+(p.ex>1?'s':''),p.id):''}${p.th?act('rpth','Puzzles tagged '+esc(p.th),'',p.id):''}${p.op?act('rpolib','Open the opening library','',p.op):''}</div>`).join(''):`<p class="dim">There is nothing to prioritize yet. Analyze more games to produce a plan.</p>`;
+ return h}
+function rpSkills(rep){let h='';const none=[];
+ for(const[g,gn]of Object.entries(RPGR)){const rows=RPS.filter(r=>r[2]===g);const shown=rows.filter(r=>rep.sk[r[0]]);if(!shown.length)continue;
+  h+=lbl(gn,'')+shown.map(r=>{const a=rep.sk[r[0]],open=S.rpx&&S.rpx[r[0]];return rpRow('rpx',r[0],r[1],a.label,rpSub(a)+(a.q==='h'?' · heuristic':''))+(open?`<div class="sbx fade"><div>${esc('What was counted: '+RPX[r[0]].opp+'.')}</div>${rpKV('Handled / missed',`${a.h} / ${a.m}`)+rpKV('Games with evidence',a.g)+(a.m?rpKV('Average severity',`${a.sev} points of winning chances`):'')+rpKV('Confidence',RPCN[a.conf].replace(' confidence',''))+rpKV('Kind of evidence',rpEvKind(a.q))}<div style="margin-top:6px">${esc(RPX[r[0]].why)}</div><div style="margin-top:4px"><i style="font-style:normal;font-weight:600">Study</i> ${esc(RPX[r[0]].study)}</div>${a.ev.length?act('rpev','View Evidence','',r[0]):''}${rptEx(rep,r[0]).length?act('rpprac','Practice Now',rptEx(rep,r[0]).length+' positions',r[0]):''}</div>`:'')}).join('');
+  rows.filter(r=>!rep.sk[r[0]]).forEach(r=>none.push(r[1]))}
+ if(none.length)h+=`<p class="dim" style="margin-top:20px">No relevant positions appeared in these games for: ${esc(none.join(', '))}.</p>`;
+ h+=`<p class="dim" style="margin-top:14px">Not assessed because they cannot be verified reliably with the engine and board geometry alone: prophylaxis, space, good and bad bishops, weak squares and outposts, overloaded defenders, trapped pieces, triangulation, and the Lucena and Philidor positions.</p>`;return h}
+function rpPhases(rep){const PH=[['open','Opening'],['mid','Middlegame'],['end','Endgame']],er=k=>{const p=rep.ph[k];return p&&p.mv?p.big/p.mv:null},ok=PH.filter(([k])=>rep.ph[k]&&rep.ph[k].mv>=15);let h='';
+ if(ok.length>=2){const s=ok.slice().sort((a,b)=>er(b[0])-er(a[0])),t=s[0],l=s[s.length-1];h+=er(t[0])-er(l[0])>=.03?`<p class="lead">You lose most ground in the ${t[1].toLowerCase()}.</p><p class="dim" style="margin:0">${Math.round(er(t[0])*100)} serious errors per 100 moves, against ${Math.round(er(l[0])*100)} in the ${l[1].toLowerCase()}.</p>`:`<p class="lead">Your error rate is similar in every phase.</p>`}
+ for(const[k,nm]of PH){const p=rep.ph[k]||{mv:0,big:0,sum:0};h+=lbl(nm,'');if(p.mv<15){h+=`<p class="dim">Only ${p.mv} of your moves were in this phase. That is not enough to assess it.</p>`;continue}
+  h+=rpKV('Moves analyzed',p.mv)+rpKV('Serious errors',`${p.big} (${Math.round(p.big/p.mv*100)} per 100 moves)`)+rpKV('Average win-chance loss',p.sum/p.mv<10?(p.sum/p.mv).toFixed(1)+' points':Math.round(p.sum/p.mv)+' points');
+  if(k==='open'){const e=rep.sk['o:end'];if(e)h+=rpKV('Position after eight moves',`acceptable in ${e.h} of ${e.o} games`);if(rep.cas.n)h+=rpKV('Castled by move 15',`${rep.cas.c} of ${rep.cas.n} games`);
+   h+=rep.op.slice(0,5).map(o=>rpRow('rptab','openings',`${o.name} as ${o.col==='w'?'White':'Black'}`,o.avg==null?'':fe(o.avg),`${o.n} game${o.n>1?'s':''} · ${o.sn?o.bad+' of '+o.sn+' worse after eight moves':'no analysis'}`)).join('');
+   const rp=rep.op.filter(o=>o.rep.length);if(rp.length)h+=`<div class="sbx"><b>Repeated problems</b><div>${rp.map(o=>esc(`${o.name}: the same position led to a costly move in ${o.rep[0].length} games.`)).join('<br>')}</div></div>`}
+  if(k==='end'){const T=[['e:pawn','Pawn'],['e:rook','Rook'],['e:minor','Minor-piece'],['e:queen','Queen']].filter(x=>rep.sk[x[0]]);h+=T.map(([id,t])=>rpRow('rpx',id,t+' endgames',rep.sk[id].label,rpSub(rep.sk[id]))).join('');for(const id of['e:conv','e:defend','e:opp'])if(rep.sk[id])h+=rpRow('rpx',id,RPX[id].n,rep.sk[id].label,rpSub(rep.sk[id]))}
+  const sp=Object.entries(rep.sk).filter(([id,a])=>a.ph[k]&&a.ph[k].m+a.ph[k].h>=4&&!id.startsWith('e:')&&id!=='o:end').map(([id,a])=>[id,a.ph[k].h,a.ph[k].m]).sort((a,b)=>b[2]/(b[1]+b[2])-a[2]/(a[1]+a[2])).slice(0,3);
+  if(sp.length)h+=`<div class="sbx"><b>Skills behind the errors</b><div>${sp.map(([id,hh,m])=>esc(`${RPX[id].n}: ${m} missed, ${hh} handled`)).join('<br>')}</div></div>`}
+ return h}
+function rpHistory(){const H=(cfg.rph||[]).slice().reverse();if(!H.length)return`<div class="cd">NO HISTORY<small>Each analysis is saved so later reports can be compared with it.</small></div>`;let h=lbl('Analyses',String(H.length));
+ h+=H.map(x=>rpRow('rptab','overview',rpDate(x.t),`${x.n} games`,Object.entries(x.prof).filter(([k,l])=>/weakness|improvement/.test(l)).map(([k])=>(cfg.rpt&&cfg.rpt.prof.find(p=>p.key===k)||{name:k}).name).slice(0,3).join(', ')||'No weakness flagged')).join('');
+ if(H.length>=2){const c=H[0],p=H[1],rows=[];for(const id of Object.keys(c.sk)){const a=c.sk[id],b=p.sk[id];if(!b||a[0]<6||b[0]<6)continue;const ia=rpWilson(a[1],a[0]),ib=rpWilson(b[1],b[0]);if(ia[0]>ib[1])rows.push([id,'Improved',b,a]);else if(ia[1]<ib[0])rows.push([id,'Declined',b,a])}
+  h+=`<div class="gapb"></div>`+lbl('Changes since the previous analysis','');
+  h+=rows.length?rows.map(([id,t,b,a])=>rpRow('rpx',id,RPX[id].n,t,`${b[1]} of ${b[0]} then, ${a[1]} of ${a[0]} now`)).join(''):`<p class="dim">No skill changed reliably. A change only counts when both analyses have at least six relevant positions and the difference is larger than chance.</p>`;
+  const still=c.weak.filter(id=>p.weak.includes(id)),gone=p.weak.filter(id=>!c.weak.includes(id)),neu=c.weak.filter(id=>!p.weak.includes(id));
+  if(still.length)h+=`<div class="sbx"><b>Still recurring</b><div>${still.map(id=>esc(RPX[id].n)).join('<br>')}</div></div>`;
+  if(neu.length)h+=`<div class="sbx"><b>Newly flagged</b><div>${neu.map(id=>esc(RPX[id].n)).join('<br>')}</div></div>`;
+  if(gone.length)h+=`<div class="sbx"><b>No longer flagged</b><div>${gone.map(id=>{const a=c.sk[id],b=p.sk[id];return esc(RPX[id].n+(a&&b&&a[0]>=6&&b[0]>=6?'':' (not enough positions this time to call it an improvement)'))}).join('<br>')}</div></div>`;
+  const sd=c.str.filter(id=>!p.str.includes(id)),sl=p.str.filter(id=>!c.str.includes(id));if(sd.length||sl.length)h+=`<div class="sbx"><b>Strengths</b><div>${sd.map(id=>'Now demonstrated: '+esc(RPX[id].n)).concat(sl.map(id=>'No longer demonstrated: '+esc(RPX[id].n))).join('<br>')}</div></div>`}
+ const X=Object.entries(cfg.rpx||{}).filter(([id,v])=>v.t);h+=`<div class="gapb"></div>`+lbl('Training performance','');
+ h+=X.length?X.map(([id,v])=>rpKV(esc((RPX[id]||{n:id}).n),`${v.ok} of ${v.t} solved on the first try`)).join(''):`<p class="dim">Exercises you complete are tracked here.</p>`;return h}
+/* ---- evidence viewer ---- */
+const rpUci=u=>u&&u.length>=4?{f:(8-(+u[1]))*8+(u.charCodeAt(0)-97),t:(8-(+u[3]))*8+(u.charCodeAt(2)-97)}:null;
+function rpEvBoard(){const q=S.rpe,e=q&&q.L[q.i];if(!e)return;B.on=null;B.lock=true;setPos(e.fen,e.col,true);B.arrow=null;const a=rpUci(e.bm);if(a&&e.res==='m')B.arrow={f:a.f,t:a.t};B.last=null;drawBoard()}
+function vRptEv(){const q=S.rpe,e=q&&q.L[q.i];if(!e)return'<h1>Evidence</h1>'+act('back','Back');const a=cfg.rpt&&cfg.rpt.sk[q.id],g=findGame(e.gid),x=RPX[q.id]||{n:q.id,q:'e'};
+ let h=`<h1 style="font-size:22px">${esc(x.n)}</h1><p class="sub">Position ${q.i+1} of ${q.L.length}${g?` · ${esc(g.white)} vs ${esc(g.black)}`:''}</p>`;
+ h+=lbl('What happened','')+`<p style="line-height:1.6;margin:0">${e.res==='m'?`At move ${rpMv(e.i)} you played <b>${esc(e.pl)}</b>${e.ls?`, which cost ${e.ls} points of winning chances`:''}.`:`At move ${rpMv(e.i)} you played <b>${esc(e.pl)}</b>.`}${e.bs&&e.res==='m'?` The engine preferred <b>${esc(e.bs)}</b>.`:''}</p>`;
+ h+=lbl('Why this counts','')+`<p style="line-height:1.6;margin:0">${esc(e.why||'')}</p>`;
+ if(e.cp!=null)h+=lbl('Consequence','')+`<p style="line-height:1.6;margin:0">${e.cp1!=null?`The evaluation for you went from ${fe(e.cp)} to ${fe(e.cp1)}.`:`The evaluation for you was ${fe(e.cp)}.`}</p>`;
+ h+=lbl('How sure we are','')+rpKV('Kind of evidence',e.heur?'Heuristic interpretation':rpEvKind(x.q))+(a?rpKV('Skill confidence',RPCN[a.conf].replace(' confidence','')):'');
+ h+=`<div class="gapb"></div>`+(q.i>0?act('rpevn','Previous position','',-1):'')+(q.i<q.L.length-1?act('rpevn','Next position','',1):'')+(g?act('rpevg','Open the game at this move'):'')+(rptEx(cfg.rpt,q.id).length?act('rpprac','Practice this skill','',q.id):'');return h}
+/* ---- exercises from your own positions: solution = the engine's best move, verified when the report was built ---- */
+function rpxBoard(){const q=S.rpq,e=q&&q.L[q.i];if(!e)return;setPos(e.fen,e.col,false);B.on=rpxAns;B.lock=false;B.arrow=null;q.tries=0;q.done=0;q.shown=0;q.msg='';drawBoard()}
+function rpxRec(id,first){const x=(cfg.rpx=cfg.rpx||{}),v=x[id]||(x[id]={t:0,ok:0});v.t++;if(first)v.ok++;sv()}
+function rpxAns(){const q=S.rpq,e=q&&q.L[q.i];if(!e||q.done)return;const h=B.hist[B.hist.length-1],sol=pzUci(h.s,e.bm),ok=sol&&rpSame(h.m,sol);B.arrow=null;
+ if(ok){q.done=1;B.lock=true;if(!q.shown)rpxRec(q.id,q.tries===0);badge('Right');q.msg=`Correct. ${e.bs} was the best move. ${e.why||''}`;view(1)}
+ else{q.tries++;B.lock=true;badge('Wrong');q.msg='That is not the best move here. Try again.';view(1);setTimeout(()=>{if(S.rpq!==q||q.done)return;popAnim();clearBadge();B.lock=false;view(1)},650)}}
+function vRptEx(){const q=S.rpq,e=q&&q.L[q.i];if(!e)return'<h1>Practice</h1>'+act('back','Back');const x=RPX[q.id]||{n:q.id},w=e.col==='w'?'White':'Black';
+ let h=`<h1 style="font-size:22px">${esc(x.n)}</h1><p class="sub">${q.i+1} of ${q.L.length} · ${w} to move</p><p class="lead">Find the best move.</p>`;if(q.msg)h+=`<div class="coach">${esc(q.msg)}</div>`;
+ if(q.done)h+=(q.i<q.L.length-1?act('rpexn','Next position'):act('back','Back to your report'));else if(q.tries>=2&&!q.shown)h+=act('rpexshow','Show answer');return h+`<div class="gapb"></div>`+act('back','Stop practicing')}
+
+function rpImport(){const t=($('#rppgn')||{}).value||'';if(!t.trim()){note('Paste a PGN first.',1);return}const names=Object.values(cfg.names||{}).map(x=>String(x||'').trim().toLowerCase()).filter(Boolean);let add=[],bad=0,guess=0;
+ for(const ch of t.split(/\n\s*\n(?=\[Event )/)){const mv=parseMoves(ch);if(!mv.length){bad++;continue}const tg=k=>(ch.match(new RegExp('\\['+k+' "([^"]*)"'))||[])[1]||'',wn=tg('White'),bn=tg('Black');let col='w';if(names.includes(bn.toLowerCase())&&!names.includes(wn.toLowerCase()))col='b';else if(!names.includes(wn.toLowerCase()))guess++;
+  const r=tg('Result'),res=r==='1/2-1/2'?'draw':r==='1-0'?(col==='w'?'win':'loss'):r==='0-1'?(col==='b'?'win':'loss'):'draw',d=tg('Date').replace(/\./g,'-'),tm=Date.parse(d);
+  const g={id:'pgn:'+olHash(mv.join(' ')+wn+bn),site:'local',col,white:wn||'White',black:bn||'Black',res,tc:'pgn',t:isNaN(tm)?Date.now():tm,open:tg('Opening'),mv:mv.join(' ')};try{gs(g)}catch(e){bad++;continue}add.push(g)}
+ if(!add.length){note('No readable games were found.',1);return}addGames(add);GSC.clear();kickBg();note(`${add.length} game${add.length>1?'s':''} imported${guess?` (${guess} assumed to be played as White)`:''}${bad?`, ${bad} skipped`:''}.`);view(1)}
+Object.assign(ACT,{rptab(p){S.rpt=p;view()},rpgo(){rptRun()},rpcancel(){RPZ.cancel=true;BG.force=null;RPZ.msg='Cancelling';view(1)},rpn(p){S.rpo.n=+p;view(1)},rptcf(p){S.rpo.tc=p;view(1)},rpcol(p){S.rpo.col=p;view(1)},rpset(){S.rps=!S.rps;view(1)},rpimp(){rpImport()},
+ rpgoto(k){S.rpt=['open','mid','end'].includes(k)?'phases':'skills';view()},rpx(id){S.rpx=S.rpx||{};S.rpx[id]=!S.rpx[id];view(1)},
+ rpev(id){const a=cfg.rpt&&cfg.rpt.sk[id];if(!a||!a.ev.length){note('No evidence positions were stored for this skill.',1);return}S.rpe={id,i:0,L:a.ev};nav(()=>{S.v='rptev';rpEvBoard();view()})},
+ rpevn(p){const q=S.rpe;q.i=Math.max(0,Math.min(q.L.length-1,q.i+ +p));rpEvBoard();view(1)},rpevg(){const q=S.rpe,e=q.L[q.i];nav(()=>openGame(e.gid,e.i))},
+ rpprac(id){const L=rptEx(cfg.rpt,id).slice(0,8);if(!L.length)return;S.rpq={id,L,i:0};nav(()=>{S.v='rptex';rpxBoard();view()})},rpexn(){const q=S.rpq;q.i++;rpxBoard();view(1)},
+ rpexshow(){const q=S.rpq,e=q.L[q.i],a=rpUci(e.bm);q.shown=1;rpxRec(q.id,false);B.arrow={f:a.f,t:a.t};q.msg=`The best move was ${e.bs}. ${e.why||''}`;q.done=1;B.lock=true;view(1);drawBoard()},
+ rpth(id){const x=RPX[id];if(!x||!x.th)return;const c=pzc();c.sel=[x.th];c.time=0;c.cu=0;sv();ACT.pzgo()},
+ rpolib(name){const nm=String(name).toLowerCase(),o=OLIB.find(o=>o.name.toLowerCase()===nm)||OLIB.find(o=>nm.includes(o.name.toLowerCase()));if(!o){nav(()=>{S.v='olib';S.olq=name;olEnterLib();view()});return}ACT.olo(o.id)}});
 
 /* ---------- puzzles: Lichess themes, optional replay of your own puzzles from a time range ---------- */
 const PZG=[['Phases',[['opening','Opening'],['middlegame','Middlegame'],['endgame','Endgame']]],
